@@ -41,9 +41,9 @@ As of now, the project has moved into the **literature review phase**. Each team
 
 ## Team Members
 
-- **Baire Gowda** — Reg No: 25PG00157
-- **Hithaishi S P**
-- **Sanjay**
+- **Baire Gowda** — https://github.com/bairegowda1003
+- **Hithaishi S P** — https://github.com/HithaishiSP2004
+- **Sanjay** — https://github.com/sanju722002
 
 ---
 
