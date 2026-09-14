@@ -42,8 +42,9 @@ As of now, the project has moved into the **literature review phase**. Each team
 ## Team Members
 
 - **Baire Gowda** — https://github.com/bairegowda1003
-- **Hithaishi S P** — https://github.com/HithaishiSP2004
 - **Sanjay** — https://github.com/sanju722002
+- **Hithaishi S P** — https://github.com/HithaishiSP2004
+
 
 ---
 
