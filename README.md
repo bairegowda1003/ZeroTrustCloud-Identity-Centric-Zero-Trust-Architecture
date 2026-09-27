@@ -35,7 +35,7 @@ The project addresses five key problems in cloud security today:
 
 ## Current Progress
 
-As of now, the project has moved into the **literature review phase**. Each team member is reviewing individual sets of research papers covering the core architectural components above, and the findings are being documented and tracked through TrackEdge.
+The project is progressing through an extended literature review phase. In Week 1, each team member reviewed 10 research papers (30 total) covering the core architectural components above. In Week 3, each member reviewed a further 10 papers focused on cloud-native Zero Trust security, workload identity, service-mesh security, dynamic access control, and multi-cloud security — bringing the combined total to 60 research papers reviewed across the team. These findings are being used to refine the research direction, identify research gaps, and shape the system requirements for the ZeroTrustCloud architecture, with progress tracked through TrackEdge.
 
 ---
 
@@ -45,7 +45,6 @@ As of now, the project has moved into the **literature review phase**. Each team
 - **Sanjay** — https://github.com/sanju722002
 - **Hithaishi S P** — https://github.com/HithaishiSP2004
 
-
 ---
 
 ## Domain
@@ -54,3 +53,4 @@ As of now, the project has moved into the **literature review phase**. Each team
 - **Academic Program:** Postgraduate — Chanakya University, School of Engineering
 - **Project Code:** PRJ-34
 - **Academic Year:** 2025–2026
+
