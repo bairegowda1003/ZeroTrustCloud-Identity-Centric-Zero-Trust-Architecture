@@ -144,18 +144,20 @@ Validation will compare two environments:
 ---
 
 ## 9. Repository Structure
+
+```
 ZeroTrustCloud-Identity-Centric-Zero-Trust-Architecture/
 │
-├── README.md
+├── README.md                                          [Project overview, status, and roadmap]
 │
-├── Plannings/
+├── Plannings/                                         [Project work plans & methodology]
 │   ├── Work_Plan_and_Project_Progress_Report_ZeroTrustCloud.pdf
 │   └── Project Methodology & Planning Documents
 │
-├── Original Research Papers/
+├── Original Research Papers/                          [Raw source papers collected by each member]
 │   ├── Baire Gowda_Research papers/
-│   │   ├── part 1/
-│   │   └── part 2/
+│   │   ├── part 1/                                    [Week 1 — 10 papers]
+│   │   └── part 2/                                    [Week 3 — 10 papers]
 │   │
 │   ├── Hithaishi S P/
 │   │   ├── part 1/
@@ -165,9 +167,9 @@ ZeroTrustCloud-Identity-Centric-Zero-Trust-Architecture/
 │       ├── part 1/
 │       └── part 2/
 │
-├── Research Papers Review/
-│   ├── part 1/
-│   └── part 2/
+└── Research Papers Review/                            [Literature survey reports]
+    ├── part 1/                                        [Week 1 literature review writeups]
+    └── part 2/                                        [Week 3 literature review writeups]
 ```
 
 ### Planned Future Directory Structure (To Be Created During Implementation)
@@ -194,10 +196,10 @@ ZeroTrustCloud-Identity-Centric-Zero-Trust-Architecture/
 ---
 
 ## 10. Project Team Members
+
 - **Baire Gowda** — [@bairegowda1003](https://github.com/bairegowda1003)
 - **Sanjay** — [@sanju722002](https://github.com/sanju722002)
 - **Hithaishi S P** — [@HithaishiSP2004](https://github.com/HithaishiSP2004)
-
 
 **Academic Program:** Master of Computer Applications (MCA) — Final Year, Semester III
 **Department:** Department of Computer Applications
