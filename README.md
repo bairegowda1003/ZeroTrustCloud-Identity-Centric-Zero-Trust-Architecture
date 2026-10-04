@@ -144,20 +144,30 @@ Validation will compare two environments:
 ---
 
 ## 9. Repository Structure
-
-> ⚠️ Placeholder — confirm your actual folder/file names from GitHub before finalizing this section.
-
-```
 ZeroTrustCloud-Identity-Centric-Zero-Trust-Architecture/
 │
 ├── README.md
 │
-├── <planning-folder>/
-│   └── Work_Plan_and_Project_Progress_Report_ZeroTrustCloud.pdf
+├── Plannings/
+│   ├── Work_Plan_and_Project_Progress_Report_ZeroTrustCloud.pdf
+│   └── Project Methodology & Planning Documents
 │
-└── research/
-    ├── <week-1-papers>/
-    └── <week-3-papers>/
+├── Original Research Papers/
+│   ├── Baire Gowda_Research papers/
+│   │   ├── part 1/
+│   │   └── part 2/
+│   │
+│   ├── Hithaishi S P/
+│   │   ├── part 1/
+│   │   └── part 2/
+│   │
+│   └── SANJAY RESEARCH PAPERS/
+│       ├── part 1/
+│       └── part 2/
+│
+├── Research Papers Review/
+│   ├── part 1/
+│   └── part 2/
 ```
 
 ### Planned Future Directory Structure (To Be Created During Implementation)
