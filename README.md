@@ -244,7 +244,7 @@ ZeroTrustCloud-Identity-Centric-Zero-Trust-Architecture/
 
 - **Baire Gowda** — [@bairegowda1003](https://github.com/bairegowda1003)
 - **Sanjay** — [@sanju722002](https://github.com/sanju722002)
-- **Hithaishi S P** — [@HithaishiSP2004](https://github.com/HithaishiSP2004) *(Project Lead)*
+- **Hithaishi S P** — [@HithaishiSP2004](https://github.com/HithaishiSP2004) 
 
 **Academic Program:** Master of Computer Applications (MCA) — Final Year, Semester III
 **Department:** Department of Computer Applications
