@@ -1,6 +1,8 @@
 # ZeroTrustCloud: Implementing and Automating Identity-Centric Zero-Trust Architecture for Cloud-Native Environments
 
-**📋 Current Status: Research & Methodology / Experimental Planning (Week 4)**
+**📋 Current Status: Phase 1 — Dashboard Foundation Implemented & Verified**
+
+Phase 1 delivers the TrustMesh Security Command Center dashboard: the application shell, an interactive findings explorer, threat context drawers, and honest integration state indicators. In accordance with `PROJECT_CORE.md`, all displayed telemetry records are controlled demonstration fixtures.
 
 ZeroTrustCloud (proposed platform name: **TrustMesh**) is a final-year MCA cybersecurity engineering project focused on the design, automated policy enforcement, and empirical evaluation of an **Identity-Centric Zero-Trust Architecture (ZTA)** built for containerized, multi-cloud Kubernetes environments (AWS EKS & Azure AKS).
 
@@ -35,7 +37,7 @@ Perimeter firewalls alone cannot address the security gaps that modern cloud-nat
 - **Continuous Runtime Verification** — ongoing checks on container integrity, drift detection, and dynamic trust scoring
 - **Software Supply Chain Defense** — automated vulnerability scanning (Trivy), SBOM generation (Syft), and image signing (Cosign/Sigstore) built into the CI/CD pipeline
 - **Centralized Security Observability** — authentication logs, authorization denials, and admission rejections routed into Prometheus/Loki and a posture dashboard
-- **Empirical Benchmarking** — measuring defensive effectiveness, latency overhead, and compute cost through controlled test scenarios
+- **Empirical Benchmarking** — measuring defensive effectiveness, latency overhead, and compute cost through controlled red-team test scenarios
 
 ---
 
@@ -86,14 +88,42 @@ Perimeter firewalls alone cannot address the security gaps that modern cloud-nat
 
 ---
 
-## 5. Core System Modules (Planned Implementation Stages)
+## 5. Core System Modules & Phase 1 Status
 
-- **Identity Engine** [Planned] — cryptographic workload identity attestation via SPIRE and secretless cloud OIDC federation
-- **Policy Engine** [Planned] — declarative Policy-as-Code admission webhooks using OPA Gatekeeper and Rego
-- **Service Trust Engine** [Planned] — Istio Service Mesh enforcing strict mTLS and Layer-7 authorization
-- **Continuous Verification Engine** [Planned] — runtime daemon tracking configuration drift and dynamic trust scores
-- **Pipeline Security Engine** [Planned] — secretless GitHub Actions runners, Trivy scanning, and Cosign image signing at admission
-- **Observability & Compliance Engine** [Planned] — centralized audit telemetry, policy violations, and security health metrics
+- **Command Center Dashboard** [Implemented — Phase 1] — application shell, navigation system, dynamic posture metrics, interactive findings explorer with multi-column sorting, free-text search and multi-factor filtering, slide-over threat context drawer with attack paths and Rego remediation, and honest integration state indicators
+- **Identity Engine** [Planned — Phase 4] — cryptographic workload identity attestation via SPIRE and secretless cloud OIDC federation
+- **Policy Engine** [Planned — Phase 4] — declarative Policy-as-Code admission webhooks using OPA Gatekeeper and Rego
+- **Service Trust Engine** [Planned — Phase 4] — Istio Service Mesh enforcing strict mTLS and Layer-7 authorization
+- **Continuous Verification Engine** [Planned — Phase 5] — runtime daemon tracking configuration drift and dynamic trust scores
+- **Pipeline Security Engine** [Planned — Phase 5] — secretless GitHub Actions runners, Trivy scanning, and Cosign image signing at admission
+- **Observability & Compliance Engine** [Planned — Phase 6] — centralized audit telemetry, policy violations, and security health metrics
+
+### 5.1 Phase 1 Local Execution & Verification
+
+The Phase 1 dashboard is built with React 18, TypeScript, and Vite, using a custom high-density dark-navy enterprise security design system.
+
+```bash
+# 1. Install dependencies
+npm install
+
+# 2. Build for production (typecheck & bundle)
+npm run build
+
+# 3. Launch local preview server (port 3000)
+npm run preview
+# OR start the Vite development server
+npm run dev
+```
+
+**Verified Phase 1 Capabilities:**
+
+- **Honest Data Tagging** — prominent `[SIMULATED TESTBED]` indicator on every screen; no fabricated live cloud connections
+- **Security Command Center** — 2.5D isometric telemetry space tracking evaluated workloads, active breaches, severity distribution chips, and a floating top-priority incident card with 1-click inspection
+- **Progressive Disclosure Architecture** — dedicated Findings Explorer with live free-text search (CVE, title, pod name, namespace), multi-factor dropdown filters (Severity, Architecture Pillar, Status), and multi-column sorting
+- **Threat Lineage Drawer** — slide-over detail drawer with threat impact analysis, 4-step attack path graphs, CIS/NIST remediation guidance, and syntax-highlighted Rego constraint snippets
+- **Session Triage Updates** — local triage toggling (New, In Progress, Resolved) that updates table badges and metric counters instantly
+- **Planned Integrations Modal** — connector inspection dialog showing planned status for AWS EKS, Azure AKS, Istio, OPA Gatekeeper, SPIRE, and Cosign
+- **Module Shell Navigation** — clean routes for upcoming engines with architectural blueprints and return buttons
 
 ---
 
@@ -109,18 +139,20 @@ Perimeter firewalls alone cannot address the security gaps that modern cloud-nat
 | Supply Chain Security | Cosign / Sigstore, Syft (SBOM), Trivy (vulnerability scanning) |
 | CI/CD Automation | GitHub Actions (OIDC Federated, Secretless) |
 | Observability & Logging | Prometheus, Grafana, Grafana Loki, OpenTelemetry Collector |
+| Dashboard Frontend | React 18, TypeScript, Vite |
 
 ---
 
 ## 7. Research & Methodology
 
-Research so far has been carried out across two review cycles:
+Research has been carried out across two review cycles, followed by the Week 4 methodology blueprint:
 
-- **Week 1 Review (10 papers individually / 30 as a team):** covering workload identity federation, OIDC token binding, mTLS performance, and software supply-chain integrity.
-- **Week 3 Review (10 more papers individually / 30 more as a team):** covering cloud-native Zero Trust security, workload identity, service-mesh security, dynamic access control, and multi-cloud security — bringing the combined total to **60 research papers reviewed** across the team.
-- **Week 4 (current):** formalizing methodology, identifying research gaps, and defining the system requirements and experimental plan for TrustMesh.
+- **Week 1 Review (10 papers individually / 30 as a team)** — workload identity federation, OIDC token binding, mTLS performance, and software supply-chain integrity
+- **Week 3 Review (10 more papers individually / 30 more as a team)** — secretless inter-application identities, service-mesh control plane verification, Intel SGX enclaves, Kubernetes network misconfigurations, and dynamic risk-based access control (DR-TBAC), bringing the combined total to **60 research papers reviewed** across the team
+- **Week 4 Blueprint** — methodology formalization, STRIDE threat modeling, telemetry schema definition, and the controlled experimental matrix
+- **Current (Phase 1)** — TrustMesh dashboard foundation built and verified using controlled demonstration fixtures
 
-Individual literature review documentation is maintained under the `research` folder, and project planning/progress reports under their respective folder, with progress tracked through TrackEdge.
+Individual literature review documentation is maintained under the `Research Papers Review/` folder, and project planning/progress reports under `Plannings/`, with progress tracked through TrackEdge.
 
 ---
 
@@ -132,6 +164,7 @@ Validation will compare two environments:
 - **Hardened ZeroTrustCloud Environment (With TrustMesh Controls):** STRICT mTLS, default-deny NetworkPolicies, SPIRE attestation, OPA Gatekeeper rules, mandatory Cosign image signing
 
 **Planned Test Scenarios (EXP-01 to EXP-08):**
+
 1. Authorized communication over strict mTLS
 2. Unauthenticated pod access blocking
 3. Unauthorized Layer-7 service call rejection
@@ -149,10 +182,22 @@ Validation will compare two environments:
 ZeroTrustCloud-Identity-Centric-Zero-Trust-Architecture/
 │
 ├── README.md                                          [Project overview, status, and roadmap]
+├── PROJECT_CORE.md                                    [TrustMesh Core Constitution & Scope Boundary]
+├── AGENTS.md                                          [Instructions & rules for coding agents]
+├── index.html, vite.config.ts, tsconfig.json          [Frontend application configuration]
+├── package.json, package-lock.json                    [Dashboard dependencies & scripts]
+│
+├── src/                                               [TrustMesh Phase 1 Dashboard Application]
+│   ├── components/                                    [Header, Sidebar, CommandCenter, FindingsTable, Drawers]
+│   ├── data/                                          [Controlled demonstration security findings & provider data]
+│   ├── styles/                                        [Custom enterprise design token CSS]
+│   ├── types/                                         [Domain TypeScript interfaces]
+│   ├── App.tsx                                        [Application shell coordinator]
+│   └── main.tsx                                       [React DOM entrypoint]
 │
 ├── Plannings/                                         [Project work plans & methodology]
 │   ├── Work_Plan_and_Project_Progress_Report_ZeroTrustCloud.pdf
-│   └── Project Methodology & Planning Documents
+│   └── ZeroTrustCloud_Methodology_Data_Collection_Experimental_Plan.pdf
 │
 ├── Original Research Papers/                          [Raw source papers collected by each member]
 │   ├── Baire Gowda_Research papers/
@@ -175,22 +220,22 @@ ZeroTrustCloud-Identity-Centric-Zero-Trust-Architecture/
 ### Planned Future Directory Structure (To Be Created During Implementation)
 
 ```
-├── identity-engine/          [Planned — SPIRE attestation & OIDC federation manifests]
-├── policy-engine/            [Planned — OPA Gatekeeper constraints & Rego policies]
-├── service-mesh/             [Planned — Istio STRICT mTLS & Layer-7 AuthZ policies]
-├── continuous-verification/  [Planned — Runtime verification & drift detectors]
-├── supply-chain-security/    [Planned — Cosign signature webhooks & SBOM generators]
-├── observability/            [Planned — Prometheus telemetry configs & Grafana dashboards]
+├── identity-engine/          [Planned — Phase 4: SPIRE attestation & OIDC federation manifests]
+├── policy-engine/            [Planned — Phase 4: OPA Gatekeeper constraints & Rego policies]
+├── service-mesh/             [Planned — Phase 4: Istio STRICT mTLS & Layer-7 AuthZ policies]
+├── continuous-verification/  [Planned — Phase 5: Runtime verification & drift detectors]
+├── supply-chain-security/    [Planned — Phase 5: Cosign signature webhooks & SBOM generators]
+├── observability/            [Planned — Phase 6: Prometheus telemetry configs & Grafana dashboards]
 │
-├── infrastructure/           [Planned — Cluster provisioning automation]
+├── infrastructure/           [Planned — Phase 3: Cluster provisioning automation]
 │   ├── kubernetes/           [Planned — Base Helm charts & microservice testbed]
 │   ├── aws/                  [Planned — AWS EKS Terraform & IRSA IAM roles]
 │   └── azure/                [Planned — Azure AKS Terraform & Workload Identity]
 │
-└── experiments/              [Planned — Empirical evaluation]
-    ├── scenarios/             [Planned — Attack simulation scripts EXP-01 to EXP-08]
-    ├── datasets/               [Planned — Raw collected CSV telemetry]
-    └── results/                 [Planned — Comparative performance charts & logs]
+└── experiments/              [Planned — Phase 5: Empirical evaluation]
+    ├── scenarios/            [Planned — Attack simulation scripts EXP-01 to EXP-08]
+    ├── datasets/             [Planned — Raw collected CSV telemetry]
+    └── results/              [Planned — Comparative performance charts & logs]
 ```
 
 ---
@@ -199,7 +244,7 @@ ZeroTrustCloud-Identity-Centric-Zero-Trust-Architecture/
 
 - **Baire Gowda** — [@bairegowda1003](https://github.com/bairegowda1003)
 - **Sanjay** — [@sanju722002](https://github.com/sanju722002)
-- **Hithaishi S P** — [@HithaishiSP2004](https://github.com/HithaishiSP2004)
+- **Hithaishi S P** — [@HithaishiSP2004](https://github.com/HithaishiSP2004) *(Project Lead)*
 
 **Academic Program:** Master of Computer Applications (MCA) — Final Year, Semester III
 **Department:** Department of Computer Applications
