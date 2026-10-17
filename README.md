@@ -10,9 +10,9 @@ ZeroTrustCloud (proposed platform name: **TrustMesh**) is a final-year MCA cyber
 
 ## 1. Project Overview
 
-Cloud-native systems today run on dynamic microservices, short-lived containers, and distributed compute spread across hybrid multi-cloud setups. Traditional perimeter-based security models ("castle-and-moat") break down in this environment, since internal workloads, service accounts, and CI/CD pipelines routinely operate outside any fixed network boundary.
+Modern cloud-native applications operate through dynamic microservices, temporary containers, and distributed workloads across hybrid and multi-cloud infrastructures. Traditional perimeter-based security approaches, often referred to as the "castle-and-moat" model, are no longer sufficient because workloads, service accounts, and CI/CD pipelines communicate across changing network boundaries.
 
-TrustMesh explores how cryptographic workload identity, Policy-as-Code enforcement, mutual TLS (mTLS) via service mesh, continuous runtime verification, and software supply-chain protection can be brought together into a single automated security control plane.
+ZeroTrustCloud aims to integrate cryptographic workload identity verification, automated Policy-as-Code enforcement, mutual TLS (mTLS) through a service mesh, continuous runtime validation, and software supply-chain security into a unified and automated security framework. This approach focuses on verifying identities, enforcing access policies, and continuously evaluating trust before allowing access to cloud resources.
 
 ---
 
