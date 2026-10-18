@@ -37,3 +37,6 @@ reserach/
 
 # Design references (private research assets — excluded from repository)
 design-references/
+
+# Design scratch & prompt references
+ui-phase.md
