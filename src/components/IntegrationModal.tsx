@@ -1,5 +1,5 @@
 import React from 'react';
-import { X, CloudOff, AlertCircle, ShieldAlert, CheckCircle2, Layers } from 'lucide-react';
+import { X, Cloud, Database, Key, GitBranch, Activity, Wifi } from 'lucide-react';
 import { IntegrationProvider } from '../types/security';
 
 interface IntegrationModalProps {
@@ -8,79 +8,84 @@ interface IntegrationModalProps {
   providers: IntegrationProvider[];
 }
 
-export const IntegrationModal: React.FC<IntegrationModalProps> = ({
-  isOpen,
-  onClose,
-  providers,
-}) => {
-  if (!isOpen) return null;
+const PROVIDER_ICONS: Record<string, React.ReactNode> = {
+  aws: <Cloud size={16} />,
+  azure: <Cloud size={16} />,
+  gcp: <Cloud size={16} />,
+  okta: <Key size={16} />,
+  github: <GitBranch size={16} />,
+  vault: <Database size={16} />,
+  istio: <Activity size={16} />,
+  default: <Wifi size={16} />,
+};
 
+const PROVIDER_COLORS: Record<string, string> = {
+  aws: '#ff9900',
+  azure: '#0078d4',
+  gcp: '#4285f4',
+  okta: '#007dc1',
+  github: '#f0f0f0',
+  vault: '#000000',
+  istio: '#466bb0',
+};
+
+export const IntegrationModal: React.FC<IntegrationModalProps> = ({ isOpen, onClose, providers }) => {
   return (
-    <div className="integration-modal-backdrop" onClick={onClose}>
-      <div className="integration-modal-card" onClick={(e) => e.stopPropagation()}>
-        <div className="integration-modal-header">
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <Layers size={16} color="var(--accent-cyan)" />
-            <h3 style={{ fontSize: '14px', fontWeight: 600, color: 'var(--text-primary)' }}>
-              Multi-Cluster Infrastructure & Security Engine Connectors
-            </h3>
+    <>
+      <div
+        className={`modal-overlay ${isOpen ? 'open' : ''}`}
+        onClick={onClose}
+        aria-hidden={!isOpen}
+      >
+        <div
+          className="modal-panel"
+          onClick={(e) => e.stopPropagation()}
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="modal-title"
+        >
+          <div className="modal-header">
+            <h2 id="modal-title" className="modal-title">Connect Data Source</h2>
+            <button className="modal-close" onClick={onClose} aria-label="Close modal">
+              <X size={18} />
+            </button>
           </div>
-          <button className="btn-close-drawer" onClick={onClose}>
-            <X size={16} />
-          </button>
-        </div>
 
-        <div className="integration-modal-body">
-          <div style={{ 
-            background: 'rgba(0, 229, 255, 0.05)', 
-            border: '1px solid rgba(0, 229, 255, 0.2)', 
-            borderRadius: 'var(--radius-sm)',
-            padding: '12px 14px',
-            fontSize: '12px',
-            color: 'var(--text-secondary)',
-            lineHeight: 1.5
-          }}>
-            <strong style={{ color: 'var(--accent-cyan)' }}>Data Integrity Notice (PROJECT_CORE.md Source of Truth):</strong>
-            <p style={{ marginTop: '4px' }}>
-              TrustMesh is operating strictly in <strong>Phase 1: Dashboard Foundation</strong>. Live cluster API connections, cloud provider IAM syncing, and OPA/Istio admission webhooks are scheduled for provisioning in Phase 3 and Phase 4. All findings shown in the console are controlled demonstration fixtures designed for interface verification.
+          <div className="modal-body">
+            <p style={{
+              fontSize: '0.857rem',
+              color: 'var(--text-tertiary)',
+              marginBottom: '20px',
+              lineHeight: '1.6',
+            }}>
+              Connect cloud providers, identity platforms, and security tools to enable
+              zero-trust telemetry ingestion. <strong style={{ color: '#eab308' }}>Demo mode</strong> — 
+              integrations shown are planned for future phases.
             </p>
-          </div>
 
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-            {providers.map((p) => (
-              <div key={p.id} className="connector-row-card">
-                <div className="connector-row-left">
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                    <span className="connector-name">{p.name}</span>
-                    <span style={{ 
-                      fontSize: '10px', 
-                      color: 'var(--text-muted)', 
-                      border: '1px solid var(--border-subtle)', 
-                      padding: '1px 5px', 
-                      borderRadius: 'var(--radius-xs)' 
-                    }}>
-                      {p.category}
-                    </span>
-                  </div>
-                  <p className="connector-desc">{p.description}</p>
-                  <p style={{ color: 'var(--accent-cyan)', fontSize: '11px', marginTop: '3px' }}>
-                    Planned Capability: {p.plannedCapability}
-                  </p>
+            {providers.map((provider) => (
+              <div key={provider.id} className="modal-integration-card">
+                <div
+                  className="modal-integration-icon"
+                  style={{
+                    background: `${PROVIDER_COLORS[provider.id] || '#333'}22`,
+                    color: PROVIDER_COLORS[provider.id] || 'var(--text-secondary)',
+                  }}
+                >
+                  {PROVIDER_ICONS[provider.id] || PROVIDER_ICONS.default}
                 </div>
-
-                <div style={{ textAlign: 'right', flexShrink: 0 }}>
-                  <span className="connector-status-badge">
-                    {p.status}
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div className="modal-integration-name">{provider.name}</div>
+                  <div className="modal-integration-desc">{provider.description}</div>
+                  <span className="modal-integration-status">
+                    {provider.status === 'Not Connected' ? '○ Not Connected' : `◯ ${provider.status}`}
                   </span>
-                  <div style={{ fontSize: '10px', color: 'var(--text-muted)', marginTop: '4px' }}>
-                    {p.targetPhase}
-                  </div>
                 </div>
               </div>
             ))}
           </div>
         </div>
       </div>
-    </div>
+    </>
   );
 };
