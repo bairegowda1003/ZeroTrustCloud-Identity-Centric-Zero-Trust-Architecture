@@ -1,84 +1,94 @@
 import React from 'react';
-import { Shield, LayoutDashboard, ListFilter, Layers, Sparkles } from 'lucide-react';
-import { IntegrationProvider } from '../types/security';
-
-export type CommandCenterTab = 'overview' | 'explorer';
+import { Filter, Layers, Sun, Moon, ShieldCheck, ChevronDown } from 'lucide-react';
 
 interface HeaderProps {
-  activeModuleTitle: string;
-  activeTab: CommandCenterTab;
-  onTabChange: (tab: CommandCenterTab) => void;
-  findingsCount: number;
-  providers: IntegrationProvider[];
-  onOpenIntegrations: () => void;
-  isCommandCenterActive: boolean;
+  title: string;
+  breadcrumb?: string;
+  activeTab?: string;
+  tabs?: { id: string; label: string }[];
+  onTabChange?: (tab: string) => void;
+  onConnectDataSource?: () => void;
+  theme?: 'dark' | 'light';
+  onToggleTheme?: () => void;
 }
 
 export const Header: React.FC<HeaderProps> = ({
-  activeModuleTitle,
+  title,
+  breadcrumb,
   activeTab,
+  tabs,
   onTabChange,
-  findingsCount,
-  providers,
-  onOpenIntegrations,
-  isCommandCenterActive,
+  onConnectDataSource,
+  theme = 'dark',
+  onToggleTheme,
 }) => {
   return (
-    <header className="app-header">
-      {/* Left: Brand & Breadcrumb */}
+    <header className="header" role="banner">
       <div className="header-left">
-        <div className="header-brand">
-          <div className="brand-logo-icon">
-            <Shield size={14} />
-          </div>
-          <span>TrustMesh</span>
-          <span className="brand-badge">ZTA CORE</span>
-        </div>
-
-        <div className="header-breadcrumbs">
-          <span>ZeroTrustCloud</span>
-          <span>/</span>
-          <span className="active-view">{activeModuleTitle}</span>
-        </div>
-      </div>
-
-      {/* Center: View Switcher (Progressive Disclosure) */}
-      <div className="header-center">
-        {isCommandCenterActive ? (
-          <div className="view-mode-switcher">
-            <button
-              className={`view-mode-btn ${activeTab === 'overview' ? 'active' : ''}`}
-              onClick={() => onTabChange('overview')}
-            >
-              <LayoutDashboard size={12} />
-              <span>Command Center</span>
-            </button>
-            <button
-              className={`view-mode-btn ${activeTab === 'explorer' ? 'active' : ''}`}
-              onClick={() => onTabChange('explorer')}
-            >
-              <ListFilter size={12} />
-              <span>Findings Explorer ({findingsCount})</span>
-            </button>
-          </div>
-        ) : (
-          <div className="env-indicator-pill">
-            <span className="indicator-tag">[SIMULATED TESTBED]</span>
-            <span>ZeroTrustCloud Research Platform</span>
+        {breadcrumb && (
+          <div className="header-breadcrumb">
+            <span>{breadcrumb}</span>
           </div>
         )}
+        <div className="header-title-row">
+          <h1 className="header-title">{title}</h1>
+          <ChevronDown size={14} className="header-title-chevron" />
+        </div>
       </div>
 
-      {/* Right: Connectors & Testbed tag */}
-      <div className="header-right">
-        <button 
-          className="btn-connectors"
-          onClick={onOpenIntegrations}
-          title="Inspect planned multi-cluster testbeds"
-        >
-          <Layers size={13} color="var(--accent-teal)" />
-          <span>Simulated Clusters (Phase 3)</span>
-        </button>
+      {tabs && tabs.length > 0 && (
+        <div className="header-tabs">
+          {tabs.map((tab) => (
+            <button
+              key={tab.id}
+              className={`header-tab ${activeTab === tab.id ? 'active' : ''}`}
+              onClick={() => onTabChange?.(tab.id)}
+            >
+              {tab.label}
+            </button>
+          ))}
+        </div>
+      )}
+
+      <div className="header-spacer" />
+
+      <div className="header-actions">
+        {/* Honest Demo Badge */}
+        <span className="header-demo-badge">
+          <ShieldCheck size={12} className="demo-badge-icon" />
+          <span>Demo Data · Simulated Testbed</span>
+        </span>
+
+        {/* Planned Integrations Button */}
+        {onConnectDataSource && (
+          <button
+            className="header-btn header-btn-ghost"
+            onClick={onConnectDataSource}
+            title="Inspect planned cloud provider and policy engine integrations"
+          >
+            <Layers size={14} />
+            <span>Integrations (6)</span>
+          </button>
+        )}
+
+        {/* Hithaishi.OS Signature Theme Toggle */}
+        {onToggleTheme && (
+          <button
+            type="button"
+            className="theme-toggle-pill"
+            onClick={onToggleTheme}
+            aria-label="Toggle Theme"
+            title={`Switch to ${theme === 'dark' ? 'Morning (Light)' : 'Night (Dark)'} theme`}
+          >
+            <span className={`theme-dot ${theme}`} />
+            {theme === 'dark' ? (
+              <Moon size={13} className="theme-icon moon" />
+            ) : (
+              <Sun size={13} className="theme-icon sun" />
+            )}
+            <span className="theme-text">{theme === 'dark' ? 'Night' : 'Morning'}</span>
+          </button>
+        )}
       </div>
     </header>
   );

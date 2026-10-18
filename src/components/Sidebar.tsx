@@ -1,121 +1,113 @@
 import React from 'react';
-import { 
-  LayoutDashboard, 
-  Fingerprint, 
-  ShieldCheck, 
-  Network, 
-  PackageCheck, 
-  Activity, 
-  Layers
+import {
+  LayoutDashboard,
+  Shield,
+  Eye,
+  Fingerprint,
+  FileText,
+  Network,
+  GitBranch,
+  Users,
+  Settings,
+  Grid3X3,
+  Bell,
+  HelpCircle,
 } from 'lucide-react';
-import { ActiveModule } from '../types/security';
+import type { ActiveModule } from '../types/security';
+import type { LucideIcon } from 'lucide-react';
 
 interface SidebarProps {
   currentModule: ActiveModule;
-  onSelectModule: (module: ActiveModule) => void;
-  findingsCount: number;
+  onModuleChange: (module: ActiveModule) => void;
 }
 
-export const Sidebar: React.FC<SidebarProps> = ({
-  currentModule,
-  onSelectModule,
-  findingsCount,
-}) => {
+const topNavItems: { id: ActiveModule; icon: LucideIcon; label: string }[] = [
+  { id: 'command_center', icon: LayoutDashboard, label: 'Command Center' },
+  { id: 'workload_identity', icon: Fingerprint, label: 'Workload Identity' },
+  { id: 'policy_governance', icon: Shield, label: 'Policy Governance' },
+  { id: 'service_mesh', icon: Network, label: 'Service Mesh' },
+  { id: 'supply_chain', icon: GitBranch, label: 'Supply Chain' },
+  { id: 'experiments', icon: Eye, label: 'Experiments' },
+  { id: 'integrations', icon: Users, label: 'Integrations' },
+];
+
+export const Sidebar: React.FC<SidebarProps> = ({ currentModule, onModuleChange }) => {
   return (
-    <aside className="app-sidebar">
-      <nav className="sidebar-nav">
-        <div className="nav-section-title">Core Operations</div>
-
-        <button 
-          className={`nav-item ${currentModule === 'command_center' ? 'active' : ''}`}
-          onClick={() => onSelectModule('command_center')}
-        >
-          <div className="nav-item-left">
-            <LayoutDashboard size={14} />
-            <span>Command Center</span>
-          </div>
-          <span className="nav-badge-count">{findingsCount}</span>
-        </button>
-
-        <div className="nav-section-title">Zero-Trust Pillars</div>
-
-        <button 
-          className={`nav-item ${currentModule === 'workload_identity' ? 'active' : ''}`}
-          onClick={() => onSelectModule('workload_identity')}
-        >
-          <div className="nav-item-left">
-            <Fingerprint size={14} />
-            <span>Workload Identity</span>
-          </div>
-          <span className="nav-badge-planned">Ph 4</span>
-        </button>
-
-        <button 
-          className={`nav-item ${currentModule === 'policy_governance' ? 'active' : ''}`}
-          onClick={() => onSelectModule('policy_governance')}
-        >
-          <div className="nav-item-left">
-            <ShieldCheck size={14} />
-            <span>Policy-as-Code</span>
-          </div>
-          <span className="nav-badge-planned">Ph 4</span>
-        </button>
-
-        <button 
-          className={`nav-item ${currentModule === 'service_mesh' ? 'active' : ''}`}
-          onClick={() => onSelectModule('service_mesh')}
-        >
-          <div className="nav-item-left">
-            <Network size={14} />
-            <span>Service Mesh Trust</span>
-          </div>
-          <span className="nav-badge-planned">Ph 4</span>
-        </button>
-
-        <button 
-          className={`nav-item ${currentModule === 'supply_chain' ? 'active' : ''}`}
-          onClick={() => onSelectModule('supply_chain')}
-        >
-          <div className="nav-item-left">
-            <PackageCheck size={14} />
-            <span>Supply Chain Defense</span>
-          </div>
-          <span className="nav-badge-planned">Ph 5</span>
-        </button>
-
-        <div className="nav-section-title">Evaluation</div>
-
-        <button 
-          className={`nav-item ${currentModule === 'experiments' ? 'active' : ''}`}
-          onClick={() => onSelectModule('experiments')}
-        >
-          <div className="nav-item-left">
-            <Activity size={14} />
-            <span>Experiments EXP-01–08</span>
-          </div>
-          <span className="nav-badge-planned">Ph 6</span>
-        </button>
-
-        <button 
-          className={`nav-item ${currentModule === 'integrations' ? 'active' : ''}`}
-          onClick={() => onSelectModule('integrations')}
-        >
-          <div className="nav-item-left">
-            <Layers size={14} />
-            <span>Cluster Connectors</span>
-          </div>
-          <span className="nav-badge-planned">Ph 3</span>
-        </button>
-      </nav>
-
-      <div className="sidebar-footer">
-        <div className="footer-capstone-card">
-          <div className="footer-capstone-tag">PRJ-34 CAPSTONE</div>
-          <div className="footer-capstone-title">
-            ZeroTrustCloud: Identity-Centric Security Mesh
-          </div>
-        </div>
+    <nav className="sidebar" role="navigation" aria-label="Main navigation">
+      {/* Logo */}
+      <div className="sidebar-logo" onClick={() => onModuleChange('command_center')}>
+        <svg viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="16" cy="16" r="14" stroke="#00d4aa" strokeWidth="2" fill="none" />
+          <path
+            d="M16 6 L16 26 M10 10 L22 22 M10 22 L22 10 M6 16 L26 16"
+            stroke="#00d4aa"
+            strokeWidth="1.5"
+            strokeLinecap="round"
+            opacity="0.6"
+          />
+          <circle cx="16" cy="16" r="3" fill="#00d4aa" />
+        </svg>
       </div>
-    </aside>
+
+      {/* Top Nav */}
+      <div className="sidebar-nav">
+        {topNavItems.map((item) => {
+          const Icon = item.icon;
+          return (
+            <button
+              key={item.id}
+              className={`sidebar-item ${currentModule === item.id ? 'active' : ''}`}
+              onClick={() => onModuleChange(item.id)}
+              aria-label={item.label}
+              aria-current={currentModule === item.id ? 'page' : undefined}
+            >
+              <Icon size={18} />
+              <span className="tooltip">{item.label}</span>
+            </button>
+          );
+        })}
+      </div>
+
+      {/* Bottom Nav */}
+      <div className="sidebar-divider" />
+      <div className="sidebar-bottom">
+        <button className="sidebar-item" aria-label="Settings">
+          <Settings size={18} />
+          <span className="tooltip">Settings</span>
+        </button>
+        <button className="sidebar-item" aria-label="Applications">
+          <Grid3X3 size={18} />
+          <span className="tooltip">Applications</span>
+        </button>
+        <button className="sidebar-item" aria-label="Notifications">
+          <Bell size={18} />
+          <span className="tooltip">Notifications</span>
+        </button>
+        <button className="sidebar-item" aria-label="Help">
+          <HelpCircle size={18} />
+          <span className="tooltip">Help</span>
+        </button>
+      </div>
+
+      {/* User Avatar */}
+      <div
+        style={{
+          marginTop: '8px',
+          width: '32px',
+          height: '32px',
+          borderRadius: '8px',
+          background: 'linear-gradient(135deg, #4da6ff, #00d4aa)',
+          color: '#0a0e1a',
+          fontSize: '0.714rem',
+          fontWeight: 700,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          cursor: 'default',
+        }}
+      >
+        TM
+      </div>
+    </nav>
   );
 };
