@@ -1,366 +1,360 @@
 import React, { useState } from 'react';
-import { 
-  X, 
-  ShieldAlert, 
-  AlertTriangle, 
-  Shield, 
-  FileCode, 
-  Copy, 
-  Check, 
-  ChevronRight,
-  ExternalLink,
-  Terminal,
-  Crosshair,
-  Key,
-  Globe,
-  Server,
-  Zap,
-  CheckCircle2
-} from 'lucide-react';
-import { SecurityFinding, FindingSeverity, FindingStatus } from '../types/security';
+import { X, Clock, Hash, Tag, Copy, Check, Globe, Shield, Server, Zap, AlertTriangle } from 'lucide-react';
+import { SecurityFinding, FindingStatus } from '../types/security';
 
 interface FindingDetailDrawerProps {
   finding: SecurityFinding | null;
+  isOpen: boolean;
   onClose: () => void;
-  onUpdateStatus: (id: string, newStatus: FindingStatus) => void;
+  onStatusChange: (findingId: string, status: FindingStatus) => void;
 }
 
-type DrawerTab = 'overview' | 'lineage' | 'evidence' | 'remediation';
+const SEVERITY_COLORS: Record<string, string> = {
+  critical: '#ef4444',
+  high: '#f97316',
+  medium: '#eab308',
+  low: '#6b7280',
+};
+
+const DOMAIN_LABELS: Record<string, string> = {
+  identity: 'Identity Security',
+  policy: 'Policy Compliance',
+  service_mesh: 'Service Mesh',
+  supply_chain: 'Supply Chain',
+  workload_runtime: 'Workload Runtime',
+};
+
+type TabId = 'overview' | 'evidence' | 'remediation';
 
 export const FindingDetailDrawer: React.FC<FindingDetailDrawerProps> = ({
   finding,
+  isOpen,
   onClose,
-  onUpdateStatus,
+  onStatusChange,
 }) => {
-  const [activeTab, setActiveTab] = useState<DrawerTab>('overview');
-  const [copiedCode, setCopiedCode] = useState(false);
-  const [copiedCmd, setCopiedCmd] = useState(false);
+  const [activeTab, setActiveTab] = useState<TabId>('overview');
+  const [copied, setCopied] = useState(false);
 
   if (!finding) return null;
 
-  const handleCopyCode = () => {
-    if (finding.regoOrConfigSnippet) {
-      navigator.clipboard.writeText(finding.regoOrConfigSnippet);
-      setCopiedCode(true);
-      setTimeout(() => setCopiedCode(false), 2000);
-    }
+  const handleCopy = (text: string) => {
+    navigator.clipboard.writeText(text).then(() => {
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    });
   };
 
-  const getRemediationCommand = () => {
-    switch (finding.domain) {
-      case 'supply_chain':
-        return `cosign verify --key cosign.pub ${finding.affectedAsset.split(':')[1]?.trim() || 'target-image'}`;
-      case 'policy':
-        return `kubectl apply -f gatekeeper-constraint-${finding.cveOrRuleId.toLowerCase()}.yaml`;
-      case 'service_mesh':
-        return `kubectl apply -f istio-peer-authentication-strict.yaml -n ${finding.namespace}`;
-      case 'identity':
-        return `spire-agent api fetch x509 -socketPath /run/spire/sockets/agent.sock`;
-      default:
-        return `kubectl patch deployment ${finding.affectedAsset.split(':')[1]?.trim() || 'target'} -n ${finding.namespace} --type='json' -p='[{"op":"replace","path":"/spec/template/spec/securityContext/readOnlyRootFilesystem","value":true}]'`;
-    }
-  };
-
-  const handleCopyCommand = () => {
-    navigator.clipboard.writeText(getRemediationCommand());
-    setCopiedCmd(true);
-    setTimeout(() => setCopiedCmd(false), 2000);
-  };
-
-  const renderSeverityBadge = (severity: FindingSeverity) => {
-    switch (severity) {
-      case 'critical':
-        return <span className="sev-chevron-pill critical"><span>▲▲</span> Critical</span>;
-      case 'high':
-        return <span className="sev-chevron-pill high"><span>▲</span> High</span>;
-      case 'medium':
-        return <span className="sev-chevron-pill medium"><span>■</span> Medium</span>;
-      case 'low':
-        return <span className="sev-chevron-pill low"><span>●</span> Low</span>;
-    }
-  };
-
-  const getStepIcon = (type: string) => {
-    switch (type) {
-      case 'attacker':
-        return <Crosshair size={16} />;
-      case 'ingress':
-        return <Globe size={16} />;
-      case 'workload':
-        return <Server size={16} />;
-      case 'exploit':
-      case 'impact':
-        return <Zap size={16} />;
-      default:
-        return <ShieldAlert size={16} />;
-    }
-  };
+  const tabs: { id: TabId; label: string }[] = [
+    { id: 'overview', label: 'Overview' },
+    { id: 'evidence', label: 'Evidence' },
+    { id: 'remediation', label: 'Remediation' },
+  ];
 
   return (
-    <div className="drawer-backdrop" onClick={onClose}>
-      <div 
-        className="cortex-investigation-drawer"
-        onClick={(e) => e.stopPropagation()}
+    <>
+      {/* Overlay */}
+      <div
+        className={`drawer-overlay ${isOpen ? 'open' : ''}`}
+        onClick={onClose}
+        aria-hidden={!isOpen}
+      />
+
+      {/* Panel */}
+      <div
+        className={`drawer-panel ${isOpen ? 'open' : ''}`}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="drawer-title"
       >
-        {/* Top Banner (Cortex Cloud Image 5 & 12) */}
-        <div className="drawer-top-banner">
-          <div className="drawer-banner-tags">
-            <span className="drawer-id-tag">{finding.id}</span>
-            {renderSeverityBadge(finding.severity)}
-            <span className="domain-cell-pill">
-              {finding.domain.toUpperCase().replace('_', ' ')}
-            </span>
-            <span style={{ fontSize: '11px', color: 'var(--accent-cyan)', fontFamily: 'var(--font-mono)' }}>
-              {finding.cveOrRuleId}
-            </span>
+        {/* Header */}
+        <div className="drawer-header">
+          <span className={`drawer-severity-badge ${finding.severity}`}>
+            {finding.severity.charAt(0).toUpperCase()}
+          </span>
+          <div className="drawer-header-info">
+            <div className="drawer-header-meta">
+              <span><Hash size={10} /> {finding.id}</span>
+              <span><Tag size={10} /> {finding.cveOrRuleId}</span>
+              <span><Clock size={10} /> {finding.firstDetected}</span>
+            </div>
+            <h2 id="drawer-title" className="drawer-finding-title">{finding.title}</h2>
           </div>
+          <button className="drawer-close-btn" onClick={onClose} aria-label="Close drawer">
+            <X size={18} />
+          </button>
+        </div>
 
-          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-            <select
-              className="drawer-status-dropdown"
-              value={finding.status}
-              onChange={(e) => onUpdateStatus(finding.id, e.target.value as FindingStatus)}
-              title="Update Triage Status"
+        {/* Tabs */}
+        <div className="drawer-tabs">
+          {tabs.map((tab) => (
+            <button
+              key={tab.id}
+              className={`drawer-tab ${activeTab === tab.id ? 'active' : ''}`}
+              onClick={() => setActiveTab(tab.id)}
             >
-              <option value="new">◇ Status: New</option>
-              <option value="in_progress">◓ Status: In Progress</option>
-              <option value="resolved">✓ Status: Resolved</option>
-            </select>
-
-            <button 
-              className="btn-close-drawer"
-              onClick={onClose}
-              title="Close Drawer"
-            >
-              <X size={16} />
+              {tab.label}
             </button>
-          </div>
+          ))}
         </div>
 
-        {/* Headline Area */}
-        <div className="drawer-headline-area">
-          <h2 className="drawer-title-text">{finding.title}</h2>
-          <div className="drawer-meta-ribbon">
-            <span className="meta-ribbon-item">
-              Risk Score: <strong>{finding.riskScore}/100</strong>
-            </span>
-            <span className="meta-ribbon-item">
-              Target: <strong>{finding.affectedAsset}</strong>
-            </span>
-            <span className="meta-ribbon-item">
-              Cluster: <strong>{finding.cluster.replace(' (Planned)', '')}</strong>
-            </span>
-            <span className="meta-ribbon-item">
-              Namespace: <strong>{finding.namespace}</strong>
-            </span>
-          </div>
-        </div>
-
-        {/* Navigation Tabs (Overview | Attack Lineage | Policy Evidence | Remediation) */}
-        <div className="drawer-tabs-bar">
-          <button 
-            className={`drawer-tab-btn ${activeTab === 'overview' ? 'active' : ''}`}
-            onClick={() => setActiveTab('overview')}
-          >
-            Overview
-          </button>
-          <button 
-            className={`drawer-tab-btn ${activeTab === 'lineage' ? 'active' : ''}`}
-            onClick={() => setActiveTab('lineage')}
-          >
-            Attack Path Lineage ({finding.attackPath.length})
-          </button>
-          <button 
-            className={`drawer-tab-btn ${activeTab === 'evidence' ? 'active' : ''}`}
-            onClick={() => setActiveTab('evidence')}
-          >
-            Policy & Evidence
-          </button>
-          <button 
-            className={`drawer-tab-btn ${activeTab === 'remediation' ? 'active' : ''}`}
-            onClick={() => setActiveTab('remediation')}
-          >
-            Remediation & Triage
-          </button>
-        </div>
-
-        {/* Tab Viewport */}
-        <div className="drawer-tab-viewport">
+        {/* Body */}
+        <div className="drawer-body">
           {activeTab === 'overview' && (
             <>
-              {/* Description Card */}
-              <div className="drawer-section-card">
-                <div className="drawer-section-title">
-                  <ShieldAlert size={13} color="var(--accent-blue)" />
-                  Security Finding Description
-                </div>
-                <p className="drawer-desc-text">
-                  {finding.description}
-                </p>
+              {/* Description */}
+              <div className="drawer-section">
+                <h3 className="drawer-section-title">Description</h3>
+                <p className="drawer-text">{finding.description}</p>
               </div>
 
-              {/* Threat Impact Card */}
-              <div className="drawer-section-card">
-                <div className="drawer-section-title">
-                  <Zap size={13} color="var(--sev-critical)" />
-                  Threat Impact & Blast Radius
-                </div>
-                <p className="drawer-desc-text" style={{ color: '#FCA5A5' }}>
-                  {finding.threatImpact}
-                </p>
+              {/* Impact */}
+              <div className="drawer-section">
+                <h3 className="drawer-section-title">Threat Impact</h3>
+                <p className="drawer-text">{finding.threatImpact}</p>
               </div>
 
-              {/* Zero-Trust Principle Violated */}
-              <div className="drawer-section-card">
-                <div className="drawer-section-title">
-                  <Shield size={13} color="var(--accent-cyan)" />
-                  Zero-Trust Architecture Principle Violated
-                </div>
-                <p className="drawer-desc-text" style={{ color: 'var(--text-primary)', fontWeight: 500 }}>
+              {/* Zero Trust Principle */}
+              <div className="drawer-section">
+                <h3 className="drawer-section-title">Zero Trust Principle Violated</h3>
+                <p className="drawer-text" style={{ color: 'var(--severity-high)' }}>
                   {finding.zeroTrustPrincipleViolated}
                 </p>
               </div>
 
-              {/* Temporal Record Metadata */}
-              <div className="drawer-section-card" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
-                <div>
-                  <div style={{ fontSize: '10px', textTransform: 'uppercase', color: 'var(--text-muted)' }}>First Ingested</div>
-                  <div style={{ fontFamily: 'var(--font-mono)', fontSize: '11.5px', color: 'var(--text-secondary)', marginTop: '2px' }}>
-                    {finding.firstDetected}
-                  </div>
+              {/* Detail Grid */}
+              <div className="drawer-section">
+                <h3 className="drawer-section-title">Details</h3>
+                <div className="drawer-detail-grid">
+                  <span className="drawer-detail-label">Status</span>
+                  <span className="drawer-detail-value">
+                    <select
+                      className="drawer-status-select"
+                      value={finding.status}
+                      onChange={(e) => onStatusChange(finding.id, e.target.value as FindingStatus)}
+                    >
+                      <option value="new">New</option>
+                      <option value="in_progress">In Progress</option>
+                      <option value="resolved">Resolved</option>
+                      <option value="suppressed">Suppressed</option>
+                    </select>
+                  </span>
+
+                  <span className="drawer-detail-label">Risk Score</span>
+                  <span className="drawer-detail-value">
+                    <span className={`cc-finding-score ${finding.severity}`}>
+                      {finding.riskScore}
+                    </span>
+                  </span>
+
+                  <span className="drawer-detail-label">Severity</span>
+                  <span className="drawer-detail-value" style={{ color: SEVERITY_COLORS[finding.severity], textTransform: 'capitalize', fontWeight: 600 }}>
+                    {finding.severity}
+                  </span>
+
+                  <span className="drawer-detail-label">Domain</span>
+                  <span className="drawer-detail-value">{DOMAIN_LABELS[finding.domain]}</span>
+
+                  <span className="drawer-detail-label">Affected Asset</span>
+                  <span className="drawer-detail-value" style={{ fontFamily: 'var(--font-mono)', fontSize: '0.785rem' }}>
+                    {finding.affectedAsset}
+                  </span>
+
+                  <span className="drawer-detail-label">Cluster</span>
+                  <span className="drawer-detail-value">{finding.cluster}</span>
+
+                  <span className="drawer-detail-label">Namespace</span>
+                  <span className="drawer-detail-value" style={{ fontFamily: 'var(--font-mono)', fontSize: '0.785rem' }}>
+                    {finding.namespace}
+                  </span>
+
+                  <span className="drawer-detail-label">First Detected</span>
+                  <span className="drawer-detail-value">{finding.firstDetected}</span>
+
+                  <span className="drawer-detail-label">Last Observed</span>
+                  <span className="drawer-detail-value">{finding.lastObserved}</span>
                 </div>
-                <div>
-                  <div style={{ fontSize: '10px', textTransform: 'uppercase', color: 'var(--text-muted)' }}>Last Attestation Check</div>
-                  <div style={{ fontFamily: 'var(--font-mono)', fontSize: '11.5px', color: 'var(--text-secondary)', marginTop: '2px' }}>
-                    {finding.lastObserved}
-                  </div>
+              </div>
+
+              {/* Attack Path Visualization */}
+              <div className="drawer-section">
+                <h3 className="drawer-section-title">Attack Path</h3>
+                <div className="drawer-attack-path">
+                  {finding.attackPath.map((step, i) => (
+                    <AttackPathStepNode
+                      key={step.step}
+                      icon={getAttackPathIcon(step.type)}
+                      label={step.label}
+                      detail={step.details}
+                      type={step.type}
+                      showConnector={i < finding.attackPath.length - 1}
+                    />
+                  ))}
                 </div>
               </div>
             </>
-          )}
-
-          {activeTab === 'lineage' && (
-            <div className="attack-lineage-canvas">
-              <div style={{ fontSize: '11px', color: 'var(--text-muted)', marginBottom: '8px' }}>
-                Reconstructed Attack Lineage Graph (Demonstration Verification Model)
-              </div>
-
-              {finding.attackPath.map((step) => (
-                <div key={step.step} className="attack-step-node">
-                  <div className={`attack-step-icon ${step.type}`}>
-                    {getStepIcon(step.type)}
-                  </div>
-                  <div className="attack-step-content">
-                    <div className="attack-step-label">
-                      Step {step.step}: {step.label}
-                    </div>
-                    <div className="attack-step-details">
-                      {step.details}
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
           )}
 
           {activeTab === 'evidence' && (
-            <>
-              {finding.regoOrConfigSnippet ? (
-                <div className="code-snippet-box">
-                  <div className="code-snippet-header">
-                    <span>
-                      {finding.domain === 'policy' || finding.domain === 'supply_chain'
-                        ? 'rego / constraint-template.rego'
-                        : 'kubernetes / security-manifest.yaml'}
-                    </span>
-                    <button 
-                      className="btn-copy-code"
-                      onClick={handleCopyCode}
-                    >
-                      {copiedCode ? <Check size={12} color="#10B981" /> : <Copy size={12} />}
-                      <span>{copiedCode ? 'Copied' : 'Copy'}</span>
-                    </button>
+            <div className="drawer-section">
+              <h3 className="drawer-section-title">Evidence</h3>
+
+              {finding.regoOrConfigSnippet && (
+                <>
+                  <p className="drawer-text" style={{ marginBottom: '12px' }}>
+                    Policy rule or configuration snippet associated with this finding:
+                  </p>
+                  <div className="drawer-code-block" style={{ marginBottom: '20px' }}>
+                    <div className="drawer-code-header">
+                      <span className="drawer-code-lang">rego / yaml</span>
+                      <button
+                        className="drawer-copy-btn"
+                        onClick={() => handleCopy(finding.regoOrConfigSnippet || '')}
+                      >
+                        {copied ? <Check size={12} /> : <Copy size={12} />}
+                        {copied ? 'Copied' : 'Copy'}
+                      </button>
+                    </div>
+                    <pre className="drawer-code-content">{finding.regoOrConfigSnippet}</pre>
                   </div>
-                  <div className="code-snippet-body">
-                    {finding.regoOrConfigSnippet}
-                  </div>
-                </div>
-              ) : (
-                <div className="drawer-section-card" style={{ textAlign: 'center', padding: '30px', color: 'var(--text-muted)' }}>
-                  No declarative Rego rule or YAML snippet attached to this finding.
-                </div>
+                </>
               )}
 
-              <div className="drawer-section-card">
-                <div className="drawer-section-title">
-                  <FileCode size={13} color="var(--accent-cyan)" />
-                  Policy Enforcement Context
+              <p className="drawer-text" style={{ marginBottom: '12px' }}>
+                Finding metadata (demo data — tagged per project integrity rules):
+              </p>
+              <div className="drawer-code-block">
+                <div className="drawer-code-header">
+                  <span className="drawer-code-lang">json</span>
+                  <button
+                    className="drawer-copy-btn"
+                    onClick={() => handleCopy(JSON.stringify({
+                      findingId: finding.id,
+                      cveOrRuleId: finding.cveOrRuleId,
+                      severity: finding.severity,
+                      riskScore: finding.riskScore,
+                      domain: finding.domain,
+                      status: finding.status,
+                      affectedAsset: finding.affectedAsset,
+                      cluster: finding.cluster,
+                      namespace: finding.namespace,
+                      isDemoData: finding.isDemoData,
+                    }, null, 2))}
+                  >
+                    {copied ? <Check size={12} /> : <Copy size={12} />}
+                    {copied ? 'Copied' : 'Copy'}
+                  </button>
                 </div>
-                <p className="drawer-desc-text">
-                  This finding violates the baseline Zero-Trust security profile enforced by TrustMesh. 
-                  In Phase 4, OPA Gatekeeper ValidatingAdmissionWebhooks and Istio Layer-7 AuthorizationPolicies 
-                  will automatically reject non-compliant deployments at admission time.
-                </p>
+                <pre className="drawer-code-content">
+                  {JSON.stringify({
+                    findingId: finding.id,
+                    cveOrRuleId: finding.cveOrRuleId,
+                    severity: finding.severity,
+                    riskScore: finding.riskScore,
+                    domain: finding.domain,
+                    status: finding.status,
+                    affectedAsset: finding.affectedAsset,
+                    cluster: finding.cluster,
+                    namespace: finding.namespace,
+                    isDemoData: finding.isDemoData,
+                  }, null, 2)}
+                </pre>
               </div>
-            </>
+            </div>
           )}
 
           {activeTab === 'remediation' && (
-            <>
-              {/* Guidance Box */}
-              <div className="remediation-box">
-                <div className="remediation-title">
-                  ✓ Prescribed Remediation Plan
+            <div className="drawer-section">
+              <h3 className="drawer-section-title">Remediation Guidance</h3>
+              <p className="drawer-text" style={{ marginBottom: '16px' }}>
+                {finding.remediationGuidance}
+              </p>
+
+              {finding.regoOrConfigSnippet && (
+                <div className="drawer-code-block" style={{ marginBottom: '16px' }}>
+                  <div className="drawer-code-header">
+                    <span className="drawer-code-lang">fix</span>
+                    <button
+                      className="drawer-copy-btn"
+                      onClick={() => handleCopy(finding.regoOrConfigSnippet || '')}
+                    >
+                      {copied ? <Check size={12} /> : <Copy size={12} />}
+                      {copied ? 'Copied' : 'Copy'}
+                    </button>
+                  </div>
+                  <pre className="drawer-code-content">{finding.regoOrConfigSnippet}</pre>
                 </div>
-                <div className="remediation-text">
-                  {finding.remediationGuidance}
+              )}
+
+              <div className="drawer-code-block">
+                <div className="drawer-code-header">
+                  <span className="drawer-code-lang">CLI</span>
+                  <button
+                    className="drawer-copy-btn"
+                    onClick={() => handleCopy(`trustmesh remediate --finding ${finding.id} --auto`)}
+                  >
+                    {copied ? <Check size={12} /> : <Copy size={12} />}
+                    {copied ? 'Copied' : 'Copy'}
+                  </button>
                 </div>
+                <pre className="drawer-code-content">
+{`# TrustMesh Remediation (Demo)
+trustmesh remediate --finding ${finding.id} --auto
+
+# View detailed report
+trustmesh inspect ${finding.id} --verbose`}
+                </pre>
               </div>
 
-              {/* Actionable Command Box */}
-              <div className="code-snippet-box">
-                <div className="code-snippet-header">
-                  <span>CLI Remediation Command</span>
-                  <button 
-                    className="btn-copy-code"
-                    onClick={handleCopyCommand}
-                  >
-                    {copiedCmd ? <Check size={12} color="#10B981" /> : <Copy size={12} />}
-                    <span>{copiedCmd ? 'Copied' : 'Copy'}</span>
-                  </button>
-                </div>
-                <div className="code-snippet-body" style={{ color: '#A7F3D0' }}>
-                  {getRemediationCommand()}
-                </div>
+              <div style={{
+                marginTop: '20px',
+                padding: '12px 16px',
+                borderRadius: 'var(--radius-md)',
+                background: 'rgba(234, 179, 8, 0.08)',
+                border: '1px solid rgba(234, 179, 8, 0.15)',
+                fontSize: '0.785rem',
+                color: '#eab308',
+              }}>
+                ⚠ Demo Mode — Remediation commands are illustrative only. No actual cloud modifications will occur.
               </div>
-
-              {/* Quick Triage Buttons */}
-              <div className="drawer-section-card">
-                <div className="drawer-section-title">
-                  <CheckCircle2 size={13} color="var(--accent-blue)" />
-                  Operational Triage Actions
-                </div>
-                <div style={{ display: 'flex', gap: '10px', marginTop: '10px' }}>
-                  <button
-                    className="btn-connectors"
-                    style={{ borderColor: 'var(--status-in-progress)', color: 'var(--status-in-progress)' }}
-                    onClick={() => onUpdateStatus(finding.id, 'in_progress')}
-                  >
-                    Mark as In Progress
-                  </button>
-                  <button
-                    className="btn-connectors"
-                    style={{ borderColor: 'var(--status-resolved)', color: 'var(--status-resolved)' }}
-                    onClick={() => onUpdateStatus(finding.id, 'resolved')}
-                  >
-                    Mark as Resolved
-                  </button>
-                </div>
-              </div>
-            </>
+            </div>
           )}
         </div>
       </div>
+    </>
+  );
+};
+
+/* Helper to get icon for attack path step type */
+function getAttackPathIcon(type: string): React.ReactNode {
+  switch (type) {
+    case 'attacker': return <Globe size={18} />;
+    case 'ingress': return <Shield size={18} />;
+    case 'workload': return <Server size={18} />;
+    case 'exploit': return <Zap size={18} />;
+    case 'impact': return <AlertTriangle size={18} />;
+    default: return <Server size={18} />;
+  }
+}
+
+/* Attack Path Step */
+const AttackPathStepNode: React.FC<{
+  icon: React.ReactNode;
+  label: string;
+  detail: string;
+  type: string;
+  showConnector: boolean;
+}> = ({ icon, label, detail, type, showConnector }) => {
+  // Map type to CSS class — default to 'workload' for unknown types
+  const cssType = ['attacker', 'ingress', 'workload', 'exploit', 'impact'].includes(type) ? type : 'workload';
+  
+  return (
+    <div className="attack-path-step">
+      <div className={`attack-path-node ${cssType}`}>
+        {icon}
+      </div>
+      <div className="attack-path-label">{label}</div>
+      <div className="attack-path-detail">{detail}</div>
+      {showConnector && <div className="attack-path-connector" />}
     </div>
   );
 };
