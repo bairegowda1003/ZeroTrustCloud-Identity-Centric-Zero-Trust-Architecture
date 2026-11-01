@@ -1,0 +1,66 @@
+# TrustMesh Workload Registration Entries (SPIRE Server v1.9.5)
+# Registers microservices with explicit Kubernetes selectors and short-lived SVID TTL (3600s).
+
+# 1. Frontend Proxy Registration
+apiVersion: spire.spiffe.io/v1alpha1
+kind: ClusterSPIFFEID
+metadata:
+  name: frontend-proxy-identity
+spec:
+  spiffeIDTemplate: "spiffe://trustmesh.internal/ns/{{ .PodMeta.Namespace }}/sa/{{ .PodSpec.ServiceAccountName }}"
+  podSelector:
+    matchLabels:
+      app: frontend-proxy
+  namespaceSelector:
+    matchLabels:
+      kubernetes.io/metadata.name: web
+  ttl: "3600s"
+
+---
+# 2. Order API Registration
+apiVersion: spire.spiffe.io/v1alpha1
+kind: ClusterSPIFFEID
+metadata:
+  name: order-api-identity
+spec:
+  spiffeIDTemplate: "spiffe://trustmesh.internal/ns/{{ .PodMeta.Namespace }}/sa/{{ .PodSpec.ServiceAccountName }}"
+  podSelector:
+    matchLabels:
+      app: order-api
+  namespaceSelector:
+    matchLabels:
+      kubernetes.io/metadata.name: orders
+  ttl: "3600s"
+
+---
+# 3. Payment Service Registration
+apiVersion: spire.spiffe.io/v1alpha1
+kind: ClusterSPIFFEID
+metadata:
+  name: payment-service-identity
+spec:
+  spiffeIDTemplate: "spiffe://trustmesh.internal/ns/{{ .PodMeta.Namespace }}/sa/{{ .PodSpec.ServiceAccountName }}"
+  podSelector:
+    matchLabels:
+      app: payment-service
+  namespaceSelector:
+    matchLabels:
+      kubernetes.io/metadata.name: payments
+  ttl: "3600s"
+
+---
+# 4. Database Cluster Registration
+apiVersion: spire.spiffe.io/v1alpha1
+kind: ClusterSPIFFEID
+metadata:
+  name: database-cluster-identity
+spec:
+  spiffeIDTemplate: "spiffe://trustmesh.internal/ns/{{ .PodMeta.Namespace }}/sa/{{ .PodSpec.ServiceAccountName }}"
+  podSelector:
+    matchLabels:
+      app: database-cluster
+  namespaceSelector:
+    matchLabels:
+      kubernetes.io/metadata.name: payments
+  ttl: "3600s"
+

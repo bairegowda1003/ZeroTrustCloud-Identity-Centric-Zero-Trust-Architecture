@@ -1,0 +1,25 @@
+# Test Case 5: Violation - Shared Default ServiceAccount Usage
+# Violates: POL-ADM-03 (k8srequirededicatedsa / require-dedicated-sa)
+# Fault Injection: workload specifies serviceAccountName: default
+#
+# Expected Admission Decision: DENY (HTTP 403 Forbidden)
+apiVersion: v1
+kind: Pod
+metadata:
+  name: test-violation-default-sa
+  namespace: orders
+  labels:
+    app: test-violation-default-sa
+    trustmesh.io/test-case: "negative-default-serviceaccount"
+spec:
+  serviceAccountName: default  # REJECTED SHARED DEFAULT SA
+  securityContext:
+    runAsNonRoot: true
+    runAsUser: 10003
+  containers:
+    - name: unauthenticated-batch-job
+      image: alpine:3.19
+      command: ["sh", "-c", "sleep 3600"]
+      securityContext:
+        allowPrivilegeEscalation: false
+

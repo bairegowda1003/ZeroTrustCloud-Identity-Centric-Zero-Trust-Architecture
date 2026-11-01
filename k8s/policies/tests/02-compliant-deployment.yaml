@@ -1,0 +1,35 @@
+# Test Case 2: Compliant Controller Workload (Deployment)
+# Demonstrates that Gatekeeper admission properly inspects and admits compliant controller templates.
+#
+# Expected Admission Decision: ALLOW (HTTP 201 Created)
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: order-api-v2
+  namespace: orders
+  labels:
+    app: order-api-v2
+    trustmesh.io/test-case: "positive-compliant-deployment"
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: order-api-v2
+  template:
+    metadata:
+      labels:
+        app: order-api-v2
+    spec:
+      serviceAccountName: order-api-sa
+      automountServiceAccountToken: false
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 10002
+      containers:
+        - name: api-server
+          image: nginx:1.25-alpine
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop: ["ALL"]
+

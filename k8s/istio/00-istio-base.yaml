@@ -1,0 +1,32 @@
+# Istio v1.21.2 Service Mesh Installation & Namespace Injection Configuration
+# Profile: Minimalist / Ambient-ready (istiod + ingress gateway)
+#
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: istio-system
+  labels:
+    topology.istio.io/network: "trustmesh-local-net"
+---
+# Enable automatic Envoy sidecar injection on microservice namespaces
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: web
+  labels:
+    istio-injection: enabled
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: orders
+  labels:
+    istio-injection: enabled
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: payments
+  labels:
+    istio-injection: enabled
+

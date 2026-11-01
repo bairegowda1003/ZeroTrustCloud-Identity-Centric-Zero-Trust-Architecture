@@ -1,0 +1,17 @@
+# OPA Gatekeeper v3.15.0 Official Installation Guide for TrustMesh KinD Lab
+# Pinned Version: v3.15.0 (Reproducible release)
+#
+# To install Gatekeeper onto an active KinD cluster:
+#   kubectl apply -f https://raw.githubusercontent.com/open-policy-agent/gatekeeper/v3.15.0/deploy/gatekeeper.yaml
+#
+# To verify readiness:
+#   kubectl wait --for=condition=Ready pods --all -n gatekeeper-system --timeout=120s
+#
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: gatekeeper-system
+  labels:
+    admission.gatekeeper.sh/ignore: "no-self-managing"
+    trustmesh.io/system-tier: "admission-controller"
+

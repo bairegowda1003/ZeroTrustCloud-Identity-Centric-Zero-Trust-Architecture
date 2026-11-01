@@ -1,0 +1,32 @@
+apiVersion: templates.gatekeeper.sh/v1
+kind: ConstraintTemplate
+metadata:
+  name: k8srequirededicatedsa
+  annotations:
+    description: "Requires workloads to bind to dedicated least-privilege ServiceAccounts and rejects the shared default ServiceAccount or omitted SA."
+    trustmesh.io/policy-id: "POL-ADM-03"
+spec:
+  crd:
+    spec:
+      names:
+        kind: K8sRequireDedicatedSA
+  targets:
+    - target: admission.k8s.gatekeeper.sh
+      rego: |
+        package k8srequirededicatedsa
+
+        # Case 1: spec.serviceAccountName is explicitly declared as "default"
+        violation[{"msg": msg}] {
+          sa := input.review.object.spec.serviceAccountName
+          sa == "default"
+          workload_name := input.review.object.metadata.name
+          msg := sprintf("[require-dedicated-sa] Workload '%v' is bound to shared 'default' ServiceAccount. Dedicated workload identities are mandatory under Zero Trust.", [workload_name])
+        }
+
+        # Case 2: spec.serviceAccountName is omitted entirely (Kubernetes implicitly assigns default)
+        violation[{"msg": msg}] {
+          not input.review.object.spec.serviceAccountName
+          workload_name := input.review.object.metadata.name
+          msg := sprintf("[require-dedicated-sa] Workload '%v' omits serviceAccountName. Workloads must explicitly declare a dedicated ServiceAccount.", [workload_name])
+        }
+

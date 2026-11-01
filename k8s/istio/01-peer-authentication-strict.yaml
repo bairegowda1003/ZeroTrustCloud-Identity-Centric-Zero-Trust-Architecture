@@ -1,0 +1,38 @@
+# PeerAuthentication: STRICT mTLS across all microservice namespaces
+# Rejects all unencrypted, plaintext communication between pods.
+apiVersion: security.istio.io/v1beta1
+kind: PeerAuthentication
+metadata:
+  name: default-strict-mtls
+  namespace: istio-system
+spec:
+  mtls:
+    mode: STRICT
+---
+apiVersion: security.istio.io/v1beta1
+kind: PeerAuthentication
+metadata:
+  name: payments-strict-mtls
+  namespace: payments
+spec:
+  mtls:
+    mode: STRICT
+---
+apiVersion: security.istio.io/v1beta1
+kind: PeerAuthentication
+metadata:
+  name: orders-strict-mtls
+  namespace: orders
+spec:
+  mtls:
+    mode: STRICT
+---
+apiVersion: security.istio.io/v1beta1
+kind: PeerAuthentication
+metadata:
+  name: web-strict-mtls
+  namespace: web
+spec:
+  mtls:
+    mode: STRICT
+

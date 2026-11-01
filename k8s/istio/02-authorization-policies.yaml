@@ -1,0 +1,64 @@
+# Istio Layer 7 Authorization Policies (Least-Privilege Zero-Trust Rules)
+
+# 1. Payment Service Authorization Policy
+apiVersion: security.istio.io/v1beta1
+kind: AuthorizationPolicy
+metadata:
+  name: payment-service-authz
+  namespace: payments
+spec:
+  selector:
+    matchLabels:
+      app: payment-service
+  action: ALLOW
+  rules:
+    - from:
+        - source:
+            principals: ["cluster.local/ns/orders/sa/order-api-sa"]
+      to:
+        - operation:
+            methods: ["POST"]
+            paths: ["/v1/charge", "/v1/verify"]
+
+---
+# 2. Database Cluster Authorization Policy
+apiVersion: security.istio.io/v1beta1
+kind: AuthorizationPolicy
+metadata:
+  name: database-cluster-authz
+  namespace: payments
+spec:
+  selector:
+    matchLabels:
+      app: database-cluster
+  action: ALLOW
+  rules:
+    - from:
+        - source:
+            principals:
+              - "cluster.local/ns/payments/sa/payment-service-sa"
+      to:
+        - operation:
+            ports: ["5432"]
+
+---
+# 3. Order API Authorization Policy
+apiVersion: security.istio.io/v1beta1
+kind: AuthorizationPolicy
+metadata:
+  name: order-api-authz
+  namespace: orders
+spec:
+  selector:
+    matchLabels:
+      app: order-api
+  action: ALLOW
+  rules:
+    - from:
+        - source:
+            principals: ["cluster.local/ns/web/sa/frontend-proxy-sa"]
+      to:
+        - operation:
+            methods: ["GET", "POST"]
+            paths: ["/v1/orders*"]
+

@@ -1,0 +1,25 @@
+# Test Case 3: Violation - Root Execution
+# Violates: POL-ADM-01 (k8srequirenonroot / require-nonroot)
+# Fault Injection: container explicitly specifies runAsUser: 0 (root)
+#
+# Expected Admission Decision: DENY (HTTP 403 Forbidden)
+apiVersion: v1
+kind: Pod
+metadata:
+  name: test-violation-root
+  namespace: web
+  labels:
+    app: test-violation-root
+    trustmesh.io/test-case: "negative-root-execution"
+spec:
+  serviceAccountName: frontend-proxy-sa
+  securityContext:
+    runAsNonRoot: true
+  containers:
+    - name: malicious-root-worker
+      image: alpine:3.19
+      command: ["sh", "-c", "whoami && sleep 3600"]
+      securityContext:
+        runAsUser: 0  # EXPLICIT ROOT OVERRIDE
+        allowPrivilegeEscalation: false
+

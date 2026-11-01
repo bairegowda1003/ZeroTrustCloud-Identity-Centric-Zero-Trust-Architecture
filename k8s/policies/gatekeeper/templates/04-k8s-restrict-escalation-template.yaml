@@ -1,0 +1,34 @@
+apiVersion: templates.gatekeeper.sh/v1
+kind: ConstraintTemplate
+metadata:
+  name: k8srestrictescalation
+  annotations:
+    description: "Requires allowPrivilegeEscalation to be explicitly disabled across all containers (regular, init, and ephemeral)."
+    trustmesh.io/policy-id: "POL-ADM-04"
+spec:
+  crd:
+    spec:
+      names:
+        kind: K8sRestrictEscalation
+  targets:
+    - target: admission.k8s.gatekeeper.sh
+      rego: |
+        package k8srestrictescalation
+
+        get_all_containers(pod) = containers {
+          containers := array.concat(
+            array.concat(
+              object.get(pod.spec, "containers", []),
+              object.get(pod.spec, "initContainers", [])
+            ),
+            object.get(pod.spec, "ephemeralContainers", [])
+          )
+        }
+
+        violation[{"msg": msg}] {
+          container := get_all_containers(input.review.object)[_]
+          sec := object.get(container, "securityContext", {})
+          sec.allowPrivilegeEscalation != false
+          msg := sprintf("[restrict-escalation] Container '%v' must explicitly declare allowPrivilegeEscalation: false to prevent binary privilege escalation.", [container.name])
+        }
+

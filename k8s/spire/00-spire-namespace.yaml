@@ -1,0 +1,8 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: spire
+  labels:
+    trustmesh.io/tier: "identity-control-plane"
+    trustmesh.io/spiffe-trust-domain: "trustmesh.internal"
+

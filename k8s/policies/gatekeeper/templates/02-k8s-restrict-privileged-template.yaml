@@ -1,0 +1,31 @@
+apiVersion: templates.gatekeeper.sh/v1
+kind: ConstraintTemplate
+metadata:
+  name: k8srestrictprivileged
+  annotations:
+    description: "Prohibits containers from running in privileged mode across all workloads."
+    trustmesh.io/policy-id: "POL-ADM-02"
+spec:
+  crd:
+    spec:
+      names:
+        kind: K8sRestrictPrivileged
+  targets:
+    - target: admission.k8s.gatekeeper.sh
+      rego: |
+        package k8srestrictprivileged
+
+        get_containers(pod) = containers {
+          containers := array.concat(
+            object.get(pod.spec, "containers", []),
+            object.get(pod.spec, "initContainers", [])
+          )
+        }
+
+        violation[{"msg": msg}] {
+          container := get_containers(input.review.object)[_]
+          sec := object.get(container, "securityContext", {})
+          sec.privileged == true
+          msg := sprintf("[restrict-privileged] Privileged container '%v' is strictly prohibited. Workloads must not execute with blanket host kernel access.", [container.name])
+        }
+

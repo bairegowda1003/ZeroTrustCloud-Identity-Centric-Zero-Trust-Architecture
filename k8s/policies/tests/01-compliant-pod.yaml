@@ -1,0 +1,33 @@
+# Test Case 1: Compliant Workload (Pod)
+# All 4 policies satisfied:
+# 1. Non-root: runAsNonRoot: true, runAsUser: 10001
+# 2. Privileged: privileged: false / not requested
+# 3. Dedicated SA: payment-service-sa
+# 4. Privilege escalation: allowPrivilegeEscalation: false
+#
+# Expected Admission Decision: ALLOW (HTTP 201 Created)
+apiVersion: v1
+kind: Pod
+metadata:
+  name: test-compliant-workload
+  namespace: payments
+  labels:
+    app: test-compliant-workload
+    trustmesh.io/test-case: "positive-compliant-pod"
+spec:
+  serviceAccountName: payment-service-sa
+  automountServiceAccountToken: false
+  securityContext:
+    runAsNonRoot: true
+    runAsUser: 10001
+    fsGroup: 10001
+  containers:
+    - name: compliant-app
+      image: alpine:3.19
+      command: ["sh", "-c", "echo 'Zero-Trust Compliant Workload Running' && sleep 3600"]
+      securityContext:
+        allowPrivilegeEscalation: false
+        readOnlyRootFilesystem: true
+        capabilities:
+          drop: ["ALL"]
+

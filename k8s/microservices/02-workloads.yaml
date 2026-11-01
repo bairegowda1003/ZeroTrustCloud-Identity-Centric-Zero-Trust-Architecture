@@ -1,0 +1,151 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: frontend-proxy
+  namespace: web
+  labels:
+    app: frontend-proxy
+    tier: edge
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: frontend-proxy
+  template:
+    metadata:
+      labels:
+        app: frontend-proxy
+        trustmesh.io/identity-verified: "true"
+    spec:
+      serviceAccountName: frontend-proxy-sa
+      containers:
+        - name: nginx
+          image: nginx:1.25-alpine
+          ports:
+            - containerPort: 80
+          resources:
+            limits:
+              cpu: 100m
+              memory: 128Mi
+            requests:
+              cpu: 50m
+              memory: 64Mi
+          securityContext:
+            readOnlyRootFilesystem: true
+            allowPrivilegeEscalation: false
+            runAsNonRoot: true
+            runAsUser: 10001
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: order-api
+  namespace: orders
+  labels:
+    app: order-api
+    tier: app
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: order-api
+  template:
+    metadata:
+      labels:
+        app: order-api
+        trustmesh.io/identity-verified: "true"
+    spec:
+      serviceAccountName: order-api-sa
+      containers:
+        - name: api
+          image: order-api:v1.2.0
+          ports:
+            - containerPort: 8080
+          securityContext:
+            allowPrivilegeEscalation: false
+            runAsNonRoot: true
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: payment-service
+  namespace: payments
+  labels:
+    app: payment-service
+    tier: financial
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: payment-service
+  template:
+    metadata:
+      labels:
+        app: payment-service
+        trustmesh.io/identity-verified: "true"
+    spec:
+      serviceAccountName: payment-service-sa
+      containers:
+        - name: processor
+          image: payment-service:v2.0.4
+          ports:
+            - containerPort: 8443
+          securityContext:
+            allowPrivilegeEscalation: false
+            runAsNonRoot: true
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: database-cluster
+  namespace: payments
+  labels:
+    app: database-cluster
+    tier: data
+spec:
+  serviceName: database-cluster
+  replicas: 1
+  selector:
+    matchLabels:
+      app: database-cluster
+  template:
+    metadata:
+      labels:
+        app: database-cluster
+        trustmesh.io/identity-verified: "true"
+    spec:
+      serviceAccountName: database-sa
+      containers:
+        - name: postgres
+          image: postgres:15-alpine
+          ports:
+            - containerPort: 5432
+---
+# Intentionally misconfigured workload to demonstrate Identity Drift & Finding SEC-002
+# Violates Zero Trust: Uses default namespace SA and has automountServiceAccountToken: true
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: unbound-batch-worker
+  namespace: orders
+  labels:
+    app: unbound-batch-worker
+    trustmesh.io/identity-warning: "unbound-sa"
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: unbound-batch-worker
+  template:
+    metadata:
+      labels:
+        app: unbound-batch-worker
+    spec:
+      # Missing dedicated SA -> defaults to 'default'
+      containers:
+        - name: worker
+          image: batch-processor:v0.9.1-unverified
+          securityContext:
+            allowPrivilegeEscalation: true
+            privileged: true
+

@@ -1,0 +1,45 @@
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: spire-agent
+  namespace: spire
+  labels:
+    app: spire-agent
+spec:
+  selector:
+    matchLabels:
+      app: spire-agent
+  template:
+    metadata:
+      labels:
+        app: spire-agent
+    spec:
+      serviceAccountName: spire-agent-sa
+      hostPID: true
+      hostNetwork: true
+      dnsPolicy: ClusterFirstWithHostNet
+      initContainers:
+        - name: init-wait-for-spire-server
+          image: ghcr.io/spiffe/spire-agent:1.9.5
+          command: ["sh", "-c", "until nc -z -w 2 spire-server.spire.svc.cluster.local 8081; do echo waiting for spire-server; sleep 2; done"]
+      containers:
+        - name: spire-agent
+          image: ghcr.io/spiffe/spire-agent:1.9.5
+          args: ["-config", "/run/spire/config/agent.conf"]
+          volumeMounts:
+            - name: spire-config
+              mountPath: /run/spire/config
+              readOnly: true
+            - name: spire-agent-socket-dir
+              mountPath: /spiffe-workload-api
+          securityContext:
+            privileged: false
+            capabilities:
+              add: ["SYS_PTRACE"]
+      volumes:
+        - name: spire-config
+          configMap:
+            name: spire-agent-config
+        - name: spire-agent-socket-dir
+          emptyDir: {}
+

@@ -1,0 +1,55 @@
+apiVersion: templates.gatekeeper.sh/v1
+kind: ConstraintTemplate
+metadata:
+  name: k8srequirenonroot
+  annotations:
+    description: "Requires containers to run as non-root with appropriate securityContext inheritance and UID verification."
+    trustmesh.io/policy-id: "POL-ADM-01"
+spec:
+  crd:
+    spec:
+      names:
+        kind: K8sRequireNonRoot
+  targets:
+    - target: admission.k8s.gatekeeper.sh
+      rego: |
+        package k8srequirenonroot
+
+        # Helper to extract all containers (regular + init)
+        get_containers(pod) = containers {
+          containers := array.concat(
+            object.get(pod.spec, "containers", []),
+            object.get(pod.spec, "initContainers", [])
+          )
+        }
+
+        # Check: Container explicitly sets runAsUser to 0 (root UID)
+        violation[{"msg": msg}] {
+          container := get_containers(input.review.object)[_]
+          sec := object.get(container, "securityContext", {})
+          sec.runAsUser == 0
+          msg := sprintf("[require-nonroot] Container '%v' explicitly sets runAsUser: 0 (root). Zero-Trust requires non-root execution.", [container.name])
+        }
+
+        # Check: Container explicitly disables runAsNonRoot
+        violation[{"msg": msg}] {
+          container := get_containers(input.review.object)[_]
+          sec := object.get(container, "securityContext", {})
+          sec.runAsNonRoot == false
+          msg := sprintf("[require-nonroot] Container '%v' explicitly disables runAsNonRoot. Must be true.", [container.name])
+        }
+
+        # Check: Neither container nor Pod sets runAsNonRoot: true
+        violation[{"msg": msg}] {
+          container := get_containers(input.review.object)[_]
+          c_sec := object.get(container, "securityContext", {})
+          p_sec := object.get(input.review.object.spec, "securityContext", {})
+          
+          # Container does not set runAsNonRoot: true
+          c_sec.runAsNonRoot != true
+          # And Pod does not set runAsNonRoot: true
+          p_sec.runAsNonRoot != true
+
+          msg := sprintf("[require-nonroot] Container '%v' lacks runAsNonRoot: true and no pod-level default is declared.", [container.name])
+        }
+

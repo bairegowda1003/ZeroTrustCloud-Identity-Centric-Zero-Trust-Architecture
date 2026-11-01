@@ -1,0 +1,32 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: web
+  labels:
+    trustmesh.io/security-zone: public-edge
+    trustmesh.io/identity-enforced: "true"
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: orders
+  labels:
+    trustmesh.io/security-zone: business-logic
+    trustmesh.io/identity-enforced: "true"
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: payments
+  labels:
+    trustmesh.io/security-zone: restricted-data
+    trustmesh.io/identity-enforced: "true"
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: security
+  labels:
+    trustmesh.io/security-zone: governance-core
+    trustmesh.io/identity-enforced: "true"
+

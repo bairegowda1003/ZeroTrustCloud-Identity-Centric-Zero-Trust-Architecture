@@ -1,0 +1,19 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: spire-bundle
+  namespace: spire
+data:
+  bundle.crt: |
+    -----BEGIN CERTIFICATE-----
+    MIIBtDCCAVqgAwIBAgIUdG1zcGlmZmU5OTAxMDEwMTAwMDEwDQYJKoZIhvcNAQEL
+    BQAwJTEjMCEGA1UEAwwadHJ1c3RtZXNoLmludGVybmFsIFJvb3QgQ0EwHhcNMjYx
+    MTAxMDAwMDAwWhcNMzYxMTAxMDAwMDAwWjAlMSMwIQYDVQQDDBp0cnVzdG1lc2gu
+    aW50ZXJuYWwgUm9vdCBDQTBZMBMGByqGSM49AgEGCCqGSM49AwEHA0IABJ/3eU0W
+    7m9qP8a1hVl7d8k2yU6nQ3w8v7b1e4c9f1a2b3c4d5e6f7a8b9c0d1e2f3a4b5c6
+    d7e8f9a0b1c2d3e4o0IwQDAPBgNVHRMBAf8EBTADAQH/MA4GA1UdDwEB/wQEAwIB
+    BjAdBgNVHQ4EFgQUS0a1b2c3d4e5f6a7b8c9d0e1f2g3MA0GCSqGSIb3DQEBCwUA
+    A4IBAQCP4x9a8b7c6d5e4f3a2b1c0d9e8f7a6b5c4d3e2f1a0b9c8d7e6f5a4b3c
+    2d1e0f9a8b7c6d5e4f3a2b1c0d9e8f7a6b5c4d3e2f1a0b9c8d7e6f5a4b3c2d1e
+    -----END CERTIFICATE-----
+
