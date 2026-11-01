@@ -1,11 +1,11 @@
 import React from 'react';
 import { SecurityFinding, FindingStatus } from '../types/security';
-import { GreetingEngineBar } from './GreetingEngineBar';
-import { TrustScoreRadialGauge } from './TrustScoreRadialGauge';
-import { NeedsAttentionCard } from './NeedsAttentionCard';
+import { TrustConduitVisualizer } from './TrustConduitVisualizer';
+import { PriorityFindingsCard } from './PriorityFindingsCard';
 import { TelemetryMetricCards } from './TelemetryMetricCards';
-import { RecentDecisionsTimeline } from './RecentDecisionsTimeline';
-import { RiskDistributionCard } from './RiskDistributionCard';
+import { RecentActivityCard } from './RecentActivityCard';
+import { SystemStatusCard } from './SystemStatusCard';
+import { FooterStatusBar } from './FooterStatusBar';
 
 interface CommandCenterHeroProps {
   findings: SecurityFinding[];
@@ -18,43 +18,46 @@ interface CommandCenterHeroProps {
 export const CommandCenterHero: React.FC<CommandCenterHeroProps> = ({
   findings,
   onFindingClick,
-  onStatusChange,
   onOpenIntegrations,
   onViewAllFindings,
 }) => {
   return (
-    <div className="command-center-stage" role="region" aria-label="TrustMesh Security Command Center">
-      {/* 1. Greeting & Security Engines Status Strip */}
-      <GreetingEngineBar onOpenIntegrations={onOpenIntegrations} />
-
-      {/* 2. Primary Focal Row: Central Trust Visual (Left) & Needs Attention (Right) */}
-      <section className="command-center-focal-row" aria-label="Primary Security Posture and Alerts">
-        <div className="focal-col-left">
-          <TrustScoreRadialGauge findings={findings} onSelectDomainFilter={() => onViewAllFindings?.()} />
+    <div className="security-command-center-stage" role="region" aria-label="TrustMesh Security Command Center">
+      {/* 1. Primary Focal Row: Command Center Hero (Left, 65%) & Priority Findings (Right, 35%) */}
+      <section className="stage-row row-focal" aria-label="Central Posture and Priority Findings">
+        <div className="stage-col-left">
+          <TrustConduitVisualizer
+            findings={findings}
+            onOpenFindings={onViewAllFindings}
+            onSelectDomain={(_domain) => onViewAllFindings?.()}
+          />
         </div>
-        <div className="focal-col-right">
-          <NeedsAttentionCard findings={findings} onFindingClick={onFindingClick} />
-        </div>
-      </section>
-
-      {/* 3. Middle Telemetry Metric Cards (3 Cards) */}
-      <section className="command-center-telemetry-row" aria-label="Zero-Trust Operational Telemetry">
-        <TelemetryMetricCards findings={findings} onViewAllFindings={onViewAllFindings} />
-      </section>
-
-      {/* 4. Bottom Row: Recent Zero-Trust Decisions (Left) & Risk Distribution (Right) */}
-      <section className="command-center-bottom-row" aria-label="Recent Decisions and Risk Distribution">
-        <div className="bottom-col-left">
-          <RecentDecisionsTimeline
+        <div className="stage-col-right">
+          <PriorityFindingsCard
             findings={findings}
             onFindingClick={onFindingClick}
             onViewAllFindings={onViewAllFindings}
           />
         </div>
-        <div className="bottom-col-right">
-          <RiskDistributionCard findings={findings} />
+      </section>
+
+      {/* 2. Middle Row: 4 Telemetry Metric Cards */}
+      <section className="stage-row row-metrics" aria-label="Security Metrics and Posture Telemetry">
+        <TelemetryMetricCards findings={findings} onViewAllFindings={onViewAllFindings} />
+      </section>
+
+      {/* 3. Bottom Row: Recent Zero-Trust Activity (Left, 65%) & System Status (Right, 35%) */}
+      <section className="stage-row row-bottom" aria-label="Recent Decisions and System Status">
+        <div className="stage-col-left">
+          <RecentActivityCard onViewAll={onViewAllFindings} />
+        </div>
+        <div className="stage-col-right">
+          <SystemStatusCard onViewDetails={onOpenIntegrations} />
         </div>
       </section>
+
+      {/* 4. Bottom Footer Bar */}
+      <FooterStatusBar />
     </div>
   );
 };
