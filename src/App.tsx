@@ -6,49 +6,47 @@ import { FindingsTable } from './components/FindingsTable';
 import { FindingDetailDrawer } from './components/FindingDetailDrawer';
 import { ModulePlaceholder } from './components/ModulePlaceholder';
 import { IntegrationModal } from './components/IntegrationModal';
+import { IdentityAccessView } from './components/identity/IdentityAccessView';
+import { PolicyGovernanceView } from './components/policies/PolicyGovernanceView';
+import { TrustArchitectureView } from './components/mesh/TrustArchitectureView';
 import { INITIAL_DEMO_FINDINGS, PLANNED_INTEGRATIONS } from './data/demoFindings';
 import { ActiveModule, SecurityFinding, FindingStatus } from './types/security';
 
 type CommandCenterTab = 'overview' | 'findings';
 
 const MODULE_META: Record<string, { title: string; breadcrumb: string; description: string }> = {
-  command_center: { title: 'Cloud Security Command Center', breadcrumb: 'ZeroTrustCloud · PRJ-34', description: '' },
+  command_center: { title: 'Security Command Center', breadcrumb: 'ZeroTrustCloud · PRJ-34', description: '' },
   workload_identity: {
-    title: 'Workload Identity (SPIRE)',
+    title: 'Workload Identity & Access',
     breadcrumb: 'Security Modules',
-    description: 'SPIFFE/SPIRE workload attestation and cryptographic identity management. Hardware-attested SVIDs replace static credentials across pods.',
+    description: 'Kubernetes Workload Identity, ServiceAccount token projection, and namespace boundary enforcement.',
   },
   policy_governance: {
-    title: 'Policy Governance (OPA)',
+    title: 'Policies & Workloads (OPA)',
     breadcrumb: 'Security Modules',
     description: 'OPA Gatekeeper admission control and Rego constraint templates. Declarative policy enforcement at the Kubernetes API server level.',
   },
   service_mesh: {
-    title: 'Service Mesh Trust (Istio)',
+    title: 'Trust Architecture (Istio)',
     breadcrumb: 'Security Modules',
     description: 'Istio mutual TLS enforcement and Layer-7 AuthorizationPolicy management. Zero plaintext east-west traffic between microservices.',
   },
   supply_chain: {
-    title: 'Supply Chain Defense',
+    title: 'Security Findings',
     breadcrumb: 'Security Modules',
-    description: 'Cosign/Sigstore container image signature verification and Trivy SBOM vulnerability scanning. CI/CD provenance attestation.',
+    description: 'Central findings management, vulnerability prioritization, and admission violation auditing.',
   },
   experiments: {
-    title: 'Empirical Experiments (EXP-01–08)',
+    title: 'Audit & Events',
     breadcrumb: 'Research',
-    description: 'Experimental validation framework for zero-trust architecture claims. Latency, compliance, and security metrics under controlled conditions.',
+    description: 'Experimental validation framework and continuous audit telemetry under controlled conditions.',
   },
   integrations: {
-    title: 'Cluster Integrations',
+    title: 'Integrations & Providers',
     breadcrumb: 'Configuration',
     description: 'Cloud provider connections, policy engine integrations, and identity platform federation. Planned AWS EKS, Azure AKS, and more.',
   },
 };
-
-const CC_TABS = [
-  { id: 'overview', label: 'Overview' },
-  { id: 'findings', label: 'Findings' },
-];
 
 export const App: React.FC = () => {
   const [currentModule, setCurrentModule] = useState<ActiveModule>('command_center');
@@ -58,6 +56,7 @@ export const App: React.FC = () => {
   const [isIntegrationsModalOpen, setIsIntegrationsModalOpen] = useState(false);
   const [selectedFinding, setSelectedFinding] = useState<SecurityFinding | null>(null);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+  const [clusterName, setClusterName] = useState<string>('Local Kubernetes');
 
   // Theme Management (Light 'morning' / Dark 'night')
   const [theme, setTheme] = useState<'dark' | 'light'>(() => {
@@ -104,38 +103,52 @@ export const App: React.FC = () => {
     setIsDrawerOpen(true);
   };
 
+  const handleNavigateToFinding = (findingId: string) => {
+    const target = findings.find((f) => f.id === findingId);
+    if (target) {
+      setSelectedFinding(target);
+      setIsDrawerOpen(true);
+    } else {
+      setCurrentModule('command_center');
+      setCommandCenterTab('findings');
+    }
+  };
+
   const handleCloseDrawer = () => {
     setIsDrawerOpen(false);
   };
 
   return (
-    <div className={`app-container ${theme}`}>
-      <Sidebar
-        currentModule={currentModule}
-        onModuleChange={(mod) => {
-          setCurrentModule(mod);
-          if (mod === 'command_center') {
-            setCommandCenterTab('overview');
-          }
-          if (mod === 'integrations') {
-            setIsIntegrationsModalOpen(true);
-          }
-        }}
+    <div className={`trustmesh-app-root ${theme}`}>
+      {/* Top Application Header */}
+      <Header
+        clusterName={clusterName}
+        theme={theme}
+        onToggleTheme={toggleTheme}
+        onSelectCluster={(name) => setClusterName(name)}
+        onOpenClusterModal={() => setIsIntegrationsModalOpen(true)}
       />
 
-      <div className="main-layout">
-        <Header
-          title={meta.title}
-          breadcrumb={meta.breadcrumb}
-          tabs={currentModule === 'command_center' ? CC_TABS : undefined}
-          activeTab={commandCenterTab}
-          onTabChange={(tab) => setCommandCenterTab(tab as CommandCenterTab)}
-          onConnectDataSource={() => setIsIntegrationsModalOpen(true)}
-          theme={theme}
-          onToggleTheme={toggleTheme}
+      {/* Main Body Shell: Sidebar + Content Viewport */}
+      <div className="app-body-container">
+        <Sidebar
+          currentModule={currentModule}
+          onModuleChange={(mod) => {
+            setCurrentModule(mod);
+            if (mod === 'command_center') {
+              setCommandCenterTab('overview');
+            } else if (mod === 'supply_chain') {
+              // Quick jump to findings
+              setCurrentModule('command_center');
+              setCommandCenterTab('findings');
+            } else if (mod === 'integrations') {
+              setIsIntegrationsModalOpen(true);
+            }
+          }}
+          unresolvedFindingsCount={findings.filter((f) => f.status !== 'resolved').length}
         />
 
-        <main className="content-viewport">
+        <main className="main-content-viewport" role="main">
           {currentModule === 'command_center' ? (
             commandCenterTab === 'overview' ? (
               <CommandCenterHero
@@ -146,16 +159,33 @@ export const App: React.FC = () => {
                 onViewAllFindings={() => setCommandCenterTab('findings')}
               />
             ) : (
-              <FindingsTable
-                findings={findings}
-                onFindingClick={handleFindingClick}
-              />
+              <div className="findings-subview-wrapper">
+                <div className="subview-header">
+                  <button
+                    className="back-to-overview-btn"
+                    onClick={() => setCommandCenterTab('overview')}
+                  >
+                    ← Back to Command Center
+                  </button>
+                  <h1 className="subview-title">Zero-Trust Security Findings Explorer</h1>
+                </div>
+                <FindingsTable
+                  findings={findings}
+                  onFindingClick={handleFindingClick}
+                />
+              </div>
             )
+          ) : currentModule === 'workload_identity' ? (
+            <IdentityAccessView onNavigateToFinding={handleNavigateToFinding} />
+          ) : currentModule === 'policy_governance' ? (
+            <PolicyGovernanceView onNavigateToFinding={handleNavigateToFinding} />
+          ) : currentModule === 'service_mesh' ? (
+            <TrustArchitectureView onNavigateToFinding={handleNavigateToFinding} />
           ) : (
             <ModulePlaceholder
               title={meta.title}
               description={meta.description}
-              phase="Phase 2+"
+              phase="Phase 5+"
               onGoHome={() => {
                 setCurrentModule('command_center');
                 setCommandCenterTab('overview');

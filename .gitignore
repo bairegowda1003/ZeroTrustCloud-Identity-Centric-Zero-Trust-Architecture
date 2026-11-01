@@ -40,3 +40,8 @@ design-references/
 
 # Design scratch & prompt references
 ui-phase.md
+components-ui.md
+phase-*.md
+plan-change.md
+PHASE_*_PLAN.md
+ZeroTrustCloud_TrustMesh_Master_Blueprint.*

@@ -6,7 +6,8 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc && vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "k8s:discover": "node k8s/scripts/discover-workloads.js"
   },
   "dependencies": {
     "lucide-react": "^0.344.0",
