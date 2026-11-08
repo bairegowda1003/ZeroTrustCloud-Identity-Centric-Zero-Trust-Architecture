@@ -9,6 +9,8 @@ import { IntegrationModal } from './components/IntegrationModal';
 import { IdentityAccessView } from './components/identity/IdentityAccessView';
 import { PolicyGovernanceView } from './components/policies/PolicyGovernanceView';
 import { TrustArchitectureView } from './components/mesh/TrustArchitectureView';
+import { SupplyChainView } from './components/supply-chain/SupplyChainView';
+import { SecurityObservabilityView } from './components/observability/SecurityObservabilityView';
 import { INITIAL_DEMO_FINDINGS, PLANNED_INTEGRATIONS } from './data/demoFindings';
 import { ActiveModule, SecurityFinding, FindingStatus } from './types/security';
 
@@ -32,14 +34,14 @@ const MODULE_META: Record<string, { title: string; breadcrumb: string; descripti
     description: 'Istio mutual TLS enforcement and Layer-7 AuthorizationPolicy management. Zero plaintext east-west traffic between microservices.',
   },
   supply_chain: {
-    title: 'Security Findings',
+    title: 'Supply Chain Defense',
     breadcrumb: 'Security Modules',
-    description: 'Central findings management, vulnerability prioritization, and admission violation auditing.',
+    description: 'Pre-deployment container vulnerability scanning with Aqua Trivy and cryptographic image signature verification with Sigstore Cosign and OPA Gatekeeper.',
   },
   experiments: {
-    title: 'Audit & Events',
-    breadcrumb: 'Research',
-    description: 'Experimental validation framework and continuous audit telemetry under controlled conditions.',
+    title: 'Centralized Security Observability & Evaluation',
+    breadcrumb: 'Observability & Evaluation',
+    description: 'Centralized telemetry aggregation, OpenTelemetry normalization, and mathematical Zero Trust control evaluation.',
   },
   integrations: {
     title: 'Integrations & Providers',
@@ -137,10 +139,6 @@ export const App: React.FC = () => {
             setCurrentModule(mod);
             if (mod === 'command_center') {
               setCommandCenterTab('overview');
-            } else if (mod === 'supply_chain') {
-              // Quick jump to findings
-              setCurrentModule('command_center');
-              setCommandCenterTab('findings');
             } else if (mod === 'integrations') {
               setIsIntegrationsModalOpen(true);
             }
@@ -181,11 +179,15 @@ export const App: React.FC = () => {
             <PolicyGovernanceView onNavigateToFinding={handleNavigateToFinding} />
           ) : currentModule === 'service_mesh' ? (
             <TrustArchitectureView onNavigateToFinding={handleNavigateToFinding} />
+          ) : currentModule === 'supply_chain' ? (
+            <SupplyChainView onNavigateToFinding={handleNavigateToFinding} />
+          ) : currentModule === 'experiments' ? (
+            <SecurityObservabilityView onNavigateToFinding={handleNavigateToFinding} />
           ) : (
             <ModulePlaceholder
               title={meta.title}
               description={meta.description}
-              phase="Phase 5+"
+              phase="Phase 6"
               onGoHome={() => {
                 setCurrentModule('command_center');
                 setCommandCenterTab('overview');
