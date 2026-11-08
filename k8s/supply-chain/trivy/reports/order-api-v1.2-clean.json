@@ -1,0 +1,39 @@
+{
+  "SchemaVersion": 2,
+  "ArtifactName": "trustmesh/order-api:v1.2",
+  "ArtifactType": "container_image",
+  "Metadata": {
+    "OS": {
+      "Family": "debian",
+      "Name": "12.5"
+    },
+    "ImageID": "sha256:7b129c54e0821dfa92918bc3251ee2d744f456108e427d1421008064953bfcb4",
+    "DiffIDs": [
+      "sha256:d8e6988849b2f1505342ea31df0a19e205391a27e7d6957dbde1895a0bc07e21"
+    ],
+    "RepoTags": ["trustmesh/order-api:v1.2"],
+    "RepoDigests": ["trustmesh/order-api@sha256:7b129c54e0821dfa92918bc3251ee2d744f456108e427d1421008064953bfcb4"]
+  },
+  "Results": [
+    {
+      "Target": "package-lock.json",
+      "Class": "lang-pkgs",
+      "Type": "npm",
+      "Packages": [
+        {
+          "Name": "mysql2",
+          "Version": "3.9.4",
+          "Layer": {
+            "DiffID": "sha256:d8e6988849b2f1505342ea31df0a19e205391a27e7d6957dbde1895a0bc07e21"
+          }
+        },
+        {
+          "Name": "express",
+          "Version": "4.19.2"
+        }
+      ],
+      "Vulnerabilities": []
+    }
+  ]
+}
+

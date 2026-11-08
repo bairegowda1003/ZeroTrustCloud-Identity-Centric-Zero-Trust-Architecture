@@ -1,0 +1,25 @@
+apiVersion: constraints.gatekeeper.sh/v1beta1
+kind: K8sCosignSignature
+metadata:
+  name: require-cosign-signature
+  annotations:
+    security.trustmesh.io/finding-ref: "TM-SEC-101"
+    security.trustmesh.io/policy-name: "Enforce Cosign Signature via External Provider"
+spec:
+  enforcementAction: deny
+  match:
+    kinds:
+      - apiGroups: [""]
+        kinds: ["Pod"]
+      - apiGroups: ["apps"]
+        kinds: ["Deployment", "StatefulSet", "DaemonSet"]
+    namespaces:
+      - "orders"
+      - "payments"
+      - "database"
+      - "ingress-edge"
+  parameters:
+    providerName: "cosign-provider"
+    trustedPublicKeys:
+      - "cosign.pub [SHA256:8f4a1b9c2014e7a884e6...]"
+

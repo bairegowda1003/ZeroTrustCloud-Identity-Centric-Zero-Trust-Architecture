@@ -1,0 +1,15 @@
+# OPA Gatekeeper External Data Provider Definition
+# Integrates Gatekeeper with an external Cosign cryptographic verification service
+apiVersion: externaldata.gatekeeper.sh/v1beta1
+kind: Provider
+metadata:
+  name: cosign-provider
+  namespace: gatekeeper-system
+spec:
+  # URL of the Cosign verification webhook service in cluster
+  url: https://cosign-webhook.gatekeeper-system.svc.cluster.local:8443/verify
+  timeout: 5
+  caBundle: LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCg== # Base64 encoded CA cert
+  # Fail-closed zero-trust policy: if provider is unreachable or returns error, reject admission
+  failurePolicy: Fail
+

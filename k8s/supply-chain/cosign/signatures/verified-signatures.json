@@ -1,0 +1,24 @@
+{
+  "critical": {
+    "identity": {
+      "docker-reference": "trustmesh/order-api"
+    },
+    "image": {
+      "docker-manifest-digest": "sha256:7b129c54e0821dfa92918bc3251ee2d744f456108e427d1421008064953bfcb4"
+    },
+    "type": "cosign container image signature"
+  },
+  "optional": {
+    "Bundle": {
+      "SignedEntryTimestamp": "2026-11-01T14:22:00Z",
+      "Body": {
+        "RekorLogIndex": 842109,
+        "IntegratedTime": 1793538120
+      }
+    },
+    "Signer": "cosign.pub [Key ID: 0x8F4A1B9C]",
+    "Issuer": "https://accounts.trustmesh.security",
+    "SignatureAlgorithm": "ECDSA_P256_SHA256"
+  }
+}
+

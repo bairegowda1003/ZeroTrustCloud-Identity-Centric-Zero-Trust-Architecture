@@ -1,0 +1,74 @@
+# OpenTelemetry Collector Configuration Map (v0.105.0)
+# Centralized ingestion, transformation, and normalization of Zero Trust telemetry
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: otel-collector-config
+  namespace: observability
+data:
+  otel-collector-config.yaml: |
+    receivers:
+      otlp:
+        protocols:
+          grpc:
+            endpoint: 0.0.0.0:4317
+          http:
+            endpoint: 0.0.0.0:4318
+      prometheus:
+        config:
+          scrape_configs:
+            - job_name: 'spire-server'
+              scrape_interval: 15s
+              static_configs:
+                - targets: ['spire-server.spire-system.svc.cluster.local:8088']
+            - job_name: 'gatekeeper'
+              scrape_interval: 15s
+              static_configs:
+                - targets: ['gatekeeper-controller-manager.gatekeeper-system.svc.cluster.local:8888']
+            - job_name: 'envoy-mesh'
+              scrape_interval: 15s
+              static_configs:
+                - targets: ['order-api.orders.svc.cluster.local:15090', 'payment-service.payments.svc.cluster.local:15090']
+      filelog:
+        include: [/var/log/containers/*gatekeeper*.log, /var/log/containers/*envoy*.log]
+        start_at: end
+
+    processors:
+      memory_limiter:
+        check_interval: 1s
+        limit_percentage: 75
+        spike_limit_percentage: 20
+      batch:
+        send_batch_size: 100
+        timeout: 2s
+      transform:
+        error_mode: ignore
+        log_statements:
+          - context: log
+            statements:
+              - set(attributes["trustmesh.cluster"], "kin-testbed")
+              - set(attributes["trustmesh.trust_domain"], "trustmesh.internal")
+
+    exporters:
+      prometheus:
+        endpoint: 0.0.0.0:8889
+        namespace: "trustmesh"
+      otlphttp/loki:
+        endpoint: "http://loki.observability.svc.cluster.local:3100/otlp"
+        tls:
+          insecure: true
+
+    service:
+      telemetry:
+        logs:
+          level: "info"
+      pipelines:
+        metrics:
+          receivers: [otlp, prometheus]
+          processors: [memory_limiter, batch]
+          exporters: [prometheus]
+        logs:
+          receivers: [otlp, filelog]
+          processors: [memory_limiter, batch, transform]
+          exporters: [otlphttp/loki]
+

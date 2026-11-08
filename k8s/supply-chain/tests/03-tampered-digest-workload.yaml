@@ -1,0 +1,27 @@
+# TEST CASE 3: Tampered Digest Image Workload
+# Expected Result: DENY (403 Forbidden - Cryptographic Digest Mismatch)
+# Artifact image content was modified after signature generation
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: order-api-tampered
+  namespace: orders
+  labels:
+    app: order-api
+    trustmesh.io/security-tier: "tampered-test"
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: order-api
+  template:
+    metadata:
+      labels:
+        app: order-api
+    spec:
+      serviceAccountName: order-api-sa
+      containers:
+        - name: order-api
+          image: trustmesh/order-api:tampered@sha256:0000000000000000000000000000000000000000000000000000000000000000
+          imagePullPolicy: Always
+

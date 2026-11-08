@@ -1,0 +1,81 @@
+apiVersion: templates.gatekeeper.sh/v1
+kind: ConstraintTemplate
+metadata:
+  name: k8scosignsignature
+  annotations:
+    description: "Requires container images to possess a valid Sigstore Cosign cryptographic signature verified by Gatekeeper External Data Provider."
+    security.trustmesh.io/rule-id: "RULE-SUPPLY-COSIGN-01"
+    security.trustmesh.io/finding-ref: "TM-SEC-101"
+spec:
+  crd:
+    spec:
+      names:
+        kind: K8sCosignSignature
+      validation:
+        openAPIV3Schema:
+          type: object
+          properties:
+            providerName:
+              type: string
+              description: "Name of the ExternalData Provider CRD configured in Gatekeeper"
+            trustedPublicKeys:
+              type: array
+              items:
+                type: string
+  targets:
+    - target: admission.k8s.gatekeeper.sh
+      rego: |
+        package k8scosignsignature
+
+        # Helper to extract all container images in the Pod
+        get_images[img] {
+          img := input.review.object.spec.containers[_].image
+        }
+        get_images[img] {
+          img := input.review.object.spec.initContainers[_].image
+        }
+
+        # Query Gatekeeper External Data provider for Cosign verification
+        violation[{"msg": msg, "details": {"image": img, "finding_id": "TM-SEC-101"}}] {
+          img := get_images[_]
+          provider := object.get(input.parameters, "providerName", "cosign-provider")
+          
+          # Call external provider webhook
+          result := external_data({"provider_name": provider, "keys": [img]})
+          
+          # Check for system/network failure (Fail-closed)
+          has_system_error(result)
+          msg := sprintf("Cosign verification provider '%v' failed or unreachable for image '%v'. Admission blocked under zero-trust fail-closed policy.", [provider, img])
+        }
+
+        violation[{"msg": msg, "details": {"image": img, "finding_id": "TM-SEC-101"}}] {
+          img := get_images[_]
+          provider := object.get(input.parameters, "providerName", "cosign-provider")
+          
+          result := external_data({"provider_name": provider, "keys": [img]})
+          not has_system_error(result)
+
+          # Extract verification response for this image key
+          verification := result.responses[img]
+          
+          # Rejection condition 1: Provider returned explicit verification error (e.g. Unsigned)
+          result.errors[img] != ""
+          msg := sprintf("Container image '%v' lacks a valid Cosign digital signature: %v. Violated RULE-SUPPLY-COSIGN-01 (Finding TM-SEC-101).", [img, result.errors[img]])
+        }
+
+        violation[{"msg": msg, "details": {"image": img, "finding_id": "TM-SEC-101"}}] {
+          img := get_images[_]
+          provider := object.get(input.parameters, "providerName", "cosign-provider")
+          
+          result := external_data({"provider_name": provider, "keys": [img]})
+          not has_system_error(result)
+
+          verification := result.responses[img]
+          verification.verified != true
+          msg := sprintf("Container image '%v' signature verification returned invalid: %v. Violated RULE-SUPPLY-COSIGN-01.", [img, verification.reason])
+        }
+
+        has_system_error(result) {
+          result.system_error != ""
+        }
+

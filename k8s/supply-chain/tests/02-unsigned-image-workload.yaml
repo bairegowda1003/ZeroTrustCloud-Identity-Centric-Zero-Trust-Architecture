@@ -1,0 +1,30 @@
+# TEST CASE 2: Unsigned Image Workload
+# Expected Result: DENY (403 Forbidden - Gatekeeper Admission Webhook)
+# Artifact lacks cryptographic Cosign signature, triggering Finding TM-SEC-101
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: checkout-gateway-unsigned
+  namespace: orders
+  labels:
+    app: checkout-gateway
+    trustmesh.io/security-tier: "production"
+    trustmesh.io/signed: "false"
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: checkout-gateway
+  template:
+    metadata:
+      labels:
+        app: checkout-gateway
+    spec:
+      serviceAccountName: checkout-gateway-sa
+      containers:
+        - name: checkout-gateway
+          image: docker.io/commerce/checkout:v2.1
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 9000
+

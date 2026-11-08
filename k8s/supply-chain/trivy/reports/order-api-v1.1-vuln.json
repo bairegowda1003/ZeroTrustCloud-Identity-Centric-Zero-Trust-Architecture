@@ -1,0 +1,65 @@
+{
+  "SchemaVersion": 2,
+  "ArtifactName": "trustmesh/mysql-proxy:cache",
+  "ArtifactType": "container_image",
+  "Metadata": {
+    "OS": {
+      "Family": "debian",
+      "Name": "12.2"
+    },
+    "ImageID": "sha256:1a84f3e198b92b67cc1d9e29088510f27cda608c0ef01a74d28430f8c2b7c419",
+    "DiffIDs": [
+      "sha256:45ea9810b4231b79f88c21a4f009d7865c19208a8c2d9a69078dfbb1b93f10ec"
+    ],
+    "RepoTags": ["trustmesh/mysql-proxy:cache"],
+    "RepoDigests": ["trustmesh/mysql-proxy@sha256:1a84f3e198b92b67cc1d9e29088510f27cda608c0ef01a74d28430f8c2b7c419"]
+  },
+  "Results": [
+    {
+      "Target": "package-lock.json",
+      "Class": "lang-pkgs",
+      "Type": "npm",
+      "Packages": [
+        {
+          "Name": "mysql2",
+          "Version": "3.9.2"
+        }
+      ],
+      "Vulnerabilities": [
+        {
+          "VulnerabilityID": "CVE-2024-21508",
+          "PkgID": "mysql2@3.9.2",
+          "PkgName": "mysql2",
+          "InstalledVersion": "3.9.2",
+          "FixedVersion": "3.9.4",
+          "Status": "fixed",
+          "Layer": {
+            "DiffID": "sha256:45ea9810b4231b79f88c21a4f009d7865c19208a8c2d9a69078dfbb1b93f10ec"
+          },
+          "SeveritySource": "nvd",
+          "PrimaryURL": "https://nvd.nist.gov/vuln/detail/CVE-2024-21508",
+          "DataSource": {
+            "ID": "nvd",
+            "Name": "National Vulnerability Database",
+            "URL": "https://nvd.nist.gov"
+          },
+          "Title": "mysql2: Prototype Pollution via parsePacket function leading to RCE",
+          "Description": "Versions of the package mysql2 before 3.9.4 are vulnerable to Prototype Pollution via the parsePacket function when parsing server packet response parameters. A malicious database or man-in-the-middle attacker can manipulate packet structures to pollute object prototypes, potentially leading to arbitrary code execution or denial of service.",
+          "Severity": "CRITICAL",
+          "CVSS": {
+            "nvd": {
+              "V3Vector": "CVSS:3.1/AV:N/AC:L/PR:N/UI:N/S:U/C:H/I:H/A:H",
+              "V3Score": 8.8
+            }
+          },
+          "References": [
+            "https://nvd.nist.gov/vuln/detail/CVE-2024-21508",
+            "https://github.com/sidorares/node-mysql2/pull/2573",
+            "https://security.snyk.io/vuln/SNYK-JS-MYSQL2-6500414"
+          ]
+        }
+      ]
+    }
+  ]
+}
+

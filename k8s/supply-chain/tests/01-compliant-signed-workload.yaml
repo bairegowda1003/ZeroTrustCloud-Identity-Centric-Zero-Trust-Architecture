@@ -1,0 +1,43 @@
+# TEST CASE 1: Compliant Signed Workload
+# Expected Result: ALLOW (201 Created)
+# Artifact is cryptographically signed with cosign.pub and contains 0 Critical CVEs (mysql2@3.9.4)
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: order-api-v1-2-compliant
+  namespace: orders
+  labels:
+    app: order-api
+    trustmesh.io/security-tier: "production"
+    trustmesh.io/signed: "true"
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: order-api
+  template:
+    metadata:
+      labels:
+        app: order-api
+        trustmesh.io/signed: "true"
+    spec:
+      serviceAccountName: order-api-sa
+      containers:
+        - name: order-api
+          image: trustmesh/order-api:v1.2
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 8080
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            runAsNonRoot: true
+            runAsUser: 10001
+          resources:
+            limits:
+              cpu: "500m"
+              memory: "512Mi"
+            requests:
+              cpu: "100m"
+              memory: "128Mi"
+
