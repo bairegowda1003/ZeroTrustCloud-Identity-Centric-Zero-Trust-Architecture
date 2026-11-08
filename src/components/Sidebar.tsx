@@ -5,6 +5,7 @@ import {
   Shield,
   Network,
   ShieldAlert,
+  Package,
   BarChart3,
   Link2,
   Settings,
@@ -104,14 +105,15 @@ export const Sidebar: React.FC<SidebarProps> = ({
     },
     {
       id: 'supply_chain',
-      label: 'Security Findings',
-      icon: <ShieldAlert size={16} />,
-      badge: unresolvedFindingsCount > 0 ? 3 : 0, // Matches screenshot 3
+      label: 'Supply Chain Defense',
+      icon: <Package size={16} />,
+      badge: 2, // 2 blocked artifacts (1 unsigned + 1 vulnerable)
     },
     {
       id: 'experiments',
-      label: 'Audit & Events',
+      label: 'Audit & Observability',
       icon: <BarChart3 size={16} />,
+      badge: 8, // 8 correlated multi-domain security events
     },
     {
       id: 'integrations',
