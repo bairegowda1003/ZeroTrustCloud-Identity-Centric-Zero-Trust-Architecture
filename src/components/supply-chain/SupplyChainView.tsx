@@ -77,6 +77,7 @@ export const SupplyChainView: React.FC<SupplyChainViewProps> = ({
       <SupplyChainSummaryCards
         summary={INITIAL_SUPPLY_CHAIN_SUMMARY}
         onFilterStatus={(filter) => setStatusFilter(filter)}
+        activeFilter={statusFilter}
       />
 
       {/* 3. Interactive 4-Step Pipeline Hero */}
