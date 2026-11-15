@@ -51,7 +51,10 @@ export const PriorityFindingsCard: React.FC<PriorityFindingsCardProps> = ({
     <div className="priority-findings-card" role="region" aria-label="Priority Security Findings">
       {/* Header */}
       <div className="priority-findings-header">
-        <h2 className="priority-findings-title">Priority Findings</h2>
+        <div className="priority-findings-title-wrap">
+          <h2 className="priority-findings-title">Priority Findings</h2>
+          <span className="priority-findings-count-badge">3 Unresolved</span>
+        </div>
         <button
           className="view-all-link-btn"
           onClick={onViewAllFindings}
@@ -75,30 +78,43 @@ export const PriorityFindingsCard: React.FC<PriorityFindingsCardProps> = ({
           >
             {/* Icon Box */}
             <div className={`finding-icon-box ${item.iconType}`}>
-              {item.iconType === 'critical' && <AlertTriangle size={17} className="text-red-400" />}
-              {item.iconType === 'warning' && <AlertCircle size={17} className="text-amber-400" />}
-              {item.iconType === 'info' && <Info size={17} className="text-sky-400" />}
+              {item.iconType === 'critical' && <AlertTriangle size={18} className="text-red-400" />}
+              {item.iconType === 'warning' && <AlertCircle size={18} className="text-amber-400" />}
+              {item.iconType === 'info' && <Info size={18} className="text-sky-400" />}
             </div>
 
             {/* Text Info */}
             <div className="finding-text-col">
-              <div className="finding-title-row">
-                <h3 className="finding-item-title">{item.title}</h3>
-                <div className={`finding-severity-pill ${item.severity}`}>
-                  <span className="severity-dot" />
-                  <span>{item.severity === 'high' ? 'High' : item.severity === 'medium' ? 'Medium' : 'Low'}</span>
-                </div>
-              </div>
+              <h3 className="finding-item-title">{item.title}</h3>
               <p className="finding-item-desc">{item.description}</p>
               <span className="finding-item-meta">{item.source}</span>
             </div>
 
-            {/* Right Chevron */}
-            <div className="finding-chevron">
-              <ChevronRight size={15} />
+            {/* Right Action: Severity Pill + Chevron */}
+            <div className="finding-row-right">
+              <div className={`finding-severity-pill ${item.severity}`}>
+                <span className="severity-dot" />
+                <span>{item.severity === 'high' ? 'High' : item.severity === 'medium' ? 'Medium' : 'Low'}</span>
+              </div>
+              <div className="finding-chevron">
+                <ChevronRight size={15} />
+              </div>
             </div>
           </div>
         ))}
+      </div>
+
+      {/* Posture / Triage Status Footer */}
+      <div className="priority-findings-footer">
+        <div className="findings-triage-summary">
+          <span className="findings-triage-dot" />
+          <span className="findings-triage-text">
+            <strong>3 of {findings.length || 11}</strong> active findings prioritized for triage
+          </span>
+        </div>
+        <div className="findings-triage-policy">
+          <span>Fail-Closed</span>
+        </div>
       </div>
     </div>
   );

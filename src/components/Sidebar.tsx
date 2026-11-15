@@ -9,7 +9,6 @@ import {
   BarChart3,
   Link2,
   Settings,
-  Activity,
   Pin,
   PinOff,
   Menu,
@@ -214,7 +213,10 @@ export const Sidebar: React.FC<SidebarProps> = ({
           );
         })}
 
-        {/* Divider & Settings Item */}
+      </div>
+
+      {/* Bottom Pinned Settings Action */}
+      <div className="sidebar-bottom-section">
         <div className="sidebar-nav-divider" />
         <button
           type="button"
@@ -229,100 +231,6 @@ export const Sidebar: React.FC<SidebarProps> = ({
           <span className="nav-label-text">Settings</span>
           {isExpanded && <span className="nav-shortcut-key">⌘S</span>}
         </button>
-      </div>
-
-      {/* Bottom Liquid Glass Telemetry Capsule */}
-      <div
-        className={`sidebar-bottom-telemetry-card ${isExpanded ? 'expanded' : 'collapsed'}`}
-        title="Simulated Zero-Trust Event Telemetry (PRJ-34)"
-      >
-        <div className="telemetry-card-glow-backdrop" aria-hidden="true" />
-
-        <div className="telemetry-card-top">
-          <div className="telemetry-activity-icon" aria-hidden="true">
-            <Activity size={14} className="activity-pulse-svg" />
-          </div>
-
-          {isExpanded && (
-            <div className="telemetry-text-block">
-              <div className="telemetry-title">Live Telemetry</div>
-              <div className="telemetry-state-row">
-                <span className="live-dot-wrap">
-                  <span className="live-dot-ring" />
-                  <span className="live-dot-pulse" />
-                </span>
-                <span className="telemetry-status-text">Active</span>
-                <span className="telemetry-sep">·</span>
-                <span className="telemetry-rate">128 eps</span>
-              </div>
-            </div>
-          )}
-        </div>
-
-        {/* Collapsed state breathing beacon */}
-        {!isExpanded && (
-          <div className="telemetry-collapsed-pulse-row" aria-hidden="true">
-            <span className="live-dot-pulse" />
-          </div>
-        )}
-
-        {/* Liquid Organic Wave with Gradient Area & Flowing Particles (Expanded View) */}
-        {isExpanded && (
-          <>
-            <div className="telemetry-wave-container" aria-hidden="true">
-              <svg viewBox="0 0 170 38" className="telemetry-wave-svg" preserveAspectRatio="none">
-                <defs>
-                  <linearGradient id="telemetry-stroke-grad" x1="0%" y1="0%" x2="100%" y2="0%">
-                    <stop offset="0%" stopColor="#16D9E8" stopOpacity="0.4" />
-                    <stop offset="50%" stopColor="#20D6A2" stopOpacity="1" />
-                    <stop offset="100%" stopColor="#38BDF8" stopOpacity="0.8" />
-                  </linearGradient>
-
-                  <linearGradient id="telemetry-fill-grad" x1="0%" y1="0%" x2="0%" y2="100%">
-                    <stop offset="0%" stopColor="#20D6A2" stopOpacity="0.22" />
-                    <stop offset="100%" stopColor="#20D6A2" stopOpacity="0" />
-                  </linearGradient>
-
-                  <filter id="telemetry-glow" x="-20%" y="-20%" width="140%" height="140%">
-                    <feGaussianBlur stdDeviation="2" result="blur" />
-                    <feMerge>
-                      <feMergeNode in="blur" />
-                      <feMergeNode in="SourceGraphic" />
-                    </feMerge>
-                  </filter>
-                </defs>
-
-                <path
-                  d="M 0 22 Q 22 10, 45 22 T 90 22 T 135 14 T 170 20 L 170 38 L 0 38 Z"
-                  fill="url(#telemetry-fill-grad)"
-                />
-
-                <path
-                  d="M 0 22 Q 22 10, 45 22 T 90 22 T 135 14 T 170 20"
-                  fill="none"
-                  stroke="url(#telemetry-stroke-grad)"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  filter="url(#telemetry-glow)"
-                  className="animate-wave-flow"
-                />
-
-                <circle r="3" fill="#20D6A2" filter="url(#telemetry-glow)">
-                  <animateMotion
-                    path="M 0 22 Q 22 10, 45 22 T 90 22 T 135 14 T 170 20"
-                    dur="3s"
-                    repeatCount="indefinite"
-                  />
-                </circle>
-              </svg>
-            </div>
-
-            <div className="telemetry-micro-footer">
-              <span className="telemetry-bus-tag">EVENT BUS</span>
-              <span className="telemetry-sync-rate">ATT 99.8%</span>
-            </div>
-          </>
-        )}
       </div>
     </aside>
   );
