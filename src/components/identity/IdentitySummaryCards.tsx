@@ -25,99 +25,176 @@ export const IdentitySummaryCards: React.FC<IdentitySummaryCardsProps> = ({
   }, [workloads]);
 
   return (
-    <div className="identity-kpi-grid">
-      {/* 1. Total Monitored Workloads */}
+    <div className="identity-kpi-grid" role="region" aria-label="Workload Identity Metrics">
+      {/* Central Single Identity Fidelity Dial (Clean, no extra outer rings) */}
+      <div className="identity-center-dial" aria-label="Identity Fidelity Core">
+        <svg className="aperture-svg" viewBox="0 0 100 100" aria-hidden="true">
+          <defs>
+            <linearGradient id="identityFidelityGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stopColor="#06b6d4" />
+              <stop offset="100%" stopColor="#10b981" />
+            </linearGradient>
+          </defs>
+          <circle className="aperture-track" cx="50" cy="50" r="38" />
+          <circle
+            className="aperture-progress"
+            cx="50"
+            cy="50"
+            r="38"
+            strokeDasharray={2 * Math.PI * 38}
+            strokeDashoffset={2 * Math.PI * 38 * (1 - stats.verifiedRate / 100)}
+          />
+        </svg>
+        <div className="aperture-inner">
+          <span className="aperture-rate">{stats.verifiedRate}%</span>
+          <span className="aperture-title">FIDELITY</span>
+          <span className="aperture-meta">{stats.verified}/{stats.total} Bound</span>
+        </div>
+      </div>
+
+      {/* 1. Total Monitored Workloads (Top-Left Box) */}
       <div
-        className={`identity-kpi-card ${activeFilter === null ? 'active-card' : ''}`}
+        className={`identity-kpi-card card-top-left ${activeFilter === null ? 'active-card' : ''}`}
         onClick={() => onFilterChange?.(null)}
         role="button"
         tabIndex={0}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            onFilterChange?.(null);
+          }
+        }}
         title="View all monitored workloads"
       >
         <div className="identity-kpi-header">
           <div className="identity-kpi-icon-wrap total">
-            <Layers size={16} />
+            <Layers size={17} />
           </div>
-          <span className="identity-kpi-label">TOTAL WORKLOADS</span>
+          <div className="identity-kpi-title-col">
+            <span className="identity-kpi-label">TOTAL WORKLOADS</span>
+            <span className="identity-kpi-meta-sub">Ground-truth cluster inventory</span>
+          </div>
+          <span className="identity-kpi-micro-tag lab">K8S TESTBED</span>
         </div>
         <div className="identity-kpi-body">
           <div className="identity-kpi-number">{stats.total}</div>
-          <span className="identity-kpi-micro-tag lab">K8S TESTBED</span>
+          <div className="identity-kpi-bar-wrap">
+            <div className="identity-kpi-bar-fill total" style={{ width: '100%' }} />
+          </div>
         </div>
         <div className="identity-kpi-footer">
           <span>Introspected across 4 namespaces</span>
+          <span className="identity-kpi-status-tag">100% Monitored</span>
         </div>
       </div>
 
-      {/* 2. Verified Identities */}
+      {/* 2. Verified Identities (Top-Right Box) */}
       <div
-        className={`identity-kpi-card verified ${activeFilter === 'verified' ? 'active-card' : ''}`}
+        className={`identity-kpi-card card-top-right verified ${activeFilter === 'verified' ? 'active-card' : ''}`}
         onClick={() => onFilterChange?.('verified')}
         role="button"
         tabIndex={0}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            onFilterChange?.('verified');
+          }
+        }}
         title="Filter by verified dedicated identities"
       >
         <div className="identity-kpi-header">
           <div className="identity-kpi-icon-wrap verified">
-            <ShieldCheck size={16} />
+            <ShieldCheck size={17} />
           </div>
-          <span className="identity-kpi-label">VERIFIED IDENTITIES</span>
+          <div className="identity-kpi-title-col">
+            <span className="identity-kpi-label">VERIFIED IDENTITIES</span>
+            <span className="identity-kpi-meta-sub">Projected ServiceAccount tokens</span>
+          </div>
+          <span className="identity-kpi-micro-tag rate">{stats.verifiedRate}% RATE</span>
         </div>
         <div className="identity-kpi-body">
           <div className="identity-kpi-number verified">{stats.verified}</div>
-          <span className="identity-kpi-micro-tag rate">{stats.verifiedRate}% RATE</span>
+          <div className="identity-kpi-bar-wrap">
+            <div className="identity-kpi-bar-fill verified" style={{ width: `${stats.verifiedRate}%` }} />
+          </div>
         </div>
         <div className="identity-kpi-footer">
           <span>Bound to dedicated ServiceAccounts</span>
+          <span className="identity-kpi-status-tag verified">Compliant</span>
         </div>
       </div>
 
-      {/* 3. Attention Required (Identity Drift) */}
+      {/* 3. Attention Required - Identity Drift (Bottom-Left Box) */}
       <div
-        className={`identity-kpi-card attention ${activeFilter === 'attention_required' ? 'active-card' : ''}`}
+        className={`identity-kpi-card card-bottom-left attention ${activeFilter === 'attention_required' ? 'active-card' : ''}`}
         onClick={() => onFilterChange?.('attention_required')}
         role="button"
         tabIndex={0}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            onFilterChange?.('attention_required');
+          }
+        }}
         title="Filter by workloads requiring identity attention"
       >
         <div className="identity-kpi-header">
           <div className="identity-kpi-icon-wrap attention">
-            <AlertTriangle size={16} />
+            <AlertTriangle size={17} />
           </div>
-          <span className="identity-kpi-label">ATTENTION REQUIRED</span>
+          <div className="identity-kpi-title-col">
+            <span className="identity-kpi-label">ATTENTION REQUIRED</span>
+            <span className="identity-kpi-meta-sub">Identity drift / unverified tokens</span>
+          </div>
+          <span className="identity-kpi-micro-tag drift">DRIFT DETECTED</span>
         </div>
         <div className="identity-kpi-body">
           <div className="identity-kpi-number attention">{stats.attention}</div>
-          <span className="identity-kpi-micro-tag drift">DRIFT DETECTED</span>
+          <div className="identity-kpi-bar-wrap">
+            <div className="identity-kpi-bar-fill attention" style={{ width: `${stats.total > 0 ? (stats.attention / stats.total) * 100 : 0}%` }} />
+          </div>
         </div>
         <div className="identity-kpi-footer">
           <span className="text-amber-400">Uses shared default ServiceAccounts</span>
+          <span className="identity-kpi-status-tag attention">Action Needed</span>
         </div>
       </div>
 
-      {/* 4. Blocked / Rejected Attestations */}
+      {/* 4. Blocked Access (Bottom-Right Box) */}
       <div
-        className={`identity-kpi-card rejected ${activeFilter === 'rejected' ? 'active-card' : ''}`}
+        className={`identity-kpi-card card-bottom-right rejected ${activeFilter === 'rejected' ? 'active-card' : ''}`}
         onClick={() => onFilterChange?.('rejected')}
         role="button"
         tabIndex={0}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            onFilterChange?.('rejected');
+          }
+        }}
         title="Filter by blocked untrusted workloads"
       >
         <div className="identity-kpi-header">
           <div className="identity-kpi-icon-wrap rejected">
-            <ShieldAlert size={16} />
+            <ShieldAlert size={17} />
           </div>
-          <span className="identity-kpi-label">BLOCKED ACCESS</span>
+          <div className="identity-kpi-title-col">
+            <span className="identity-kpi-label">BLOCKED ACCESS</span>
+            <span className="identity-kpi-meta-sub">Zero-Trust boundary violations</span>
+          </div>
+          <span className="identity-kpi-micro-tag blocked">ENFORCED</span>
         </div>
         <div className="identity-kpi-body">
           <div className="identity-kpi-number rejected">{stats.rejected}</div>
-          <span className="identity-kpi-micro-tag blocked">ENFORCED</span>
+          <div className="identity-kpi-bar-wrap">
+            <div className="identity-kpi-bar-fill rejected" style={{ width: `${stats.total > 0 ? (stats.rejected / stats.total) * 100 : 0}%` }} />
+          </div>
         </div>
         <div className="identity-kpi-footer">
           <span className="text-rose-400">Untrusted pod ingress attempts</span>
+          <span className="identity-kpi-status-tag rejected">Quarantined</span>
         </div>
       </div>
     </div>
   );
 };
-
