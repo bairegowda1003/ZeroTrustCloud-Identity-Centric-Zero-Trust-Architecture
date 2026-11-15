@@ -49,7 +49,7 @@ export const PolicyAuditViolationsTable: React.FC<PolicyAuditViolationsTableProp
           </thead>
           <tbody>
             {violations.map((v) => (
-              <tr key={v.id} className="audit-row">
+              <tr key={v.id} className="policy-audit-row">
                 <td className="cell-workload">
                   <div className="workload-box">
                     <Server size={14} className="workload-icon" />

@@ -70,6 +70,7 @@ export const SecurityObservabilityView: React.FC<SecurityObservabilityViewProps>
       {/* 2. KPI Summary Cards */}
       <ObservabilitySummaryCards
         summary={INITIAL_OBSERVABILITY_SUMMARY}
+        activeFilter={activeTab === 'HEALTH' ? 'HEALTH' : domainFilter}
         onFilterDomain={(dom) => {
           if (dom === 'HEALTH') {
             setActiveTab('HEALTH');
