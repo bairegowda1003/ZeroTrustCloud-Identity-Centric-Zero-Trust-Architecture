@@ -51,43 +51,44 @@ export const PolicyGovernanceView: React.FC<PolicyGovernanceViewProps> = ({
     setSyncNotice(null);
     setTimeout(() => {
       setIsSyncing(false);
-      setSyncNotice('Gatekeeper validating webhook verified. 4 constraints synchronized.');
+      setSyncNotice('Standalone evaluation: 4 Gatekeeper constraint templates verified against testbed baseline.');
       setTimeout(() => setSyncNotice(null), 4000);
     }, 700);
   };
 
   return (
     <div className="policy-governance-container">
-      {/* 1. Gatekeeper Engine Status Banner */}
-      <div className="policy-engine-banner">
-        <div className="engine-banner-left">
-          <div className="engine-badge">
-            <span className="engine-dot" />
-            <span>OPA GATEKEEPER v3.15.0</span>
+      {/* 1. Official Domain Header */}
+      <div className="domain-page-header">
+        <div className="domain-header-left">
+          <div className="domain-title-row">
+            <div className="domain-icon-squircle policy" aria-hidden="true">
+              <ShieldCheck size={18} />
+            </div>
+            <h1 className="domain-page-title">Policy-as-Code & Admission Control</h1>
+            <span className="domain-live-badge policy">
+              <span className="live-pip emerald" />
+              OPA Gatekeeper {GATEKEEPER_ENGINE_INFO.version}
+            </span>
           </div>
-          <div className="engine-banner-copy">
-            <h1 className="engine-banner-title">Policy-as-Code & Admission Control</h1>
-            <p className="engine-banner-subtitle">
-              Validating admission webhook enforcement intercepting Kubernetes deployment requests. Rego constraint templates, non-root baselines, and dedicated identity requirements.
-            </p>
+          <div className="domain-meta-subrow">
+            <span className="domain-meta-crumb">
+              Mode: <strong>Enforce & Audit</strong>
+            </span>
+            <span className="domain-meta-sep">•</span>
+            <span className="domain-meta-crumb">
+              Cluster: <strong>{GATEKEEPER_ENGINE_INFO.clusterContext}</strong>
+            </span>
+            <span className="domain-meta-sep">•</span>
+            <span className="domain-meta-crumb">
+              Webhook: <strong>Validating Webhook Active (100% Intercept)</strong>
+            </span>
           </div>
         </div>
 
-        <div className="engine-banner-right">
-          <div className="engine-meta-pills">
-            <span className="meta-pill">
-              <strong>Engine:</strong> {GATEKEEPER_ENGINE_INFO.version}
-            </span>
-            <span className="meta-pill">
-              <strong>Mode:</strong> Enforce & Audit
-            </span>
-            <span className="meta-pill">
-              <strong>Cluster:</strong> {GATEKEEPER_ENGINE_INFO.clusterContext}
-            </span>
-          </div>
-
+        <div className="domain-header-right">
           <button
-            className={`sync-engine-btn ${isSyncing ? 'syncing' : ''}`}
+            className={`domain-action-btn ${isSyncing ? 'syncing' : ''}`}
             onClick={handleSyncEngine}
             disabled={isSyncing}
             title="Verify Gatekeeper admission webhook status"

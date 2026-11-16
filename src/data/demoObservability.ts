@@ -79,7 +79,7 @@ export const ZERO_TRUST_EVALUATION_CONTROLS: ZeroTrustEvaluationControl[] = [
     observationWindow: '1-hour renewal cycle',
     dataSource: 'SPIRE Agent Workload API & Server Registration',
     evidenceCitation: 'k8s/spire/04-workload-registrations.yaml',
-    dataProvenance: 'TESTBED_AUDIT'
+    dataProvenance: 'DEMO'
   },
   {
     id: 'CTL-02',
@@ -96,7 +96,7 @@ export const ZERO_TRUST_EVALUATION_CONTROLS: ZeroTrustEvaluationControl[] = [
     observationWindow: 'Rolling 1-hour window',
     dataSource: 'Istio Envoy Connection Security Telemetry',
     evidenceCitation: 'k8s/istio/01-peer-authentication-strict.yaml',
-    dataProvenance: 'TESTBED_AUDIT'
+    dataProvenance: 'DEMO'
   },
   {
     id: 'CTL-03',
@@ -112,8 +112,8 @@ export const ZERO_TRUST_EVALUATION_CONTROLS: ZeroTrustEvaluationControl[] = [
     passStatus: 'PASSED',
     observationWindow: 'Testbed Execution Suite',
     dataSource: 'OPA Gatekeeper Validating Webhook Decision Logs',
-    evidenceCitation: 'k8s/policies/tests/run-all-tests.ps1',
-    dataProvenance: 'TESTBED_AUDIT'
+    evidenceCitation: 'k8s/policies/tests/run-policy-tests.ps1',
+    dataProvenance: 'DEMO'
   },
   {
     id: 'CTL-04',
@@ -130,7 +130,7 @@ export const ZERO_TRUST_EVALUATION_CONTROLS: ZeroTrustEvaluationControl[] = [
     observationWindow: 'Continuous Ingestion',
     dataSource: 'Gatekeeper Cosign External Data Provider',
     evidenceCitation: 'k8s/supply-chain/cosign/signatures/verified-signatures.json',
-    dataProvenance: 'TESTBED_AUDIT'
+    dataProvenance: 'DEMO'
   },
   {
     id: 'CTL-05',
@@ -147,7 +147,7 @@ export const ZERO_TRUST_EVALUATION_CONTROLS: ZeroTrustEvaluationControl[] = [
     observationWindow: 'Pre-deployment Gate',
     dataSource: 'Aqua Trivy Vulnerability Threshold Policy',
     evidenceCitation: 'k8s/supply-chain/trivy/reports/order-api-v1.1-vuln.json',
-    dataProvenance: 'TESTBED_AUDIT'
+    dataProvenance: 'DEMO'
   },
   {
     id: 'CTL-06',
@@ -164,7 +164,7 @@ export const ZERO_TRUST_EVALUATION_CONTROLS: ZeroTrustEvaluationControl[] = [
     observationWindow: '30-second Health Probe',
     dataSource: 'OpenTelemetry & Prometheus Collector Probes',
     evidenceCitation: 'k8s/observability/otel/01-otel-collector-config.yaml',
-    dataProvenance: 'TESTBED_AUDIT'
+    dataProvenance: 'DEMO'
   }
 ];
 
@@ -190,8 +190,8 @@ export const CORRELATED_SECURITY_EVENTS: NormalizedSecurityEvent[] = [
       ttlSeconds: 3600,
       issuer: 'spire-server.spire-system.svc.cluster.local'
     },
-    dataProvenance: 'TESTBED_AUDIT',
-    collectorStatus: 'HEALTHY'
+    dataProvenance: 'DEMO',
+    collectorStatus: 'STANDALONE'
   },
   {
     eventId: 'EVT-2026-002',
@@ -214,8 +214,8 @@ export const CORRELATED_SECURITY_EVENTS: NormalizedSecurityEvent[] = [
       attestationVerdict: 'UNREGISTERED_BINARY',
       action: 'DENY_SVID_ISSUANCE'
     },
-    dataProvenance: 'TESTBED_AUDIT',
-    collectorStatus: 'HEALTHY'
+    dataProvenance: 'DEMO',
+    collectorStatus: 'STANDALONE'
   },
   {
     eventId: 'EVT-2026-003',
@@ -237,8 +237,8 @@ export const CORRELATED_SECURITY_EVENTS: NormalizedSecurityEvent[] = [
       evaluatedConstraints: ['K8sAllowedUsers', 'K8sReadOnlyRootFilesystem', 'K8sRequireServiceAccountTokenProjection'],
       httpCode: 201
     },
-    dataProvenance: 'TESTBED_AUDIT',
-    collectorStatus: 'HEALTHY'
+    dataProvenance: 'DEMO',
+    collectorStatus: 'STANDALONE'
   },
   {
     eventId: 'EVT-2026-004',
@@ -255,15 +255,15 @@ export const CORRELATED_SECURITY_EVENTS: NormalizedSecurityEvent[] = [
     ruleId: 'RULE-POL-PRIVILEGED-04',
     description: 'Admission rejected: Workload specification requested privileged securityContext (runAsUser: 0 / root execution prohibited).',
     findingRef: 'TM-SEC-102',
-    evidenceReference: 'k8s/policies/tests/negative-tests/01-privileged-pod.yaml',
+    evidenceReference: 'k8s/policies/tests/04-violation-privileged-pod.yaml',
     evidencePayload: {
       deniedBy: 'K8sAllowedUsers',
       violationField: 'spec.containers[0].securityContext.runAsUser',
       violationValue: 0,
       admissionVerdict: 'DENIED_403_FORBIDDEN'
     },
-    dataProvenance: 'TESTBED_AUDIT',
-    collectorStatus: 'HEALTHY'
+    dataProvenance: 'DEMO',
+    collectorStatus: 'STANDALONE'
   },
   {
     eventId: 'EVT-2026-005',
@@ -287,8 +287,8 @@ export const CORRELATED_SECURITY_EVENTS: NormalizedSecurityEvent[] = [
       terminationReason: 'PEER_AUTHENTICATION_STRICT_FAILED',
       socketAction: 'ECONNRESET'
     },
-    dataProvenance: 'TESTBED_AUDIT',
-    collectorStatus: 'HEALTHY'
+    dataProvenance: 'DEMO',
+    collectorStatus: 'STANDALONE'
   },
   {
     eventId: 'EVT-2026-006',
@@ -311,8 +311,8 @@ export const CORRELATED_SECURITY_EVENTS: NormalizedSecurityEvent[] = [
       rekorIndex: 842109,
       verificationStatus: 'VERIFIED'
     },
-    dataProvenance: 'TESTBED_AUDIT',
-    collectorStatus: 'HEALTHY'
+    dataProvenance: 'DEMO',
+    collectorStatus: 'STANDALONE'
   },
   {
     eventId: 'EVT-2026-007',
@@ -335,8 +335,8 @@ export const CORRELATED_SECURITY_EVENTS: NormalizedSecurityEvent[] = [
       admissionVerdict: 'DENIED_403_FORBIDDEN',
       targetImage: 'docker.io/commerce/checkout-gateway:v2.1'
     },
-    dataProvenance: 'TESTBED_AUDIT',
-    collectorStatus: 'HEALTHY'
+    dataProvenance: 'DEMO',
+    collectorStatus: 'STANDALONE'
   },
   {
     eventId: 'EVT-2026-008',
@@ -362,8 +362,8 @@ export const CORRELATED_SECURITY_EVENTS: NormalizedSecurityEvent[] = [
       cvssScore: 8.8,
       policyAction: 'IMMEDIATE_QUARANTINE'
     },
-    dataProvenance: 'TESTBED_AUDIT',
-    collectorStatus: 'HEALTHY'
+    dataProvenance: 'DEMO',
+    collectorStatus: 'STANDALONE'
   }
 ];
 

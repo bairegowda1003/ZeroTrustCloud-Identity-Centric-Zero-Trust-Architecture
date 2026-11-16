@@ -204,7 +204,7 @@ export const ADMISSION_DECISIONS: AdmissionDecisionRecord[] = [
     decision: 'ALLOW',
     reason: 'Admitted: runAsNonRoot: true, non-privileged, dedicated SA payment-service-sa, escalation disabled',
     rawWebhookResponse: 'pod/test-compliant-workload created (admission review allowed: true)',
-    sourceType: 'TEST EVIDENCE',
+    sourceType: 'DEMO',
   },
   {
     id: 'ADM-102',
@@ -217,7 +217,7 @@ export const ADMISSION_DECISIONS: AdmissionDecisionRecord[] = [
     decision: 'ALLOW',
     reason: 'Admitted: Deployment controller pod template satisfies security baseline requirements',
     rawWebhookResponse: 'deployment.apps/order-api-v2 created (admission review allowed: true)',
-    sourceType: 'TEST EVIDENCE',
+    sourceType: 'DEMO',
   },
   {
     id: 'ADM-103',
@@ -230,7 +230,7 @@ export const ADMISSION_DECISIONS: AdmissionDecisionRecord[] = [
     decision: 'DENY',
     reason: 'Blocked by webhook: Container malicious-root-worker explicitly sets runAsUser: 0 (root)',
     rawWebhookResponse: 'Error from server (Forbidden): admission webhook "validation.gatekeeper.sh" denied the request: [require-nonroot] Container \'malicious-root-worker\' explicitly sets runAsUser: 0 (root). Zero-Trust requires non-root execution.',
-    sourceType: 'TEST EVIDENCE',
+    sourceType: 'DEMO',
     linkedFindingId: 'TM-SEC-102',
   },
   {
@@ -244,7 +244,7 @@ export const ADMISSION_DECISIONS: AdmissionDecisionRecord[] = [
     decision: 'DENY',
     reason: 'Blocked by webhook: Container privileged-breakout-agent requests privileged: true',
     rawWebhookResponse: 'Error from server (Forbidden): admission webhook "validation.gatekeeper.sh" denied the request: [restrict-privileged] Privileged container \'privileged-breakout-agent\' is strictly prohibited. Workloads must not execute with blanket host kernel access.',
-    sourceType: 'TEST EVIDENCE',
+    sourceType: 'DEMO',
     linkedFindingId: 'TM-SEC-102',
   },
   {
@@ -258,7 +258,7 @@ export const ADMISSION_DECISIONS: AdmissionDecisionRecord[] = [
     decision: 'DENY',
     reason: 'Blocked by webhook: Workload unauthenticated-batch-job binds to shared default ServiceAccount',
     rawWebhookResponse: 'Error from server (Forbidden): admission webhook "validation.gatekeeper.sh" denied the request: [require-dedicated-sa] Workload \'test-violation-default-sa\' is bound to shared \'default\' ServiceAccount. Dedicated workload identities are mandatory under Zero Trust.',
-    sourceType: 'TEST EVIDENCE',
+    sourceType: 'DEMO',
     linkedFindingId: 'TM-SEC-106',
   },
   {
@@ -272,7 +272,7 @@ export const ADMISSION_DECISIONS: AdmissionDecisionRecord[] = [
     decision: 'DENY',
     reason: 'Blocked by webhook: Container setuid-binary-spawner enables allowPrivilegeEscalation: true',
     rawWebhookResponse: 'Error from server (Forbidden): admission webhook "validation.gatekeeper.sh" denied the request: [restrict-escalation] Container \'setuid-binary-spawner\' must explicitly declare allowPrivilegeEscalation: false to prevent binary privilege escalation.',
-    sourceType: 'TEST EVIDENCE',
+    sourceType: 'DEMO',
     linkedFindingId: 'TM-SEC-107',
   },
 ];

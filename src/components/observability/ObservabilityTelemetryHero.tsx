@@ -33,7 +33,7 @@ export const ObservabilityTelemetryHero: React.FC<ObservabilityTelemetryHeroProp
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
             <span className="obs-hero-tag">Centralized Pipeline</span>
             <span style={{ fontSize: '0.72rem', color: '#94a3b8', fontFamily: 'var(--font-mono)' }}>
-              Phases 1–5 Telemetry Ingestion & Correlation
+              Multi-Domain Telemetry Ingestion & Correlation
             </span>
           </div>
           <h2 className="obs-hero-title">

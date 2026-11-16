@@ -7,7 +7,7 @@ export type EnforcementAction = 'deny' | 'dryrun' | 'warn';
 
 export type PolicyStatus = 'active' | 'enforcing' | 'audit_only' | 'disabled';
 
-export type DataSourceType = 'TEST EVIDENCE' | 'LIVE CLUSTER' | 'AUDIT';
+export type DataSourceType = 'DEMO' | 'LIVE CLUSTER' | 'AUDIT';
 
 export interface GatekeeperPolicyRecord {
   id: string; // e.g., "POL-ADM-01"
@@ -42,7 +42,7 @@ export interface AdmissionDecisionRecord {
   decision: 'ALLOW' | 'DENY';
   reason: string;
   rawWebhookResponse: string; // Raw Kubernetes admission webhook error output
-  sourceType: DataSourceType; // "TEST EVIDENCE" | "LIVE CLUSTER" | "AUDIT"
+  sourceType: DataSourceType; // "DEMO" | "LIVE CLUSTER" | "AUDIT"
   linkedFindingId?: string;
 }
 

@@ -20,9 +20,10 @@ export type EventOutcome =
   | 'AUDIT';
 
 export type DataProvenance = 
-  | 'LIVE_COLLECTOR' 
-  | 'TESTBED_AUDIT' 
-  | 'LAB_FIXTURE';
+  | 'LIVE'
+  | 'TESTBED'
+  | 'DEMO'
+  | 'UNVERIFIED';
 
 export interface NormalizedSecurityEvent {
   eventId: string; // "EVT-2026-8910"
@@ -42,7 +43,7 @@ export interface NormalizedSecurityEvent {
   evidenceReference: string; // File path, digest, or cluster resource
   evidencePayload: Record<string, any>;
   dataProvenance: DataProvenance;
-  collectorStatus: 'HEALTHY' | 'BUFFERED' | 'STANDALONE';
+  collectorStatus: 'STANDALONE' | 'BUFFERED' | 'STANDALONE';
 }
 
 export interface ZeroTrustEvaluationControl {

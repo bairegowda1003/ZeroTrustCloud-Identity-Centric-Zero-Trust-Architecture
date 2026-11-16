@@ -56,8 +56,8 @@ export const EventDetailDrawer: React.FC<EventDetailDrawerProps> = ({
                 fontFamily: 'var(--font-mono)',
                 padding: '2px 6px',
                 borderRadius: '4px',
-                background: event.dataProvenance === 'LIVE_COLLECTOR' ? 'rgba(16, 185, 129, 0.15)' : 'rgba(245, 158, 11, 0.15)',
-                color: event.dataProvenance === 'LIVE_COLLECTOR' ? '#10b981' : '#f59e0b',
+                background: event.dataProvenance === 'LIVE' ? 'rgba(16, 185, 129, 0.15)' : 'rgba(245, 158, 11, 0.15)',
+                color: event.dataProvenance === 'LIVE' ? '#10b981' : '#f59e0b',
                 fontWeight: 600
               }}>
                 {event.dataProvenance}

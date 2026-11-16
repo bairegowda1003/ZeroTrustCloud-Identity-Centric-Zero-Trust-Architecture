@@ -34,35 +34,38 @@ export const SecurityObservabilityView: React.FC<SecurityObservabilityViewProps>
 
   return (
     <div className="security-observability-container">
-      {/* 1. Tooling Status Banner */}
-      <div className="observability-banner">
-        <div className="obs-banner-left">
-          <div className="obs-banner-badges">
-            <span className="obs-badge">AUDIT & OBSERVABILITY</span>
-            <span className="obs-badge evaluating">EVALUATING</span>
+      {/* 1. Official Domain Header */}
+      <div className="domain-page-header">
+        <div className="domain-header-left">
+          <div className="domain-title-row">
+            <div className="domain-icon-squircle obs" aria-hidden="true">
+              <Activity size={18} />
+            </div>
+            <h1 className="domain-page-title">Security Observability & Telemetry</h1>
+            <span className="domain-live-badge obs">
+              <span className="live-pip indigo" />
+              Pipeline Normalizing
+            </span>
           </div>
-          <h1 className="obs-banner-title">
-            <Activity className="w-5 h-5" style={{ display: 'inline-block', verticalAlign: 'middle', marginRight: '8px', color: '#818cf8' }} />
-            Centralized Security Observability & Evaluation
-          </h1>
-          <p className="obs-banner-desc">
-            Centralized telemetry aggregation, event normalization, and mathematical evaluation across all Zero Trust layers.
-          </p>
+          <div className="domain-meta-subrow">
+            <span className="domain-meta-crumb">
+              Collector: <strong>OTel {INITIAL_OBSERVABILITY_SUMMARY.pipelineEngineStatus.otelVersion}</strong>
+            </span>
+            <span className="domain-meta-sep">•</span>
+            <span className="domain-meta-crumb">
+              Metrics: <strong>Prometheus {INITIAL_OBSERVABILITY_SUMMARY.pipelineEngineStatus.prometheusVersion}</strong>
+            </span>
+            <span className="domain-meta-sep">•</span>
+            <span className="domain-meta-crumb">
+              Logs: <strong>Loki {INITIAL_OBSERVABILITY_SUMMARY.pipelineEngineStatus.lokiVersion}</strong>
+            </span>
+          </div>
         </div>
 
-        {/* Engine Version Pills */}
-        <div className="obs-banner-right">
-          <div className="obs-engine-pill">
-            <span className="w-2 h-2 rounded-full" style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#818cf8', display: 'inline-block' }} />
-            <span>OTel: <strong>{INITIAL_OBSERVABILITY_SUMMARY.pipelineEngineStatus.otelVersion}</strong></span>
-          </div>
-          <div className="obs-engine-pill">
-            <span className="w-2 h-2 rounded-full" style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#10b981', display: 'inline-block' }} />
-            <span>Prometheus: <strong>{INITIAL_OBSERVABILITY_SUMMARY.pipelineEngineStatus.prometheusVersion}</strong></span>
-          </div>
-          <div className="obs-engine-pill">
-            <span className="w-2 h-2 rounded-full" style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#06b6d4', display: 'inline-block' }} />
-            <span>Loki: <strong>{INITIAL_OBSERVABILITY_SUMMARY.pipelineEngineStatus.lokiVersion}</strong></span>
+        <div className="domain-header-right">
+          <div className="domain-header-status-pill">
+            <BarChart3 size={13} className="text-indigo-400" />
+            <span>Zero-Trust Normalization Active</span>
           </div>
         </div>
       </div>
