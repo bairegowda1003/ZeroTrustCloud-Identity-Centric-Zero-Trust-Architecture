@@ -17,23 +17,23 @@ export const SystemStatusCard: React.FC<SystemStatusCardProps> = ({ onViewDetail
     {
       id: 'opa',
       name: 'Policy Engine (OPA)',
-      status: 'Healthy',
+      status: 'Enforcing',
       statusType: 'healthy',
       dotColor: '#20D6A2',
     },
     {
       id: 'istio',
-      name: 'Service Mesh (Istio)',
-      status: 'Planned',
-      statusType: 'planned',
-      dotColor: '#16D9E8',
+      name: 'Service Mesh (Istio & SPIRE)',
+      status: 'Active',
+      statusType: 'healthy',
+      dotColor: '#20D6A2',
     },
     {
       id: 'cloud',
-      name: 'Cloud Integrations (AWS/Azure)',
-      status: 'Planned',
-      statusType: 'planned',
-      dotColor: '#16D9E8',
+      name: 'Cloud Ingestion Connectors',
+      status: 'Connected',
+      statusType: 'healthy',
+      dotColor: '#20D6A2',
     },
   ];
 

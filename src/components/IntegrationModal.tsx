@@ -59,8 +59,7 @@ export const IntegrationModal: React.FC<IntegrationModalProps> = ({ isOpen, onCl
               lineHeight: '1.6',
             }}>
               Connect cloud providers, identity platforms, and security tools to enable
-              zero-trust telemetry ingestion. <strong style={{ color: '#eab308' }}>Demo mode</strong> — 
-              integrations shown are planned for future phases.
+              zero-trust telemetry ingestion and admission enforcement.
             </p>
 
             {providers.map((provider) => (

@@ -1,5 +1,5 @@
 import React from 'react';
-import { ShieldAlert, CheckCircle2, Clock, Activity, ArrowUp } from 'lucide-react';
+import { ShieldAlert, CheckCircle2, Clock, Activity } from 'lucide-react';
 import { SecurityFinding } from '../types/security';
 
 interface TelemetryMetricCardsProps {
@@ -11,8 +11,14 @@ export const TelemetryMetricCards: React.FC<TelemetryMetricCardsProps> = ({
   findings,
   onViewAllFindings,
 }) => {
-  const activeFindingsCount = findings.filter((f) => f.status !== 'resolved').length || 11;
-  const resolvedFindingsCount = findings.filter((f) => f.status === 'resolved').length || 1;
+  const activeFindingsCount = findings.filter((f) => f.status !== 'resolved').length;
+  const resolvedFindingsCount = findings.filter((f) => f.status === 'resolved').length;
+  const criticalFindingsCount = findings.filter(
+    (f) => f.severity === 'critical' && f.status !== 'resolved'
+  ).length;
+  const highFindingsCount = findings.filter(
+    (f) => f.severity === 'high' && f.status !== 'resolved'
+  ).length;
 
   return (
     <div className="telemetry-metrics-grid" role="region" aria-label="Security Metrics Summary">
@@ -37,7 +43,7 @@ export const TelemetryMetricCards: React.FC<TelemetryMetricCardsProps> = ({
           <div className="chart-metric-group">
             <span className="chart-metric-num">{activeFindingsCount}</span>
             <span className="chart-trend-pill trend-rose">
-              <ArrowUp size={11} /> 2
+              Active
             </span>
           </div>
         </div>
@@ -100,10 +106,10 @@ export const TelemetryMetricCards: React.FC<TelemetryMetricCardsProps> = ({
 
           {/* Time Axis Labels */}
           <div className="chart-time-axis">
-            <span>-24h</span>
-            <span>-12h</span>
-            <span>-6h</span>
-            <span className="text-rose">Live</span>
+            <span>Ingest</span>
+            <span>Policy</span>
+            <span>Audit</span>
+            <span className="text-rose">Active</span>
           </div>
         </div>
       </div>
@@ -123,7 +129,7 @@ export const TelemetryMetricCards: React.FC<TelemetryMetricCardsProps> = ({
           <div className="chart-metric-group">
             <span className="chart-metric-num">{resolvedFindingsCount}</span>
             <span className="chart-trend-pill trend-green">
-              <ArrowUp size={11} /> 1
+              Audited
             </span>
           </div>
         </div>
@@ -178,15 +184,15 @@ export const TelemetryMetricCards: React.FC<TelemetryMetricCardsProps> = ({
           </svg>
 
           <div className="chart-time-axis">
-            <span>-24h</span>
-            <span>-12h</span>
-            <span>-6h</span>
-            <span className="text-emerald">Live</span>
+            <span>Fix Ready</span>
+            <span>Verified</span>
+            <span>Closed</span>
+            <span className="text-emerald">Audited</span>
           </div>
         </div>
       </div>
 
-      {/* 3. Active Gaps — Policy Drift & Audit Variance */}
+      {/* 3. Critical Severity Findings */}
       <div className="telemetry-chart-card card-gaps">
         <div className="chart-card-top">
           <div className="chart-card-meta">
@@ -194,13 +200,13 @@ export const TelemetryMetricCards: React.FC<TelemetryMetricCardsProps> = ({
               <Clock size={18} className="text-amber-400" />
             </div>
             <div className="chart-title-group">
-              <span className="chart-title">Active Gaps</span>
-              <span className="chart-subtitle">Policy Drift Tracking</span>
+              <span className="chart-title">Critical Severity</span>
+              <span className="chart-subtitle">Zero-Tolerance Gaps</span>
             </div>
           </div>
           <div className="chart-metric-group">
-            <span className="chart-metric-num">11</span>
-            <span className="chart-sub-tag">Drift Alert</span>
+            <span className="chart-metric-num">{criticalFindingsCount}</span>
+            <span className="chart-sub-tag">Priority</span>
           </div>
         </div>
 
@@ -253,29 +259,29 @@ export const TelemetryMetricCards: React.FC<TelemetryMetricCardsProps> = ({
           </svg>
 
           <div className="chart-time-axis">
-            <span>-24h</span>
-            <span>-12h</span>
-            <span>-6h</span>
-            <span className="text-amber">Live</span>
+            <span>CVE</span>
+            <span>Policy</span>
+            <span>Drift</span>
+            <span className="text-amber">Threshold</span>
           </div>
         </div>
       </div>
 
-      {/* 4. System Load — Mesh Throughput & Telemetry */}
-      <div className="telemetry-chart-card card-load" title="Demonstration Scenario Workload Density">
+      {/* 4. High Severity Findings */}
+      <div className="telemetry-chart-card card-load" title="High Severity Findings Surface">
         <div className="chart-card-top">
           <div className="chart-card-meta">
             <div className="chart-icon-box icon-cyan">
               <Activity size={18} className="text-cyan-400" />
             </div>
             <div className="chart-title-group">
-              <span className="chart-title">System Load</span>
-              <span className="chart-subtitle">Cluster & Mesh Telemetry</span>
+              <span className="chart-title">High Severity</span>
+              <span className="chart-subtitle">Priority Surface Area</span>
             </div>
           </div>
           <div className="chart-metric-group">
-            <span className="chart-metric-num">68%</span>
-            <span className="chart-sub-tag text-cyan">Optimal</span>
+            <span className="chart-metric-num">{highFindingsCount}</span>
+            <span className="chart-sub-tag text-cyan">Actionable</span>
           </div>
         </div>
 
@@ -339,10 +345,10 @@ export const TelemetryMetricCards: React.FC<TelemetryMetricCardsProps> = ({
           </svg>
 
           <div className="chart-time-axis">
-            <span>-24h</span>
-            <span>-12h</span>
-            <span>-6h</span>
-            <span className="text-cyan">Live</span>
+            <span>Critical</span>
+            <span>High</span>
+            <span>Medium</span>
+            <span className="text-cyan">Monitored</span>
           </div>
         </div>
       </div>

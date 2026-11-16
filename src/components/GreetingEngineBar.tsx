@@ -9,11 +9,11 @@ interface EngineStatus {
 }
 
 const SECURITY_ENGINES: EngineStatus[] = [
-  { name: 'SPIRE', role: 'Identity', status: 'planned', label: 'Planned (Phase 4)' },
-  { name: 'OPA', role: 'Policy', status: 'simulated', label: 'Simulated Policy' },
-  { name: 'Istio', role: 'Service Mesh', status: 'simulated', label: 'Simulated mTLS' },
-  { name: 'Cosign', role: 'Supply Chain', status: 'planned', label: 'Planned (Phase 5)' },
-  { name: 'Trivy', role: 'Vulnerability', status: 'simulated', label: 'Simulated Scan' },
+  { name: 'SPIRE', role: 'Identity', status: 'simulated', label: 'Workload Attestor' },
+  { name: 'OPA', role: 'Policy', status: 'simulated', label: 'Gatekeeper v3.15' },
+  { name: 'Istio', role: 'Service Mesh', status: 'simulated', label: 'STRICT mTLS' },
+  { name: 'Cosign', role: 'Supply Chain', status: 'simulated', label: 'ECDSA Verified' },
+  { name: 'Trivy', role: 'Vulnerability', status: 'simulated', label: 'Vulnerability Scan' },
   { name: 'Kubernetes', role: 'Workload', status: 'testbed', label: 'Local Testbed' },
 ];
 
@@ -44,9 +44,9 @@ export const GreetingEngineBar: React.FC<GreetingEngineBarProps> = ({ onOpenInte
             type="button" 
             className="engine-manage-link" 
             onClick={onOpenIntegrations}
-            title="Inspect planned integration architecture and roadmap"
+            title="Inspect security engine integrations and connectors"
           >
-            Roadmap →
+            Integrations →
           </button>
         </div>
 

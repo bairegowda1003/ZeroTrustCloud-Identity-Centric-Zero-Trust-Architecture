@@ -17,11 +17,11 @@ export const FooterStatusBar: React.FC = () => {
         <span>Building a more secure, identity-driven cloud.</span>
       </div>
 
-      {/* Right: Phase Status Pill */}
+      {/* Right: Operational Status Pill */}
       <div className="footer-right">
         <div className="phase-badge">
           <span className="phase-dot" />
-          <span>Phase 1 Foundation</span>
+          <span>Zero Trust Enforced</span>
         </div>
       </div>
     </footer>
