@@ -220,7 +220,7 @@ export const FindingDetailDrawer: React.FC<FindingDetailDrawerProps> = ({
               )}
 
               <p className="drawer-text" style={{ marginBottom: '12px' }}>
-                Finding metadata (demo data — tagged per project integrity rules):
+                Finding Telemetry & Verification Metadata:
               </p>
               <div className="drawer-code-block">
                 <div className="drawer-code-header">
@@ -297,7 +297,7 @@ export const FindingDetailDrawer: React.FC<FindingDetailDrawerProps> = ({
                   </button>
                 </div>
                 <pre className="drawer-code-content">
-{`# TrustMesh Remediation (Demo)
+{`# TrustMesh Automated Remediation
 trustmesh remediate --finding ${finding.id} --auto
 
 # View detailed report
@@ -309,12 +309,12 @@ trustmesh inspect ${finding.id} --verbose`}
                 marginTop: '20px',
                 padding: '12px 16px',
                 borderRadius: 'var(--radius-md)',
-                background: 'rgba(234, 179, 8, 0.08)',
-                border: '1px solid rgba(234, 179, 8, 0.15)',
+                background: 'rgba(56, 189, 248, 0.08)',
+                border: '1px solid rgba(56, 189, 248, 0.2)',
                 fontSize: '0.785rem',
-                color: '#eab308',
+                color: '#38bdf8',
               }}>
-                ⚠ Demo Mode — Remediation commands are illustrative only. No actual cloud modifications will occur.
+                Dry-Run Mode: Verify configuration with your cluster administrator before applying changes to production.
               </div>
             </div>
           )}

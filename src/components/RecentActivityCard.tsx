@@ -11,7 +11,7 @@ export const RecentActivityCard: React.FC<RecentActivityCardProps> = ({ onViewAl
       id: 1,
       dotColor: '#20D6A2',
       time: '10:42:18',
-      description: 'Identity verified for demo-workload',
+      description: 'Identity verified for payment-service',
       badge: 'ALLOW',
       badgeType: 'allow',
       source: 'Kubernetes',
