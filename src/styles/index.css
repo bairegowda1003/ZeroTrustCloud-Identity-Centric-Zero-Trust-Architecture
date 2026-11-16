@@ -6031,82 +6031,91 @@ a:focus:not(:focus-visible) {
   filter: drop-shadow(0 0 8px rgba(22, 217, 232, 0.5));
 }
 
-.header-title-stack {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-}
-
-.header-brand-line {
+/* Executive Brand Lockup: ZeroTrustCloud / TrustMesh */
+.header-brand-lockup {
   display: flex;
   align-items: center;
-  gap: 8px;
-  font-size: 15px;
-  line-height: 1.2;
+  gap: 10px;
 }
 
-.brand-primary {
-  font-weight: 600;
+.brand-suite-title {
+  font-size: 16px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
   color: #F8FAFC;
-  letter-spacing: -0.015em;
+  white-space: nowrap;
 }
 
-.trustmesh-app-root.light .brand-primary {
+.trustmesh-app-root.light .brand-suite-title {
   color: #0F172A;
 }
 
-.brand-sep {
-  color: rgba(255, 255, 255, 0.2);
+.brand-suite-sep {
+  font-size: 14px;
   font-weight: 300;
-  font-size: 13px;
+  color: rgba(255, 255, 255, 0.25);
+  user-select: none;
 }
 
-.trustmesh-app-root.light .brand-sep {
-  color: rgba(0, 0, 0, 0.25);
+.trustmesh-app-root.light .brand-suite-sep {
+  color: rgba(0, 0, 0, 0.2);
 }
 
-.brand-product {
-  font-weight: 800;
-  background: linear-gradient(135deg, #16D9E8 0%, #38BDF8 50%, #818CF8 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  letter-spacing: -0.02em;
-}
-
-.header-sub-line {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  font-size: 11px;
-  color: #94A3B8;
-  letter-spacing: 0.01em;
-}
-
-.sub-line-bullet {
-  color: rgba(255, 255, 255, 0.2);
-}
-
-.platform-tag {
+.brand-product-capsule {
   display: inline-flex;
   align-items: center;
-  gap: 5px;
-  padding: 1px 8px;
+  gap: 7px;
+  padding: 3px 10px 3px 8px;
   border-radius: 9999px;
   background: rgba(22, 217, 232, 0.08);
   border: 1px solid rgba(22, 217, 232, 0.25);
-  color: #16D9E8;
-  font-size: 10px;
-  font-weight: 600;
-  font-family: 'JetBrains Mono', monospace;
-  letter-spacing: 0.02em;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-.platform-tag-pulse {
-  width: 4px;
-  height: 4px;
+.trustmesh-app-root.light .brand-product-capsule {
+  background: rgba(13, 148, 136, 0.08);
+  border-color: rgba(13, 148, 136, 0.25);
+}
+
+.brand-product-capsule:hover {
+  background: rgba(22, 217, 232, 0.12);
+  border-color: rgba(22, 217, 232, 0.4);
+}
+
+.brand-pulse-dot {
+  width: 6px;
+  height: 6px;
   border-radius: 50%;
-  background: #16D9E8;
-  box-shadow: 0 0 6px #16D9E8;
+  background: #10B981;
+  box-shadow: 0 0 8px #10B981;
+  flex-shrink: 0;
+}
+
+.brand-product-gradient {
+  font-size: 14.5px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  background: linear-gradient(135deg, #16D9E8 0%, #38BDF8 50%, #818CF8 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.brand-status-chip {
+  font-size: 9px;
+  font-weight: 700;
+  font-family: var(--font-mono, monospace);
+  letter-spacing: 0.06em;
+  padding: 1px 5px;
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.08);
+  color: #38bdf8;
+}
+
+.trustmesh-app-root.light .brand-status-chip {
+  background: rgba(13, 148, 136, 0.12);
+  color: #0f766e;
 }
 
 /* Center System Health Liquid Capsule */
@@ -8262,7 +8271,272 @@ a:focus:not(:focus-visible) {
   animation: fadeInQuick 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
-/* 1. Fidelity Banner */
+/* ==========================================================================
+   UNIFIED ENTERPRISE DOMAIN PAGE HEADERS (ALL VIEWS)
+   ========================================================================== */
+.domain-page-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 14px;
+  padding: 2px 0 8px 0;
+  margin-bottom: 4px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.trustmesh-app-root.light .domain-page-header {
+  border-bottom-color: rgba(0, 0, 0, 0.06);
+}
+
+.domain-header-left {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.domain-title-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.domain-icon-squircle {
+  width: 32px;
+  height: 32px;
+  border-radius: 9px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: all 0.2s ease;
+}
+
+.domain-icon-squircle.identity {
+  background: rgba(6, 182, 212, 0.12);
+  border: 1px solid rgba(6, 182, 212, 0.28);
+  color: #38bdf8;
+}
+
+.domain-icon-squircle.policy {
+  background: rgba(16, 185, 129, 0.12);
+  border: 1px solid rgba(16, 185, 129, 0.28);
+  color: #34d399;
+}
+
+.domain-icon-squircle.mesh {
+  background: rgba(14, 165, 233, 0.12);
+  border: 1px solid rgba(14, 165, 233, 0.28);
+  color: #38bdf8;
+}
+
+.domain-icon-squircle.supply {
+  background: rgba(244, 63, 94, 0.12);
+  border: 1px solid rgba(244, 63, 94, 0.28);
+  color: #fb7185;
+}
+
+.domain-icon-squircle.obs {
+  background: rgba(99, 102, 241, 0.12);
+  border: 1px solid rgba(99, 102, 241, 0.28);
+  color: #818cf8;
+}
+
+.domain-page-title {
+  font-size: 1.25rem;
+  font-weight: 700;
+  letter-spacing: -0.018em;
+  color: var(--text-primary, #f8fafc);
+  margin: 0;
+  line-height: 1.25;
+}
+
+.trustmesh-app-root.light .domain-page-title {
+  color: #0f172a;
+}
+
+.domain-live-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 9px;
+  border-radius: 9999px;
+  font-size: 0.68rem;
+  font-weight: 700;
+  font-family: var(--font-mono, 'JetBrains Mono', monospace);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.domain-live-badge.identity {
+  background: rgba(6, 182, 212, 0.1);
+  border: 1px solid rgba(6, 182, 212, 0.25);
+  color: #38bdf8;
+}
+
+.domain-live-badge.policy {
+  background: rgba(16, 185, 129, 0.1);
+  border: 1px solid rgba(16, 185, 129, 0.25);
+  color: #34d399;
+}
+
+.domain-live-badge.mesh {
+  background: rgba(14, 165, 233, 0.1);
+  border: 1px solid rgba(14, 165, 233, 0.25);
+  color: #38bdf8;
+}
+
+.domain-live-badge.supply {
+  background: rgba(244, 63, 94, 0.1);
+  border: 1px solid rgba(244, 63, 94, 0.25);
+  color: #fb7185;
+}
+
+.domain-live-badge.obs {
+  background: rgba(99, 102, 241, 0.1);
+  border: 1px solid rgba(99, 102, 241, 0.25);
+  color: #818cf8;
+}
+
+.live-pip {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  display: inline-block;
+  animation: pulseDot 2s infinite ease-in-out;
+}
+
+.live-pip.cyan {
+  background: #38bdf8;
+  box-shadow: 0 0 8px rgba(56, 189, 248, 0.6);
+}
+
+.live-pip.emerald {
+  background: #34d399;
+  box-shadow: 0 0 8px rgba(52, 211, 153, 0.6);
+}
+
+.live-pip.rose {
+  background: #fb7185;
+  box-shadow: 0 0 8px rgba(251, 113, 133, 0.6);
+}
+
+.live-pip.indigo {
+  background: #818cf8;
+  box-shadow: 0 0 8px rgba(129, 140, 248, 0.6);
+}
+
+.domain-meta-subrow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  font-size: 0.78rem;
+  color: var(--text-secondary, #94a3b8);
+}
+
+.trustmesh-app-root.light .domain-meta-subrow {
+  color: #64748b;
+}
+
+.domain-meta-crumb {
+  color: inherit;
+  font-weight: 400;
+}
+
+.domain-meta-crumb strong {
+  color: var(--text-primary, #f1f5f9);
+  font-weight: 600;
+  font-family: var(--font-mono, 'JetBrains Mono', monospace);
+  font-size: 0.74rem;
+}
+
+.trustmesh-app-root.light .domain-meta-crumb strong {
+  color: #1e293b;
+}
+
+.domain-meta-sep {
+  color: rgba(148, 163, 184, 0.35);
+  font-size: 0.75rem;
+  user-select: none;
+}
+
+.trustmesh-app-root.light .domain-meta-sep {
+  color: rgba(100, 116, 139, 0.3);
+}
+
+.domain-header-right {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.domain-action-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 14px;
+  border-radius: 8px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--text-primary, #f1f5f9);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+.domain-action-btn:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.2);
+  transform: translateY(-1px);
+}
+
+.domain-action-btn:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.domain-action-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.trustmesh-app-root.light .domain-action-btn {
+  background: #ffffff;
+  border-color: rgba(0, 0, 0, 0.12);
+  color: #1e293b;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.trustmesh-app-root.light .domain-action-btn:hover:not(:disabled) {
+  background: #f8fafc;
+  border-color: rgba(0, 0, 0, 0.2);
+}
+
+.domain-header-status-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border-radius: 8px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  color: var(--text-secondary, #94a3b8);
+}
+
+.trustmesh-app-root.light .domain-header-status-pill {
+  background: #ffffff;
+  border-color: rgba(0, 0, 0, 0.08);
+  color: #475569;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03);
+}
+
+/* 1. Fidelity Banner (Legacy fallback) */
 .identity-fidelity-banner {
   display: flex;
   justify-content: space-between;
@@ -13413,54 +13687,40 @@ a:focus:not(:focus-visible) {
   color: #0f172a;
 }
 
-/* 2. Supply Chain Unified Triage Console (Continuous Segmented Architecture with Funnel Flow) */
+/* 2. Supply Chain Unified Triage Console (Apple iOS Symmetrical Liquid Glass Console) */
 .sc-kpi-unified-console {
   position: relative;
   display: flex;
   width: 100%;
-  border-radius: 14px;
-  background: linear-gradient(145deg, #070F1C 0%, #040812 100%);
+  border-radius: 16px;
+  background: linear-gradient(145deg, rgba(12, 19, 34, 0.85) 0%, rgba(6, 11, 22, 0.94) 100%);
   border: 1px solid rgba(255, 255, 255, 0.08);
-  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.35);
+  box-shadow: 0 16px 40px -10px rgba(0, 0, 0, 0.5), inset 0 1px 1px 0 rgba(255, 255, 255, 0.12);
+  backdrop-filter: blur(28px) saturate(190%);
+  -webkit-backdrop-filter: blur(28px) saturate(190%);
   overflow: hidden;
 }
 
 .trustmesh-app-root.light .sc-kpi-unified-console {
-  background: #FFFFFF;
-  border-color: rgba(0, 0, 0, 0.08);
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.04);
-}
-
-.sc-funnel-wave-wrap {
-  position: absolute;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  height: 90px;
-  pointer-events: none;
-  z-index: 1;
-  overflow: hidden;
-}
-
-.sc-funnel-wave-svg {
-  width: 100%;
-  height: 100%;
-  display: block;
+  background: linear-gradient(145deg, rgba(255, 255, 255, 0.92) 0%, rgba(248, 250, 252, 0.98) 100%);
+  border: 1px solid rgba(226, 232, 240, 0.9);
+  box-shadow: 0 12px 32px -4px rgba(0, 0, 0, 0.05), inset 0 1px 2px #FFFFFF;
+  backdrop-filter: blur(28px) saturate(190%);
+  -webkit-backdrop-filter: blur(28px) saturate(190%);
 }
 
 .sc-kpi-segment {
   position: relative;
   flex: 1;
   min-width: 0;
-  padding: 22px 24px 34px 24px;
+  padding: 20px 22px;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  gap: 12px;
+  gap: 10px;
   border-right: 1px solid rgba(255, 255, 255, 0.08);
   cursor: pointer;
-  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
-  z-index: 2;
+  transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
   background: transparent;
 }
 
@@ -13469,7 +13729,7 @@ a:focus:not(:focus-visible) {
 }
 
 .trustmesh-app-root.light .sc-kpi-segment {
-  border-right-color: rgba(0, 0, 0, 0.08);
+  border-right-color: rgba(0, 0, 0, 0.06);
 }
 
 .sc-kpi-segment:hover {
@@ -13477,17 +13737,95 @@ a:focus:not(:focus-visible) {
 }
 
 .trustmesh-app-root.light .sc-kpi-segment:hover {
-  background: rgba(0, 0, 0, 0.02);
+  background: rgba(0, 0, 0, 0.015);
 }
 
 .sc-kpi-segment.active-segment {
-  background: rgba(56, 189, 248, 0.04);
+  background: rgba(255, 255, 255, 0.04);
   box-shadow: inset 0 2px 0 0 #38bdf8;
 }
 
 .trustmesh-app-root.light .sc-kpi-segment.active-segment {
-  background: rgba(13, 148, 136, 0.04);
-  box-shadow: inset 0 2px 0 0 #0d9488;
+  background: #FFFFFF;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.04), inset 0 2px 0 0 #0d9488;
+}
+
+/* Apple iOS Liquid Glass Capillary Indicator */
+.sc-fluid-bar-track {
+  width: 100%;
+  height: 6px;
+  border-radius: 9999px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  overflow: hidden;
+  position: relative;
+  margin: 2px 0;
+}
+
+.trustmesh-app-root.light .sc-fluid-bar-track {
+  background: rgba(0, 0, 0, 0.04);
+  border-color: rgba(0, 0, 0, 0.06);
+}
+
+.sc-fluid-bar-fill {
+  height: 100%;
+  border-radius: 9999px;
+  position: relative;
+  overflow: hidden;
+  transition: width 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.sc-fluid-bar-fill.cyan {
+  background: linear-gradient(90deg, #06b6d4 0%, #38bdf8 100%);
+  box-shadow: 0 0 10px rgba(6, 182, 212, 0.5);
+}
+
+.sc-fluid-bar-fill.emerald {
+  background: linear-gradient(90deg, #059669 0%, #10b981 100%);
+  box-shadow: 0 0 10px rgba(16, 185, 129, 0.5);
+}
+
+.sc-fluid-bar-fill.red {
+  background: linear-gradient(90deg, #dc2626 0%, #f43f5e 100%);
+  box-shadow: 0 0 10px rgba(244, 63, 94, 0.5);
+}
+
+.sc-fluid-bar-fill.amber {
+  background: linear-gradient(90deg, #d97706 0%, #fbbf24 100%);
+  box-shadow: 0 0 10px rgba(251, 191, 36, 0.5);
+}
+
+/* Living Liquid Shimmer Flow (Real fluid reflection in glass) */
+.sc-fluid-shimmer {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(90deg, transparent 0%, rgba(255, 255, 255, 0.65) 50%, transparent 100%);
+  animation: fluid-shimmer 2.6s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+}
+
+@keyframes fluid-shimmer {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(200%); }
+}
+
+/* Specular Ambient Bottom Glass Horizon */
+.sc-specular-glass-horizon {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 2px;
+  background: linear-gradient(90deg, #06b6d4 0%, #10b981 35%, #f43f5e 70%, #f59e0b 100%);
+  opacity: 0.65;
+  filter: blur(0.5px);
+  pointer-events: none;
+}
+
+.trustmesh-app-root.light .sc-specular-glass-horizon {
+  opacity: 0.35;
 }
 
 .sc-kpi-unit {
@@ -13507,9 +13845,6 @@ a:focus:not(:focus-visible) {
   }
   .sc-kpi-segment:nth-child(2n) {
     border-right: none;
-  }
-  .sc-funnel-wave-wrap {
-    display: none;
   }
 }
 
@@ -13576,16 +13911,36 @@ a:focus:not(:focus-visible) {
   color: #0f172a;
 }
 
+.sc-kpi-val.cyan {
+  color: #38bdf8;
+}
+
+.trustmesh-app-root.light .sc-kpi-val.cyan {
+  color: #0284c7;
+}
+
 .sc-kpi-val.emerald {
   color: #34d399;
+}
+
+.trustmesh-app-root.light .sc-kpi-val.emerald {
+  color: #059669;
 }
 
 .sc-kpi-val.red {
   color: #f87171;
 }
 
+.trustmesh-app-root.light .sc-kpi-val.red {
+  color: #dc2626;
+}
+
 .sc-kpi-val.amber {
   color: #fbbf24;
+}
+
+.trustmesh-app-root.light .sc-kpi-val.amber {
+  color: #d97706;
 }
 
 .sc-kpi-subtext {
@@ -13594,6 +13949,39 @@ a:focus:not(:focus-visible) {
   display: flex;
   align-items: center;
   gap: 6px;
+  font-weight: 500;
+}
+
+.sc-kpi-subtext.cyan {
+  color: #38bdf8;
+}
+
+.trustmesh-app-root.light .sc-kpi-subtext.cyan {
+  color: #0284c7;
+}
+
+.sc-kpi-subtext.emerald {
+  color: #34d399;
+}
+
+.trustmesh-app-root.light .sc-kpi-subtext.emerald {
+  color: #059669;
+}
+
+.sc-kpi-subtext.red {
+  color: #f87171;
+}
+
+.trustmesh-app-root.light .sc-kpi-subtext.red {
+  color: #dc2626;
+}
+
+.sc-kpi-subtext.amber {
+  color: #fbbf24;
+}
+
+.trustmesh-app-root.light .sc-kpi-subtext.amber {
+  color: #d97706;
 }
 
 /* 3. Pipeline Hero */
@@ -14962,4 +15350,455 @@ a:focus:not(:focus-visible) {
 .trustmesh-app-root.light .obs-health-item {
   background: rgba(241, 245, 249, 0.6);
   border-color: rgba(203, 213, 225, 0.6);
+}
+
+/* ==========================================================================
+   COMPREHENSIVE LIGHT THEME COLOR & CONTRAST FIXES (ALL WORKSPACES)
+   ========================================================================== */
+
+/* 1. Action Buttons & Common Table Elements */
+.trustmesh-app-root.light .inspect-btn {
+  background: rgba(241, 245, 249, 0.95);
+  border-color: rgba(203, 213, 225, 0.85);
+  color: #334155;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+}
+
+.trustmesh-app-root.light .inspect-btn:hover {
+  background: #e2e8f0;
+  border-color: rgba(6, 182, 212, 0.6);
+  color: #0284c7;
+  transform: translateX(2px);
+}
+
+.trustmesh-app-root.light .audit-inspect-btn {
+  background: #fef2f2;
+  border-color: rgba(239, 68, 68, 0.3);
+  color: #dc2626;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+}
+
+.trustmesh-app-root.light .audit-inspect-btn:hover {
+  background: #fee2e2;
+  border-color: rgba(239, 68, 68, 0.5);
+  color: #b91c1c;
+}
+
+.trustmesh-app-root.light .inspect-svid-btn {
+  background: rgba(241, 245, 249, 0.9);
+  border-color: rgba(203, 213, 225, 0.85);
+  color: #334155;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+}
+
+.trustmesh-app-root.light .inspect-svid-btn:hover {
+  background: #f5f3ff;
+  border-color: rgba(139, 92, 246, 0.5);
+  color: #7c3aed;
+}
+
+.trustmesh-app-root.light .finding-link-btn {
+  background: #fef2f2;
+  border-color: rgba(239, 68, 68, 0.35);
+  color: #dc2626;
+}
+
+.trustmesh-app-root.light .finding-link-btn:hover {
+  background: #fee2e2;
+  color: #b91c1c;
+}
+
+.trustmesh-app-root.light .sc-inspect-btn {
+  color: #0284c7;
+}
+
+/* 2. Trust Conduit / Flow Hero (TrustArchitectureView) */
+.trustmesh-app-root.light .conduit-pill {
+  background: rgba(241, 245, 249, 0.85);
+  border-color: rgba(203, 213, 225, 0.8);
+  color: #475569;
+}
+
+.trustmesh-app-root.light .conduit-pill:hover {
+  background: #e2e8f0;
+  color: #0f172a;
+}
+
+.trustmesh-app-root.light .conduit-pill.active.allow {
+  background: rgba(16, 185, 129, 0.12);
+  border-color: rgba(16, 185, 129, 0.45);
+  color: #059669;
+}
+
+.trustmesh-app-root.light .conduit-pill.active.deny {
+  background: rgba(239, 68, 68, 0.12);
+  border-color: rgba(239, 68, 68, 0.45);
+  color: #dc2626;
+}
+
+.trustmesh-app-root.light .conduit-node {
+  background: #ffffff;
+  border-color: rgba(203, 213, 225, 0.8);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.04);
+}
+
+.trustmesh-app-root.light .conduit-node:hover {
+  background: #ffffff;
+  border-color: rgba(6, 182, 212, 0.5);
+  box-shadow: 0 4px 16px rgba(6, 182, 212, 0.12);
+}
+
+.trustmesh-app-root.light .node-step {
+  color: #94a3b8;
+}
+
+.trustmesh-app-root.light .node-label {
+  color: #64748b;
+}
+
+.trustmesh-app-root.light .node-title {
+  color: #0f172a;
+}
+
+.trustmesh-app-root.light .node-sub {
+  color: #64748b;
+}
+
+.trustmesh-app-root.light .conduit-node.decision-node.allow {
+  background: rgba(16, 185, 129, 0.08);
+  border-color: rgba(16, 185, 129, 0.35);
+}
+
+.trustmesh-app-root.light .conduit-node.decision-node.deny {
+  background: rgba(239, 68, 68, 0.08);
+  border-color: rgba(239, 68, 68, 0.35);
+}
+
+.trustmesh-app-root.light .conduit-explanation-card {
+  background: #f8fafc;
+  border-color: rgba(203, 213, 225, 0.8);
+  color: #334155;
+}
+
+.trustmesh-app-root.light .conduit-explanation-card.allow {
+  background: rgba(16, 185, 129, 0.06);
+  border-color: rgba(16, 185, 129, 0.3);
+}
+
+.trustmesh-app-root.light .conduit-explanation-card.deny {
+  background: rgba(239, 68, 68, 0.06);
+  border-color: rgba(239, 68, 68, 0.3);
+}
+
+.trustmesh-app-root.light .explanation-heading {
+  color: #0f172a;
+}
+
+.trustmesh-app-root.light .explanation-p {
+  color: #475569;
+}
+
+/* 3. Policy-as-Code Inventory & Filters (PolicyGovernanceView) */
+.trustmesh-app-root.light .category-pill {
+  background: rgba(241, 245, 249, 0.85);
+  border-color: rgba(203, 213, 225, 0.8);
+  color: #475569;
+}
+
+.trustmesh-app-root.light .category-pill:hover {
+  background: #e2e8f0;
+  color: #0f172a;
+}
+
+.trustmesh-app-root.light .category-pill.active {
+  background: rgba(16, 185, 129, 0.12);
+  border-color: rgba(16, 185, 129, 0.45);
+  color: #059669;
+  font-weight: 600;
+}
+
+.trustmesh-app-root.light .category-badge {
+  background: rgba(241, 245, 249, 0.95);
+  border-color: rgba(203, 213, 225, 0.8);
+  color: #334155;
+}
+
+.trustmesh-app-root.light .drawer-category-pill {
+  background: rgba(241, 245, 249, 0.9);
+  color: #334155;
+}
+
+.trustmesh-app-root.light .policy-template-text {
+  color: #64748b;
+}
+
+.trustmesh-app-root.light .target-kinds-text {
+  color: #0f172a;
+}
+
+.trustmesh-app-root.light .exclusions-text {
+  color: #64748b;
+}
+
+.trustmesh-app-root.light .policy-table th {
+  color: #64748b;
+  border-bottom-color: rgba(203, 213, 225, 0.8);
+}
+
+.trustmesh-app-root.light .policy-table td {
+  border-bottom-color: rgba(203, 213, 225, 0.5);
+}
+
+.trustmesh-app-root.light .policy-row:hover {
+  background: rgba(241, 245, 249, 0.75);
+}
+
+.trustmesh-app-root.light .policy-toolbar {
+  border-bottom-color: rgba(203, 213, 225, 0.6);
+}
+
+.trustmesh-app-root.light .policy-table-footer {
+  border-top-color: rgba(203, 213, 225, 0.6);
+  color: #64748b;
+}
+
+/* 4. Admission Decisions Feed (AdmissionDecisionsFeed.tsx) */
+.trustmesh-app-root.light .admission-feed-header {
+  background: #ffffff;
+  border-color: rgba(203, 213, 225, 0.8);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.04);
+}
+
+.trustmesh-app-root.light .feed-subtitle {
+  color: #64748b;
+}
+
+.trustmesh-app-root.light .decision-filter-pill {
+  background: rgba(241, 245, 249, 0.85);
+  border-color: rgba(203, 213, 225, 0.8);
+  color: #475569;
+}
+
+.trustmesh-app-root.light .decision-filter-pill:hover {
+  background: #e2e8f0;
+  color: #0f172a;
+}
+
+.trustmesh-app-root.light .decision-filter-pill.active {
+  background: rgba(6, 182, 212, 0.12);
+  border-color: rgba(6, 182, 212, 0.45);
+  color: #0284c7;
+}
+
+.trustmesh-app-root.light .decision-filter-pill.allow.active {
+  background: rgba(16, 185, 129, 0.12);
+  border-color: rgba(16, 185, 129, 0.45);
+  color: #059669;
+}
+
+.trustmesh-app-root.light .decision-filter-pill.deny.active {
+  background: rgba(239, 68, 68, 0.12);
+  border-color: rgba(239, 68, 68, 0.45);
+  color: #dc2626;
+}
+
+.trustmesh-app-root.light .policy-eval-text {
+  color: #64748b;
+}
+
+.trustmesh-app-root.light .policy-eval-text strong {
+  color: #0f172a;
+}
+
+.trustmesh-app-root.light .timestamp-box {
+  color: #64748b;
+}
+
+.trustmesh-app-root.light .raw-response-block {
+  background: #f8fafc;
+  border-color: rgba(203, 213, 225, 0.8);
+}
+
+.trustmesh-app-root.light .raw-response-block pre {
+  color: #1e293b;
+}
+
+/* 5. Workload Identity & Telemetry Drawer (IdentityAccessView) */
+.trustmesh-app-root.light .pipeline-telemetry-toggle {
+  background: #ffffff;
+  border-color: rgba(203, 213, 225, 0.8);
+  color: #334155;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+}
+
+.trustmesh-app-root.light .pipeline-telemetry-toggle:hover {
+  background: #f8fafc;
+  color: #0f172a;
+}
+
+.trustmesh-app-root.light .pipeline-telemetry-drawer {
+  background: #ffffff;
+  border-color: rgba(203, 213, 225, 0.8);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
+}
+
+.trustmesh-app-root.light .telemetry-table-header {
+  background: #f1f5f9;
+  color: #64748b;
+  border-bottom-color: rgba(203, 213, 225, 0.8);
+}
+
+.trustmesh-app-root.light .telemetry-row {
+  border-bottom-color: rgba(203, 213, 225, 0.4);
+  color: #334155;
+}
+
+.trustmesh-app-root.light .telemetry-row:hover {
+  background: #f8fafc;
+}
+
+.trustmesh-app-root.light .telemetry-time {
+  color: #64748b;
+}
+
+.trustmesh-app-root.light .telemetry-source code,
+.trustmesh-app-root.light .telemetry-target code {
+  background: #f1f5f9;
+  border: 1px solid rgba(203, 213, 225, 0.8);
+  color: #0f172a;
+}
+
+.trustmesh-app-root.light .telemetry-reason {
+  color: #475569;
+}
+
+.trustmesh-app-root.light .workload-table th {
+  color: #64748b;
+  border-bottom-color: rgba(203, 213, 225, 0.8);
+}
+
+.trustmesh-app-root.light .workload-table td {
+  border-bottom-color: rgba(203, 213, 225, 0.5);
+}
+
+.trustmesh-app-root.light .workload-row:hover {
+  background: rgba(241, 245, 249, 0.75);
+}
+
+.trustmesh-app-root.light .workload-toolbar {
+  border-bottom-color: rgba(203, 213, 225, 0.6);
+}
+
+.trustmesh-app-root.light .workload-table-footer {
+  border-top-color: rgba(203, 213, 225, 0.6);
+  color: #64748b;
+}
+
+/* 6. Service Mesh Matrix & Traffic Streams (TrustArchitectureView) */
+.trustmesh-app-root.light .matrix-filter-pill {
+  background: rgba(241, 245, 249, 0.85);
+  border-color: rgba(203, 213, 225, 0.8);
+  color: #475569;
+}
+
+.trustmesh-app-root.light .matrix-filter-pill:hover {
+  background: #e2e8f0;
+  color: #0f172a;
+}
+
+.trustmesh-app-root.light .matrix-filter-pill.active {
+  background: rgba(6, 182, 212, 0.12);
+  border-color: rgba(6, 182, 212, 0.45);
+  color: #0284c7;
+}
+
+.trustmesh-app-root.light .matrix-filter-pill.allow.active {
+  background: rgba(16, 185, 129, 0.12);
+  border-color: rgba(16, 185, 129, 0.45);
+  color: #059669;
+}
+
+.trustmesh-app-root.light .matrix-filter-pill.deny.active {
+  background: rgba(239, 68, 68, 0.12);
+  border-color: rgba(239, 68, 68, 0.45);
+  color: #dc2626;
+}
+
+.trustmesh-app-root.light .mesh-matrix-table th {
+  color: #64748b;
+  border-bottom-color: rgba(203, 213, 225, 0.8);
+}
+
+.trustmesh-app-root.light .mesh-matrix-table td {
+  border-bottom-color: rgba(203, 213, 225, 0.5);
+}
+
+.trustmesh-app-root.light .mesh-matrix-table tr:hover {
+  background: rgba(241, 245, 249, 0.75);
+}
+
+.trustmesh-app-root.light .stream-header-row {
+  background: #ffffff;
+  border-color: rgba(203, 213, 225, 0.8);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.04);
+}
+
+.trustmesh-app-root.light .stream-title {
+  color: #0f172a;
+}
+
+.trustmesh-app-root.light .stream-subtitle {
+  color: #64748b;
+}
+
+.trustmesh-app-root.light .events-count-pill {
+  background: #f0f9ff;
+  border-color: rgba(6, 182, 212, 0.3);
+  color: #0284c7;
+}
+
+.trustmesh-app-root.light .traffic-card {
+  background: #ffffff;
+  border-color: rgba(203, 213, 225, 0.7);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.03);
+}
+
+.trustmesh-app-root.light .traffic-card:hover {
+  background: #f8fafc;
+  border-color: rgba(148, 163, 184, 0.4);
+}
+
+.trustmesh-app-root.light .traffic-caller {
+  color: #0f172a;
+}
+
+.trustmesh-app-root.light .spiffe-table-wrapper {
+  background: rgba(255, 255, 255, 0.9);
+  border-color: rgba(203, 213, 225, 0.6);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+}
+
+.trustmesh-app-root.light .spiffe-table-header {
+  border-bottom-color: rgba(203, 213, 225, 0.6);
+}
+
+.trustmesh-app-root.light .section-title {
+  color: #0f172a;
+}
+
+.trustmesh-app-root.light .spiffe-table th {
+  color: #64748b;
+  border-bottom-color: rgba(203, 213, 225, 0.8);
+}
+
+.trustmesh-app-root.light .spiffe-table td {
+  border-bottom-color: rgba(203, 213, 225, 0.5);
+}
+
+.trustmesh-app-root.light .spiffe-row:hover {
+  background: rgba(241, 245, 249, 0.75);
+}
+
+.trustmesh-app-root.light .workload-code {
+  color: #0f172a;
 }

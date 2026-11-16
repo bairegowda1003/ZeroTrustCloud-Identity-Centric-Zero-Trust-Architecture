@@ -43,8 +43,8 @@ export interface IntegrationProvider {
   name: string;
   shortName: string;
   category: 'Cloud Provider' | 'Policy Engine' | 'Service Mesh' | 'Identity Attestor' | 'Supply Chain';
-  status: 'Not Connected' | 'Planned Phase 3' | 'Planned Phase 4' | 'Planned Phase 5';
-  targetPhase: string;
+  status: 'Connected' | 'Active' | 'Ready to Connect' | 'Not Connected' | 'Configured';
+  targetPhase?: string;
   description: string;
   plannedCapability: string;
   healthScore: number | null;

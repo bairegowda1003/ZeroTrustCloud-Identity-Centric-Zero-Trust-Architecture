@@ -31,44 +31,38 @@ export const SupplyChainView: React.FC<SupplyChainViewProps> = ({
 
   return (
     <div className="supply-chain-container">
-      {/* 1. Tooling Status Banner */}
-      <div className="supply-chain-banner">
-        <div className="sc-banner-left">
-          <div className="sc-banner-badges">
-            <span className="sc-badge trivy">
-              <Package size={12} />
-              <span>Trivy {INITIAL_SUPPLY_CHAIN_SUMMARY.trivyVersion}</span>
-            </span>
-            <span className="sc-badge cosign">
-              <ShieldCheck size={12} />
-              <span>Cosign {INITIAL_SUPPLY_CHAIN_SUMMARY.cosignVersion}</span>
-            </span>
-            <span className="sc-badge enforced">
-              <CheckCircle2 size={12} />
-              <span>ENFORCED</span>
+      {/* 1. Official Domain Header */}
+      <div className="domain-page-header">
+        <div className="domain-header-left">
+          <div className="domain-title-row">
+            <div className="domain-icon-squircle supply" aria-hidden="true">
+              <Package size={18} />
+            </div>
+            <h1 className="domain-page-title">Software Supply Chain Defense</h1>
+            <span className="domain-live-badge supply">
+              <span className="live-pip rose" />
+              FAIL-CLOSED Enforced
             </span>
           </div>
-          <div>
-            <h1 className="sc-banner-title">
-              Software Supply Chain Defense & Vulnerability Scanning
-            </h1>
-            <p className="sc-banner-subtitle">
-              Pre-deployment artifact integrity validation via Aqua Trivy, Sigstore Cosign, and OPA Gatekeeper External Data admission control.
-            </p>
+          <div className="domain-meta-subrow">
+            <span className="domain-meta-crumb">
+              Scanner: <strong>Aqua Trivy {INITIAL_SUPPLY_CHAIN_SUMMARY.trivyVersion}</strong>
+            </span>
+            <span className="domain-meta-sep">•</span>
+            <span className="domain-meta-crumb">
+              Signatures: <strong>Sigstore Cosign {INITIAL_SUPPLY_CHAIN_SUMMARY.cosignVersion}</strong>
+            </span>
+            <span className="domain-meta-sep">•</span>
+            <span className="domain-meta-crumb">
+              Gatekeeper: <strong>External Data Provider Active</strong>
+            </span>
           </div>
         </div>
 
-        <div className="sc-banner-right">
-          <div className="sc-meta-pills">
-            <span className="sc-meta-pill">
-              Trivy: <strong>{INITIAL_SUPPLY_CHAIN_SUMMARY.trivyVersion}</strong>
-            </span>
-            <span className="sc-meta-pill">
-              Cosign: <strong>{INITIAL_SUPPLY_CHAIN_SUMMARY.cosignVersion}</strong>
-            </span>
-            <span className="sc-meta-pill">
-              Threshold: <strong>Critical: 0 (FAIL_CLOSED)</strong>
-            </span>
+        <div className="domain-header-right">
+          <div className="domain-header-status-pill">
+            <CheckCircle2 size={13} className="text-emerald-400" />
+            <span>Admission Webhook Enforcing</span>
           </div>
         </div>
       </div>

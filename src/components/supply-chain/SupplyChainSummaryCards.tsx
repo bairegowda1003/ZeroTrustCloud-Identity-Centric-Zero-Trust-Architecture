@@ -15,35 +15,6 @@ export const SupplyChainSummaryCards: React.FC<SupplyChainSummaryCardsProps> = (
 }) => {
   return (
     <div className="sc-kpi-unified-console" role="region" aria-label="Supply Chain Security Metrics">
-      {/* Flowing Bottom Funnel Wave (Matching Reference Image) */}
-      <div className="sc-funnel-wave-wrap" aria-hidden="true">
-        <svg className="sc-funnel-wave-svg" viewBox="0 0 1000 120" preserveAspectRatio="none">
-          <defs>
-            <linearGradient id="scFunnelGradient" x1="0%" y1="0%" x2="100%" y2="0%">
-              <stop offset="0%" stopColor="#f43f5e" stopOpacity="0.85" />
-              <stop offset="28%" stopColor="#fb7185" stopOpacity="0.65" />
-              <stop offset="65%" stopColor="#e11d48" stopOpacity="0.45" />
-              <stop offset="100%" stopColor="#be123c" stopOpacity="0.15" />
-            </linearGradient>
-            <linearGradient id="scFunnelStroke" x1="0%" y1="0%" x2="100%" y2="0%">
-              <stop offset="0%" stopColor="#fb7185" stopOpacity="0.9" />
-              <stop offset="40%" stopColor="#f43f5e" stopOpacity="0.7" />
-              <stop offset="100%" stopColor="#f43f5e" stopOpacity="0.2" />
-            </linearGradient>
-          </defs>
-          <path
-            d="M 0,35 C 90,38 180,86 280,94 C 420,98 560,96 700,105 C 840,112 920,116 1000,118 L 1000,120 L 0,120 Z"
-            fill="url(#scFunnelGradient)"
-          />
-          <path
-            d="M 0,35 C 90,38 180,86 280,94 C 420,98 560,96 700,105 C 840,112 920,116 1000,118"
-            fill="none"
-            stroke="url(#scFunnelStroke)"
-            strokeWidth="1.5"
-          />
-        </svg>
-      </div>
-
       {/* 1. Scanned Images */}
       <div 
         onClick={() => onFilterStatus && onFilterStatus('ALL')}
@@ -64,10 +35,18 @@ export const SupplyChainSummaryCards: React.FC<SupplyChainSummaryCardsProps> = (
             <Package size={15} />
           </div>
         </div>
-        <div className="sc-kpi-val">
+        <div className="sc-kpi-val cyan">
           {summary.totalScannedImages} <span className="sc-kpi-unit">OCI Artifacts</span>
         </div>
-        <div className="sc-kpi-subtext" style={{ color: '#38bdf8' }}>
+        
+        {/* Apple iOS Fluid Bar */}
+        <div className="sc-fluid-bar-track" aria-hidden="true">
+          <div className="sc-fluid-bar-fill cyan" style={{ width: '100%' }}>
+            <div className="sc-fluid-shimmer" />
+          </div>
+        </div>
+
+        <div className="sc-kpi-subtext cyan">
           <CheckCircle2 size={13} />
           <span>Aqua Trivy {summary.trivyVersion}</span>
         </div>
@@ -96,7 +75,15 @@ export const SupplyChainSummaryCards: React.FC<SupplyChainSummaryCardsProps> = (
         <div className="sc-kpi-val emerald">
           {summary.signedPercentage}% <span className="sc-kpi-unit">({summary.signedImagesCount}/{summary.totalScannedImages} Verified)</span>
         </div>
-        <div className="sc-kpi-subtext" style={{ color: '#34d399' }}>
+
+        {/* Apple iOS Fluid Bar (80% Fill) */}
+        <div className="sc-fluid-bar-track" aria-hidden="true">
+          <div className="sc-fluid-bar-fill emerald" style={{ width: `${summary.signedPercentage}%` }}>
+            <div className="sc-fluid-shimmer" />
+          </div>
+        </div>
+
+        <div className="sc-kpi-subtext emerald">
           <Lock size={13} />
           <span>ECDSA P-256 (cosign.pub)</span>
         </div>
@@ -123,9 +110,17 @@ export const SupplyChainSummaryCards: React.FC<SupplyChainSummaryCardsProps> = (
           </div>
         </div>
         <div className="sc-kpi-val red">
-          {summary.criticalCveCount} <span className="sc-kpi-unit" style={{ color: '#f87171' }}>(CVE-2024-21508)</span>
+          {summary.criticalCveCount} <span className="sc-kpi-unit">(CVE-2024-21508)</span>
         </div>
-        <div className="sc-kpi-subtext" style={{ color: '#f87171' }}>
+
+        {/* Apple iOS Fluid Bar (Critical Threshold) */}
+        <div className="sc-fluid-bar-track" aria-hidden="true">
+          <div className="sc-fluid-bar-fill red" style={{ width: summary.criticalCveCount > 0 ? '30%' : '0%' }}>
+            <div className="sc-fluid-shimmer" />
+          </div>
+        </div>
+
+        <div className="sc-kpi-subtext red">
           <span>Policy: 0 Allowed (FAIL-CLOSED)</span>
         </div>
       </div>
@@ -153,10 +148,21 @@ export const SupplyChainSummaryCards: React.FC<SupplyChainSummaryCardsProps> = (
         <div className="sc-kpi-val amber">
           {summary.blockedDeploymentsCount} <span className="sc-kpi-unit">Deployments Denied</span>
         </div>
-        <div className="sc-kpi-subtext" style={{ color: '#fbbf24' }}>
+
+        {/* Apple iOS Fluid Bar (Quarantine Threshold) */}
+        <div className="sc-fluid-bar-track" aria-hidden="true">
+          <div className="sc-fluid-bar-fill amber" style={{ width: summary.blockedDeploymentsCount > 0 ? '55%' : '0%' }}>
+            <div className="sc-fluid-shimmer" />
+          </div>
+        </div>
+
+        <div className="sc-kpi-subtext amber">
           <span>1 Unsigned + 1 Vulnerable</span>
         </div>
       </div>
+
+      {/* Specular Ambient Bottom Glass Horizon */}
+      <div className="sc-specular-glass-horizon" aria-hidden="true" />
     </div>
   );
 };
