@@ -72,9 +72,9 @@ export const IdentitySummaryCards: React.FC<IdentitySummaryCardsProps> = ({
           </div>
           <div className="identity-kpi-title-col">
             <span className="identity-kpi-label">TOTAL WORKLOADS</span>
-            <span className="identity-kpi-meta-sub">Ground-truth cluster inventory</span>
+            <span className="identity-kpi-meta-sub">Illustrative workload inventory</span>
           </div>
-          <span className="identity-kpi-micro-tag lab">K8S TESTBED</span>
+          <span className="identity-kpi-micro-tag lab">DEMO INVENTORY</span>
         </div>
         <div className="identity-kpi-body">
           <div className="identity-kpi-number">{stats.total}</div>
@@ -84,7 +84,7 @@ export const IdentitySummaryCards: React.FC<IdentitySummaryCardsProps> = ({
         </div>
         <div className="identity-kpi-footer">
           <span>Introspected across 4 namespaces</span>
-          <span className="identity-kpi-status-tag">100% Monitored</span>
+          <span className="identity-kpi-status-tag">DEMO DATA</span>
         </div>
       </div>
 
@@ -182,7 +182,7 @@ export const IdentitySummaryCards: React.FC<IdentitySummaryCardsProps> = ({
             <span className="identity-kpi-label">BLOCKED ACCESS</span>
             <span className="identity-kpi-meta-sub">Zero-Trust boundary violations</span>
           </div>
-          <span className="identity-kpi-micro-tag blocked">ENFORCED</span>
+          <span className="identity-kpi-micro-tag blocked">DEMO OUTCOME</span>
         </div>
         <div className="identity-kpi-body">
           <div className="identity-kpi-number rejected">{stats.rejected}</div>

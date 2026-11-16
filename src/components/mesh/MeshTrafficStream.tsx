@@ -25,11 +25,11 @@ export const MeshTrafficStream: React.FC<MeshTrafficStreamProps> = ({
         <div className="stream-header-left">
           <div className="stream-tag">
             <span className="stream-pulse-dot" />
-            <span>LIVE SERVICE MESH TELEMETRY</span>
+            <span>RECORDED SERVICE MESH TELEMETRY (DEMO)</span>
           </div>
-          <h3 className="stream-title">Real-Time Traffic Decisions</h3>
+          <h3 className="stream-title">Traffic Authorization Decisions</h3>
           <p className="stream-subtitle">
-            Istio Envoy data plane authorization logs and mutual TLS handshake evaluations.
+            Istio Envoy data plane authorization events and mutual TLS handshake evaluations.
           </p>
         </div>
         <div className="stream-header-right">

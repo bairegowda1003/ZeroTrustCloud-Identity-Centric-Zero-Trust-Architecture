@@ -1,3 +1,4 @@
+import { useDialogFocus } from '../../hooks/useDialogFocus';
 import React, { useState, useEffect } from 'react';
 import {
   X,
@@ -29,6 +30,7 @@ export const WorkloadDetailDrawer: React.FC<WorkloadDetailDrawerProps> = ({
   onClose,
   onNavigateToFinding,
 }) => {
+  const dialogRef = useDialogFocus(isOpen && !!workload, onClose);
   const [activeTab, setActiveTab] = useState<'identity' | 'boundaries' | 'audit'>('identity');
 
   // Handle escape key
@@ -51,7 +53,7 @@ export const WorkloadDetailDrawer: React.FC<WorkloadDetailDrawerProps> = ({
   return (
     <div className="workload-drawer-overlay" onClick={onClose} role="dialog" aria-modal="true">
       <div
-        className="workload-drawer-sheet"
+        ref={dialogRef} tabIndex={-1} className="workload-drawer-sheet"
         onClick={(e) => e.stopPropagation()}
         aria-label={`Details for ${workload.name}`}
       >

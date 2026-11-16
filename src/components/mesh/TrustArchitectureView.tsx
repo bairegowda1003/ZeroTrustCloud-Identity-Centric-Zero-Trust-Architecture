@@ -52,49 +52,44 @@ export const TrustArchitectureView: React.FC<TrustArchitectureViewProps> = ({
     setSyncNotice(null);
     setTimeout(() => {
       setIsSyncing(false);
-      setSyncNotice('SPIRE Server & Istio control plane synchronized. SVIDs auto-rotated; STRICT mTLS active.');
+      setSyncNotice('Standalone evaluation: SPIRE SVID inventory & Istio STRICT mTLS baseline verified.');
       setTimeout(() => setSyncNotice(null), 4000);
     }, 700);
   };
 
   return (
     <div className="trust-architecture-container">
-      {/* 1. Control Plane Status Banner */}
-      <div className="mesh-engine-banner">
-        <div className="engine-banner-left">
-          <div className="mesh-badges-row">
-            <span className="mesh-badge spire">
-              <KeyRound size={12} />
-              <span>SPIRE {SPIRE_CONTROL_PLANE_INFO.version}</span>
-            </span>
-            <span className="mesh-badge istio">
-              <Lock size={12} />
-              <span>ISTIO {ISTIO_CONTROL_PLANE_INFO.version} (STRICT mTLS)</span>
+      {/* 1. Official Domain Header */}
+      <div className="domain-page-header">
+        <div className="domain-header-left">
+          <div className="domain-title-row">
+            <div className="domain-icon-squircle mesh" aria-hidden="true">
+              <Network size={18} />
+            </div>
+            <h1 className="domain-page-title">Trust Architecture & Service Mesh</h1>
+            <span className="domain-live-badge mesh">
+              <span className="live-pip cyan" />
+              STRICT mTLS Active
             </span>
           </div>
-          <div className="engine-banner-copy">
-            <h1 className="engine-banner-title">Trust Architecture & Service Mesh</h1>
-            <p className="engine-banner-subtitle">
-              Cryptographic workload attestation and mutual TLS encryption. Short-lived X.509 SVIDs, SPIFFE identity domain, and Envoy Layer 7 authorization policies.
-            </p>
+          <div className="domain-meta-subrow">
+            <span className="domain-meta-crumb">
+              Attestor: <strong>SPIRE {SPIRE_CONTROL_PLANE_INFO.version}</strong>
+            </span>
+            <span className="domain-meta-sep">•</span>
+            <span className="domain-meta-crumb">
+              Data Plane: <strong>Istio {ISTIO_CONTROL_PLANE_INFO.version} ({ISTIO_CONTROL_PLANE_INFO.activeSidecars} Sidecars)</strong>
+            </span>
+            <span className="domain-meta-sep">•</span>
+            <span className="domain-meta-crumb">
+              Domain: <strong>{SPIRE_CONTROL_PLANE_INFO.trustDomain}</strong>
+            </span>
           </div>
         </div>
 
-        <div className="engine-banner-right">
-          <div className="engine-meta-pills">
-            <span className="meta-pill">
-              <strong>Trust Domain:</strong> {SPIRE_CONTROL_PLANE_INFO.trustDomain}
-            </span>
-            <span className="meta-pill">
-              <strong>mTLS Mode:</strong> {ISTIO_CONTROL_PLANE_INFO.mtlsMode}
-            </span>
-            <span className="meta-pill">
-              <strong>Sidecars:</strong> {ISTIO_CONTROL_PLANE_INFO.activeSidecars} Active
-            </span>
-          </div>
-
+        <div className="domain-header-right">
           <button
-            className={`sync-engine-btn ${isSyncing ? 'syncing' : ''}`}
+            className={`domain-action-btn ${isSyncing ? 'syncing' : ''}`}
             onClick={handleSyncMesh}
             disabled={isSyncing}
             title="Verify SPIRE Server & Istio mutual TLS status"

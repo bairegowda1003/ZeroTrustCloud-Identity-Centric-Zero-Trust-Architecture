@@ -37,7 +37,7 @@ export const VerificationPipelineHero: React.FC = () => {
         <div className="pipeline-title-group">
           <div className="pipeline-badge">
             <Activity size={14} className="pulse-icon" />
-            <span>LIVE DECISION ENGINE</span>
+            <span>DEMO DECISION EXPLORER</span>
           </div>
           <h2 className="pipeline-title">Zero-Trust Workload Verification Pipeline</h2>
           <p className="pipeline-description">
