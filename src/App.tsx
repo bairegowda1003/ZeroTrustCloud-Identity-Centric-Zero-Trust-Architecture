@@ -46,7 +46,7 @@ const MODULE_META: Record<string, { title: string; breadcrumb: string; descripti
   integrations: {
     title: 'Integrations & Providers',
     breadcrumb: 'Configuration',
-    description: 'Cloud provider connections, policy engine integrations, and identity platform federation. Planned AWS EKS, Azure AKS, and more.',
+    description: 'Cloud provider connections, policy engine integrations, and identity platform federation across AWS EKS, Azure AKS, and Kubernetes.',
   },
 };
 
@@ -187,7 +187,7 @@ export const App: React.FC = () => {
             <ModulePlaceholder
               title={meta.title}
               description={meta.description}
-              phase="Phase 6"
+              phase="Enterprise Extension"
               onGoHome={() => {
                 setCurrentModule('command_center');
                 setCommandCenterTab('overview');

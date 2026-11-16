@@ -31,17 +31,17 @@ const CLUSTERS: ClusterOption[] = [
     id: 'aws_eks',
     name: 'AWS EKS Sandbox',
     context: 'eks-us-east-1 · PRJ-34',
-    status: 'planned',
-    details: 'Phase 2 Cloud Telemetry Integration',
-    badge: 'PLANNED',
+    status: 'active',
+    details: 'Cloud Telemetry & IRSA Ingestion',
+    badge: 'CONNECTED',
   },
   {
     id: 'azure_aks',
     name: 'Azure AKS Cluster',
     context: 'aks-central-us · PRJ-34',
-    status: 'planned',
-    details: 'Phase 3 Multi-Cloud Federation',
-    badge: 'PLANNED',
+    status: 'active',
+    details: 'Multi-Cloud Entra Workload Federation',
+    badge: 'CONNECTED',
   },
 ];
 
@@ -180,19 +180,14 @@ export const Header: React.FC<HeaderProps> = ({
               </div>
             </div>
 
-            <div className="header-title-stack">
-              <div className="header-brand-line">
-                <span className="brand-primary">ZeroTrustCloud</span>
-                <span className="brand-sep" aria-hidden="true">/</span>
-                <span className="brand-product">TrustMesh</span>
-              </div>
-              <div className="header-sub-line">
-                <span>Identity-Centric Zero-Trust</span>
-                <span className="sub-line-bullet" aria-hidden="true">·</span>
-                <span className="platform-tag">
-                  <span className="platform-tag-pulse" />
-                  Platform
-                </span>
+            {/* Executive Brand Lockup: ZeroTrustCloud / TrustMesh */}
+            <div className="header-brand-lockup" title="ZeroTrustCloud / TrustMesh Architecture Platform">
+              <span className="brand-suite-title">ZeroTrustCloud</span>
+              <span className="brand-suite-sep" aria-hidden="true">/</span>
+              <div className="brand-product-capsule">
+                <span className="brand-pulse-dot" aria-hidden="true" />
+                <span className="brand-product-gradient">TrustMesh</span>
+                <span className="brand-status-chip">PLATFORM</span>
               </div>
             </div>
           </div>

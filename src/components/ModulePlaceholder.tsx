@@ -11,7 +11,7 @@ interface ModulePlaceholderProps {
 export const ModulePlaceholder: React.FC<ModulePlaceholderProps> = ({
   title,
   description,
-  phase = 'Phase 2+',
+  phase = 'Module Provisioning',
   onGoHome,
 }) => {
   return (
@@ -21,7 +21,7 @@ export const ModulePlaceholder: React.FC<ModulePlaceholderProps> = ({
       </div>
 
       <span className="module-placeholder-phase">
-        🔒 {phase}
+        {phase}
       </span>
 
       <h2 className="module-placeholder-title">{title}</h2>
