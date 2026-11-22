@@ -1,3 +1,4 @@
+import { DemoNotice } from './DemoNotice';
 import React, { useState } from 'react';
 import { X, Clock, Hash, Tag, Copy, Check, Globe, Shield, Server, Zap, AlertTriangle } from 'lucide-react';
 import { SecurityFinding, FindingStatus } from '../types/security';
@@ -46,8 +47,8 @@ export const FindingDetailDrawer: React.FC<FindingDetailDrawerProps> = ({
 
   const tabs: { id: TabId; label: string }[] = [
     { id: 'overview', label: 'Overview' },
-    { id: 'evidence', label: 'Evidence' },
-    { id: 'remediation', label: 'Remediation' },
+    { id: 'evidence', label: 'Example Record' },
+    { id: 'remediation', label: 'Example Guidance' },
   ];
 
   return (
@@ -99,6 +100,7 @@ export const FindingDetailDrawer: React.FC<FindingDetailDrawerProps> = ({
 
         {/* Body */}
         <div className="drawer-body">
+          <DemoNotice>Session-only demonstration triage; changes reset on reload and do not modify Kubernetes.</DemoNotice>
           {activeTab === 'overview' && (
             <>
               {/* Description */}
@@ -139,7 +141,7 @@ export const FindingDetailDrawer: React.FC<FindingDetailDrawerProps> = ({
                     </select>
                   </span>
 
-                  <span className="drawer-detail-label">Risk Score</span>
+                  <span className="drawer-detail-label">Demo Risk Score</span>
                   <span className="drawer-detail-value">
                     <span className={`cc-finding-score ${finding.severity}`}>
                       {finding.riskScore}
@@ -170,7 +172,7 @@ export const FindingDetailDrawer: React.FC<FindingDetailDrawerProps> = ({
                   <span className="drawer-detail-label">First Detected</span>
                   <span className="drawer-detail-value">{finding.firstDetected}</span>
 
-                  <span className="drawer-detail-label">Last Observed</span>
+                  <span className="drawer-detail-label">Fixture Observation Time</span>
                   <span className="drawer-detail-value">{finding.lastObserved}</span>
                 </div>
               </div>
@@ -285,25 +287,7 @@ export const FindingDetailDrawer: React.FC<FindingDetailDrawerProps> = ({
                 </div>
               )}
 
-              <div className="drawer-code-block">
-                <div className="drawer-code-header">
-                  <span className="drawer-code-lang">CLI</span>
-                  <button
-                    className="drawer-copy-btn"
-                    onClick={() => handleCopy(`trustmesh remediate --finding ${finding.id} --auto`)}
-                  >
-                    {copied ? <Check size={12} /> : <Copy size={12} />}
-                    {copied ? 'Copied' : 'Copy'}
-                  </button>
-                </div>
-                <pre className="drawer-code-content">
-{`# TrustMesh Automated Remediation
-trustmesh remediate --finding ${finding.id} --auto
-
-# View detailed report
-trustmesh inspect ${finding.id} --verbose`}
-                </pre>
-              </div>
+              <p className="drawer-text">Automated remediation and a TrustMesh CLI are not implemented. Configuration snippets above are educational examples only.</p>
 
               <div style={{
                 marginTop: '20px',
@@ -314,7 +298,7 @@ trustmesh inspect ${finding.id} --verbose`}
                 fontSize: '0.785rem',
                 color: '#38bdf8',
               }}>
-                Dry-Run Mode: Verify configuration with your cluster administrator before applying changes to production.
+                Example guidance only. This view does not execute commands, perform a dry-run, or remediate resources.
               </div>
             </div>
           )}

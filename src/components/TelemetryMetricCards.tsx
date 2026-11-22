@@ -11,13 +11,13 @@ export const TelemetryMetricCards: React.FC<TelemetryMetricCardsProps> = ({
   findings,
   onViewAllFindings,
 }) => {
-  const activeFindingsCount = findings.filter((f) => f.status !== 'resolved').length;
+  const activeFindingsCount = findings.filter((f) => f.status !== 'resolved' && f.status !== 'suppressed').length;
   const resolvedFindingsCount = findings.filter((f) => f.status === 'resolved').length;
   const criticalFindingsCount = findings.filter(
-    (f) => f.severity === 'critical' && f.status !== 'resolved'
+    (f) => f.severity === 'critical' && f.status !== 'resolved' && f.status !== 'suppressed'
   ).length;
   const highFindingsCount = findings.filter(
-    (f) => f.severity === 'high' && f.status !== 'resolved'
+    (f) => f.severity === 'high' && f.status !== 'resolved' && f.status !== 'suppressed'
   ).length;
 
   return (
@@ -36,8 +36,8 @@ export const TelemetryMetricCards: React.FC<TelemetryMetricCardsProps> = ({
               <ShieldAlert size={18} className="text-rose-400" />
             </div>
             <div className="chart-title-group">
-              <span className="chart-title">Active Findings</span>
-              <span className="chart-subtitle">Threat Surface Detection</span>
+              <span className="chart-title">Demo Active Findings</span>
+              <span className="chart-subtitle">Illustrative chart, not history</span>
             </div>
           </div>
           <div className="chart-metric-group">
@@ -48,7 +48,7 @@ export const TelemetryMetricCards: React.FC<TelemetryMetricCardsProps> = ({
           </div>
         </div>
 
-        {/* Visual Chart Area with Real Telemetry Waves, Gridlines & Timestamps */}
+        {/* Visual Chart Area with Decorative demonstration curves, not measured history */}
         <div className="chart-visual-area">
           <svg viewBox="0 0 280 64" className="chart-full-svg" preserveAspectRatio="none">
             <defs>
@@ -123,13 +123,13 @@ export const TelemetryMetricCards: React.FC<TelemetryMetricCardsProps> = ({
             </div>
             <div className="chart-title-group">
               <span className="chart-title">Resolved</span>
-              <span className="chart-subtitle">Remediated Findings</span>
+              <span className="chart-subtitle">Session-only demo triage</span>
             </div>
           </div>
           <div className="chart-metric-group">
             <span className="chart-metric-num">{resolvedFindingsCount}</span>
             <span className="chart-trend-pill trend-green">
-              Audited
+              Demo
             </span>
           </div>
         </div>
@@ -185,9 +185,9 @@ export const TelemetryMetricCards: React.FC<TelemetryMetricCardsProps> = ({
 
           <div className="chart-time-axis">
             <span>Fix Ready</span>
-            <span>Verified</span>
+            <span>Example</span>
             <span>Closed</span>
-            <span className="text-emerald">Audited</span>
+            <span className="text-emerald">Demo</span>
           </div>
         </div>
       </div>
@@ -200,8 +200,8 @@ export const TelemetryMetricCards: React.FC<TelemetryMetricCardsProps> = ({
               <Clock size={18} className="text-amber-400" />
             </div>
             <div className="chart-title-group">
-              <span className="chart-title">Critical Severity</span>
-              <span className="chart-subtitle">Zero-Tolerance Gaps</span>
+              <span className="chart-title">Demo Critical Severity</span>
+              <span className="chart-subtitle">Illustrative chart, not history</span>
             </div>
           </div>
           <div className="chart-metric-group">
@@ -275,8 +275,8 @@ export const TelemetryMetricCards: React.FC<TelemetryMetricCardsProps> = ({
               <Activity size={18} className="text-cyan-400" />
             </div>
             <div className="chart-title-group">
-              <span className="chart-title">High Severity</span>
-              <span className="chart-subtitle">Priority Surface Area</span>
+              <span className="chart-title">Demo High Severity</span>
+              <span className="chart-subtitle">Illustrative chart, not history</span>
             </div>
           </div>
           <div className="chart-metric-group">

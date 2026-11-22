@@ -165,7 +165,7 @@ export const FindingsTable: React.FC<FindingsTableProps> = ({ findings, onFindin
           <div style={{ fontSize: '1.7rem', fontWeight: 700, color: 'var(--text-primary)' }}>
             {Math.round(findings.reduce((sum, f) => sum + f.riskScore, 0) / Math.max(findings.length, 1))}
           </div>
-          <div style={{ fontSize: '0.714rem', color: 'var(--text-tertiary)' }}>Avg Risk Score</div>
+          <div style={{ fontSize: '0.714rem', color: 'var(--text-tertiary)' }}>Avg Demo Risk Score</div>
         </div>
       </div>
 

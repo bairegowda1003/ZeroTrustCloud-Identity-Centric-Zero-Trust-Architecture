@@ -46,17 +46,17 @@ export const RecentActivityCard: React.FC<RecentActivityCardProps> = ({ onViewAl
   ];
 
   return (
-    <div className="recent-activity-card" role="region" aria-label="Recent Zero-Trust Audit Decisions">
+    <div className="recent-activity-card" role="region" aria-label="Demonstration audit decisions">
       {/* Header */}
       <div className="activity-card-header">
         <div className="activity-title-group">
-          <h2 className="activity-title">Recent Activity</h2>
+          <h2 className="activity-title">Demo Activity</h2>
           <div className="live-telemetry-badge">
             <span className="live-dot" />
-            <span>Live</span>
+            <span>Demo</span>
           </div>
         </div>
-        <button className="view-all-link-btn" onClick={onViewAll} aria-label="View all recent activity">
+        <button className="view-all-link-btn" onClick={onViewAll} aria-label="View demonstration findings">
           <span>View all</span>
           <ArrowRight size={14} />
         </button>

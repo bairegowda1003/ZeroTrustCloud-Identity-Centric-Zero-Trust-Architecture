@@ -13,43 +13,15 @@ export const PriorityFindingsCard: React.FC<PriorityFindingsCardProps> = ({
   onFindingClick,
   onViewAllFindings,
 }) => {
-  const priorityItems = [
-    {
-      id: 'TM-SEC-101',
-      title: 'Unsigned container image deployed',
-      description: 'Image running without Cosign cryptographic signature',
-      source: 'Supply Chain · 35m ago',
-      severity: 'critical' as const,
-      iconType: 'critical',
-    },
-    {
-      id: 'TM-SEC-102',
-      title: 'Privileged container configuration',
-      description: 'Container running with excessive privileges',
-      source: 'Kubernetes · 2h ago',
-      severity: 'high' as const,
-      iconType: 'critical',
-    },
-    {
-      id: 'TM-SEC-106',
-      title: 'Workload missing identity binding',
-      description: 'Pod not bound to a verified identity',
-      source: 'Kubernetes · 5h ago',
-      severity: 'medium' as const,
-      iconType: 'warning',
-    },
-    {
-      id: 'TM-SEC-107',
-      title: 'Policy rule not enforced',
-      description: 'Expected policy not applied',
-      source: 'OPA · 1d ago',
-      severity: 'low' as const,
-      iconType: 'info',
-    },
-  ];
+  const unresolved = findings.filter((finding) => finding.status !== 'resolved' && finding.status !== 'suppressed');
+  const priorityItems = [...unresolved].sort((a, b) => b.riskScore - a.riskScore).slice(0, 4).map((finding) => ({
+    ...finding,
+    source: `Demo fixture: ${finding.domain}`,
+    iconType: finding.severity === 'critical' || finding.severity === 'high' ? 'critical' : finding.severity === 'medium' ? 'warning' : 'info',
+  }));
 
   const handleItemClick = (id: string) => {
-    const found = findings.find((f) => f.id === id) || findings[0];
+    const found = findings.find((f) => f.id === id);
     if (found) {
       onFindingClick(found);
     }
@@ -61,7 +33,7 @@ export const PriorityFindingsCard: React.FC<PriorityFindingsCardProps> = ({
       <div className="priority-findings-header">
         <div className="priority-findings-title-wrap">
           <h2 className="priority-findings-title">Priority Findings</h2>
-          <span className="priority-findings-count-badge">4 Unresolved</span>
+          <span className="priority-findings-count-badge">{unresolved.length} Demo Unresolved</span>
         </div>
         <button
           className="view-all-link-btn"
@@ -75,6 +47,7 @@ export const PriorityFindingsCard: React.FC<PriorityFindingsCardProps> = ({
 
       {/* List of 4 Priority Findings */}
       <div className="priority-findings-list">
+        {priorityItems.length === 0 && <p>No unresolved demonstration findings.</p>}
         {priorityItems.map((item) => (
           <div
             key={item.id}
@@ -125,11 +98,11 @@ export const PriorityFindingsCard: React.FC<PriorityFindingsCardProps> = ({
         <div className="findings-triage-summary">
           <span className="findings-triage-dot" />
           <span className="findings-triage-text">
-            <strong>4 of {findings.length || 12}</strong> active findings prioritized for triage
+            <strong>{priorityItems.length} of {unresolved.length}</strong> demo findings prioritized for session triage
           </span>
         </div>
         <div className="findings-triage-policy">
-          <span>Fail-Closed</span>
+          <span>Demo Only</span>
         </div>
       </div>
     </div>
