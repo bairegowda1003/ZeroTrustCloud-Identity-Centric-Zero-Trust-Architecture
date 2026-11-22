@@ -49,7 +49,7 @@ export const TrustConduitVisualizer: React.FC<TrustConduitVisualizerProps> = ({
       id: 'workloads',
       title: 'Workloads',
       metric: '12',
-      statusLabel: 'Monitored',
+      statusLabel: 'Example',
       icon: <Box size={18} className="text-indigo-400" />,
       side: 'left',
       x: 105,
@@ -67,7 +67,7 @@ export const TrustConduitVisualizer: React.FC<TrustConduitVisualizerProps> = ({
       id: 'identities',
       title: 'Identities',
       metric: '24',
-      statusLabel: 'Verified',
+      statusLabel: 'Example',
       icon: <UserCheck size={18} className="text-sky-400" />,
       side: 'right',
       x: 595,
@@ -85,7 +85,7 @@ export const TrustConduitVisualizer: React.FC<TrustConduitVisualizerProps> = ({
       id: 'policies',
       title: 'Policies',
       metric: '8',
-      statusLabel: 'Active',
+      statusLabel: 'Example',
       icon: <ShieldCheck size={18} className="text-cyan-400" />,
       side: 'left',
       x: 105,
@@ -103,7 +103,7 @@ export const TrustConduitVisualizer: React.FC<TrustConduitVisualizerProps> = ({
       id: 'services',
       title: 'Services',
       metric: '6',
-      statusLabel: 'Healthy',
+      statusLabel: 'Example',
       icon: <Link2 size={18} className="text-emerald-400" />,
       side: 'right',
       x: 595,
@@ -188,11 +188,11 @@ export const TrustConduitVisualizer: React.FC<TrustConduitVisualizerProps> = ({
       <div className="scc-header">
         <div>
           <h2 className="scc-title">Security Command Center</h2>
-          <p className="scc-subtitle">Real-time view of your system's security posture</p>
+          <p className="scc-subtitle">Illustrative security posture from demo fixtures</p>
         </div>
         <div className="scc-meta">
           <span className="live-status-dot" />
-          <span className="scc-last-updated">Last updated Oct 24, 2026 10:42 AM</span>
+          <span className="scc-last-updated">Static demonstration snapshot</span>
         </div>
       </div>
 
@@ -397,12 +397,12 @@ export const TrustConduitVisualizer: React.FC<TrustConduitVisualizerProps> = ({
                   title={activeNode.details.status}
                 >
                   <span className="reconciled-dot" style={{ backgroundColor: activeNode.color, boxShadow: `0 0 6px ${activeNode.color}` }} />
-                  <span>ATTESTED</span>
+                  <span>DEMO</span>
                 </div>
               </div>
             ) : (
               <div className="core-telemetry-default">
-                <span className="core-label-kicker">Trust Score</span>
+                <span className="core-label-kicker">Demo Score</span>
                 <div className="core-score-num">{posture.overallScore}</div>
                 <span className="core-score-denom">/ 100</span>
                 <div
@@ -410,10 +410,10 @@ export const TrustConduitVisualizer: React.FC<TrustConduitVisualizerProps> = ({
                   onClick={onOpenFindings}
                   role="button"
                   tabIndex={0}
-                  title="Status: Reconciled. Click to inspect zero-trust findings"
+                  title="Illustrative score. Click to inspect demo findings"
                 >
                   <span className="reconciled-dot" />
-                  <span>RECONCILED</span>
+                  <span>DEMO TRIAGE</span>
                 </div>
               </div>
             )}

@@ -1,3 +1,4 @@
+import { DemoNotice } from '../DemoNotice';
 import { useDialogFocus } from '../../hooks/useDialogFocus';
 import React, { useState, useEffect } from 'react';
 import {
@@ -77,7 +78,7 @@ export const WorkloadDetailDrawer: React.FC<WorkloadDetailDrawerProps> = ({
               >
                 {isVerified ? (
                   <>
-                    <ShieldCheck size={12} /> Verified Identity
+                    <ShieldCheck size={12} /> Example Verified Identity
                   </>
                 ) : isAttention ? (
                   <>
@@ -134,6 +135,7 @@ export const WorkloadDetailDrawer: React.FC<WorkloadDetailDrawerProps> = ({
 
         {/* Drawer Content Body */}
         <div className="workload-drawer-body">
+          <DemoNotice />
           {activeTab === 'identity' && (
             <div className="drawer-tab-pane">
               <div className="drawer-section">
@@ -257,7 +259,7 @@ export const WorkloadDetailDrawer: React.FC<WorkloadDetailDrawerProps> = ({
               </div>
 
               <div className="drawer-section">
-                <h4 className="drawer-section-title">Enforced Network & Identity Policies</h4>
+                <h4 className="drawer-section-title">Example Network & Identity Policies</h4>
                 <div className="policies-pills-list">
                   {workload.assignedPolicyNames.length === 0 ? (
                     <div className="policy-pill-empty">
@@ -324,7 +326,7 @@ export const WorkloadDetailDrawer: React.FC<WorkloadDetailDrawerProps> = ({
               )}
 
               <div className="drawer-section">
-                <h4 className="drawer-section-title">Manifest Provenance</h4>
+                <h4 className="drawer-section-title">Illustrative Manifest Reference</h4>
                 <div className="provenance-box">
                   <FileCode size={16} />
                   <span>
