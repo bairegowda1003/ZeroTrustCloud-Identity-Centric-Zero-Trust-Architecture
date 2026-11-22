@@ -270,7 +270,7 @@ test('the chamber follows a workload selection and an unused account has no rout
     data,pick,checks:[],verificationState:'Unavailable',freshness:'Collected'
   }));
   const verifier=render({kind:'pod',name:data.workloads[1].name});
-  assert.match(verifier,/Selected ServiceAccount<\/small><strong>default<\/strong>/);
+  assert.match(verifier,/Assigned identity<\/small><strong>default<\/strong>/);
   assert.equal((verifier.match(/data-binding=/g)||[]).length,1);
   assert.match(verifier,new RegExp('data-binding="'+data.workloads[1].name+'"'));
   const unused=render({kind:'account',name:'unused'});
@@ -296,4 +296,23 @@ test('registration owns the chamber and clears every pressed ServiceAccount', ()
   const account=render({kind:'account',name:data.workloads[0].serviceAccountName});
   assert.match(account,/class="studio-credential"/);
   assert.doesNotMatch(account,/class="studio-seal"/);
+});
+
+test('workload emphasis follows one reported binding and preserves its shared assignment', () => {
+  const {IdentityFabric}=require('../src/components/identity/IdentityFabric.tsx');
+  const data=fixture();
+  data.workloads.push({...data.workloads[0], name:'plaintext-client'});
+  const render=pick=>renderToStaticMarkup(React.createElement(IdentityFabric,{
+    data:validateIdentityWorkloads(data),pick,checks:[],verificationState:'Unavailable',freshness:'Last known'
+  }));
+  const workload=render({kind:'pod',name:'plaintext-client'});
+  assert.equal((workload.match(/class="studio-route-light"/g)||[]).length,1);
+  assert.equal((workload.match(/data-binding=/g)||[]).length,2);
+  assert.match(workload,/Assigned identity/);
+  assert.match(workload,/data-name="plaintext-client" data-active="true" aria-pressed="true"/);
+  const shared=render({kind:'account',name:data.workloads[0].serviceAccountName});
+  assert.equal((shared.match(/class="studio-route-light"/g)||[]).length,2);
+  data.workloads[1].serviceAccountName=data.workloads[0].serviceAccountName;
+  assert.doesNotMatch(render({kind:'account',name:'default'}),/class="studio-route-light"/);
+  assert.doesNotMatch(render({kind:'registration',name:data.spireRegistration.name}),/class="studio-route-light"/);
 });
