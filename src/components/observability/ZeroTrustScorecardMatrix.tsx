@@ -11,11 +11,11 @@ export const ZeroTrustScorecardMatrix: React.FC = () => {
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
           <ShieldCheck className="w-4 h-4" style={{ color: '#10b981' }} />
           <h3 className="sc-table-title">
-            Zero Trust Control Effectiveness Scorecard (Mathematical Evaluation)
+            Zero Trust Evaluation Scorecard
           </h3>
         </div>
         <span className="sc-count-badge" style={{ color: '#10b981', borderColor: 'rgba(16, 185, 129, 0.3)', background: 'rgba(16, 185, 129, 0.1)' }}>
-          6/6 Controls Verified
+          ILLUSTRATIVE EVALUATION — NOT LIVE SECURITY MEASUREMENT
         </span>
       </div>
 
@@ -26,10 +26,10 @@ export const ZeroTrustScorecardMatrix: React.FC = () => {
             <tr>
               <th className="sc-th">Control Name / Category</th>
               <th className="sc-th">Mathematical Formula</th>
-              <th className="sc-th">Evidence (Num / Denom)</th>
-              <th className="sc-th">Evaluated Score</th>
+              <th className="sc-th">Illustrative Inputs (Num / Denom)</th>
+              <th className="sc-th">Calculated Score (Illustrative)</th>
               <th className="sc-th">Status</th>
-              <th className="sc-th">Data Source</th>
+              <th className="sc-th">Proposed Data Source (Architecture Target)</th>
             </tr>
           </thead>
           <tbody>
@@ -62,7 +62,7 @@ export const ZeroTrustScorecardMatrix: React.FC = () => {
                   </div>
                 </td>
 
-                {/* Evaluated Score */}
+                {/* Illustrative Score */}
                 <td className="sc-td">
                   <div style={{ display: 'flex', alignItems: 'baseline', gap: '6px', fontFamily: 'var(--font-mono)' }}>
                     <span style={{ fontSize: '0.9rem', fontWeight: 700, color: '#10b981' }}>
@@ -77,7 +77,7 @@ export const ZeroTrustScorecardMatrix: React.FC = () => {
                 {/* Status */}
                 <td className="sc-td">
                   <span className="obs-outcome-badge allowed">
-                    <CheckCircle2 className="w-3 h-3" style={{ marginRight: '4px' }} /> PASSED
+                    <CheckCircle2 className="w-3 h-3" style={{ marginRight: '4px' }} /> DEMO ONLY
                   </span>
                 </td>
 
@@ -90,6 +90,9 @@ export const ZeroTrustScorecardMatrix: React.FC = () => {
             ))}
           </tbody>
         </table>
+      </div>
+      <div style={{ padding: '10px 16px', background: 'rgba(255, 255, 255, 0.02)', borderTop: '1px solid rgba(148, 163, 184, 0.1)', fontSize: '0.72rem', color: '#94a3b8', lineHeight: 1.5 }}>
+        Calculations demonstrate weighted scoring logic. Inputs and percentage results are illustrative fixtures and do not represent measured cluster compliance or real-time enforcement.
       </div>
     </div>
   );

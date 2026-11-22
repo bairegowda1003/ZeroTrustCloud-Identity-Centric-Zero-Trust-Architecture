@@ -180,7 +180,7 @@ export const SupplyChainPipelineHero: React.FC<SupplyChainPipelineHeroProps> = (
           <div className="sc-inspector-header">
             <span>Step 0{activeStep.stepNumber} Details: {activeStep.label}</span>
             <span className={`sc-step-badge ${activeStep.status}`}>
-              {activeStep.status.toUpperCase()}
+              Example: {activeStep.status.toUpperCase()}
             </span>
           </div>
           <p className="sc-inspector-details">{activeStep.details}</p>

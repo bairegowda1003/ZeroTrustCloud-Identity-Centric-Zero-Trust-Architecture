@@ -34,7 +34,7 @@ export const ObservabilitySummaryCards: React.FC<ObservabilitySummaryCardsProps>
       >
         <div className="obs-gauge-top">
           <ShieldCheck size={16} className="text-emerald-400" />
-          <span className="obs-gauge-framework-tag">ZERO TRUST POSTURE</span>
+          <span className="obs-gauge-framework-tag">ZERO TRUST POSTURE (ILLUSTRATIVE)</span>
         </div>
 
         {/* Semi-Circular Speedometer / Tachometer Gauge (Direct from Image 4) */}
@@ -55,13 +55,13 @@ export const ObservabilitySummaryCards: React.FC<ObservabilitySummaryCardsProps>
           </svg>
           <div className="obs-gauge-center-content">
             <span className="obs-gauge-score text-emerald-400">{summary.evaluatedZeroTrustScore}%</span>
-            <span className="obs-gauge-label">ZeroTrust Index</span>
+            <span className="obs-gauge-label">ZeroTrust Index (Illustrative)</span>
           </div>
         </div>
 
         <div className="obs-gauge-footer">
           <span>6 Quantitative Control Gates</span>
-          <span className="obs-gauge-status-tag emerald">Mathematically Proven</span>
+          <span className="obs-gauge-status-tag emerald">Illustrative Score</span>
         </div>
       </div>
 
@@ -81,7 +81,7 @@ export const ObservabilitySummaryCards: React.FC<ObservabilitySummaryCardsProps>
       >
         <div className="obs-gauge-top">
           <Activity size={16} className="text-cyan-400" />
-          <span className="obs-gauge-framework-tag">SECURITY EVENTS</span>
+          <span className="obs-gauge-framework-tag">SECURITY EVENTS (SIMULATED)</span>
         </div>
 
         <div className="obs-gauge-speedometer-wrap">
@@ -99,13 +99,13 @@ export const ObservabilitySummaryCards: React.FC<ObservabilitySummaryCardsProps>
           </svg>
           <div className="obs-gauge-center-content">
             <span className="obs-gauge-score text-cyan-400">{summary.totalEventsMonitored}</span>
-            <span className="obs-gauge-label">Incidents Logged</span>
+            <span className="obs-gauge-label">Incidents (Simulated)</span>
           </div>
         </div>
 
         <div className="obs-gauge-footer">
           <span>Across 5 Security Layers</span>
-          <span className="obs-gauge-status-tag cyan">Normalized OTel</span>
+          <span className="obs-gauge-status-tag cyan">Simulated Scenarios</span>
         </div>
       </div>
 
@@ -125,7 +125,7 @@ export const ObservabilitySummaryCards: React.FC<ObservabilitySummaryCardsProps>
       >
         <div className="obs-gauge-top">
           <ShieldAlert size={16} className="text-rose-400" />
-          <span className="obs-gauge-framework-tag">BOUNDARY DEFENSE</span>
+          <span className="obs-gauge-framework-tag">BOUNDARY DEFENSE (SIMULATED)</span>
         </div>
 
         <div className="obs-gauge-speedometer-wrap">
@@ -143,13 +143,13 @@ export const ObservabilitySummaryCards: React.FC<ObservabilitySummaryCardsProps>
           </svg>
           <div className="obs-gauge-center-content">
             <span className="obs-gauge-score text-rose-400">{summary.violationsPreventedCount}</span>
-            <span className="obs-gauge-label">Enforced Blocks</span>
+            <span className="obs-gauge-label">Example Blocks (Simulated)</span>
           </div>
         </div>
 
         <div className="obs-gauge-footer">
-          <span>Fail-Closed Boundaries</span>
-          <span className="obs-gauge-status-tag rose">Quarantined</span>
+          <span>Example Boundaries</span>
+          <span className="obs-gauge-status-tag rose">Simulated Blocks</span>
         </div>
       </div>
 
@@ -169,7 +169,7 @@ export const ObservabilitySummaryCards: React.FC<ObservabilitySummaryCardsProps>
       >
         <div className="obs-gauge-top">
           <Cpu size={16} className="text-indigo-400" />
-          <span className="obs-gauge-framework-tag">TELEMETRY PIPELINE</span>
+          <span className="obs-gauge-framework-tag">TELEMETRY PIPELINE (SIMULATED)</span>
         </div>
 
         <div className="obs-gauge-speedometer-wrap">
@@ -187,16 +187,16 @@ export const ObservabilitySummaryCards: React.FC<ObservabilitySummaryCardsProps>
           </svg>
           <div className="obs-gauge-center-content">
             <span className="obs-gauge-score text-indigo-400">{summary.collectorAvailabilityPercent}%</span>
-            <span className="obs-gauge-label">Collector Health</span>
+            <span className="obs-gauge-label">Availability (Simulated)</span>
           </div>
         </div>
 
         <div className="obs-gauge-footer">
           <div className="flex items-center gap-1">
             <Clock size={12} className="text-indigo-400 inline" />
-            <span>p95 Transit: {summary.transitFreshnessMs} ms</span>
+            <span>Simulated transit: {summary.transitFreshnessMs} ms</span>
           </div>
-          <span className="obs-gauge-status-tag indigo">Operational</span>
+          <span className="obs-gauge-status-tag indigo">Simulated Metric</span>
         </div>
       </div>
     </div>

@@ -29,7 +29,7 @@ export interface CalculatedTrustPosture {
 }
 
 /**
- * Calculates authentic Zero-Trust posture scores dynamically from findings.
+ * Calculates illustrative triage scores from demonstration findings; not security coverage.
  * Score improves when findings are marked as 'resolved' or 'suppressed'.
  */
 export function calculateTrustScore(findings: SecurityFinding[]): CalculatedTrustPosture {

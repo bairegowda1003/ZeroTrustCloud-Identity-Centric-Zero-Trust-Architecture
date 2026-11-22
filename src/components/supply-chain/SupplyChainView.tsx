@@ -1,3 +1,4 @@
+import { DemoNotice } from '../DemoNotice';
 import React, { useState } from 'react';
 import { 
   ShieldCheck, 
@@ -15,6 +16,7 @@ import { SupplyChainPipelineHero } from './SupplyChainPipelineHero';
 import { ContainerImageInventoryTable } from './ContainerImageInventoryTable';
 import { ImageDetailDrawer } from './ImageDetailDrawer';
 import { VulnerabilityExplorerTable } from './VulnerabilityExplorerTable';
+import { HistoricalSupplyChainEvidence } from './HistoricalSupplyChainEvidence';
 import { DEMO_CONTAINER_IMAGES, INITIAL_SUPPLY_CHAIN_SUMMARY } from '../../data/demoSupplyChain';
 import { ContainerImageRecord } from '../../types/supplyChain';
 
@@ -31,6 +33,7 @@ export const SupplyChainView: React.FC<SupplyChainViewProps> = ({
 
   return (
     <div className="supply-chain-container">
+      <DemoNotice />
       {/* 1. Official Domain Header */}
       <div className="domain-page-header">
         <div className="domain-header-left">
@@ -40,21 +43,21 @@ export const SupplyChainView: React.FC<SupplyChainViewProps> = ({
             </div>
             <h1 className="domain-page-title">Software Supply Chain Defense</h1>
             <span className="domain-live-badge supply">
-              <span className="live-pip rose" />
-              FAIL-CLOSED Enforced
+              <span className="live-pip amber" />
+              Historical Evidence + Demo
             </span>
           </div>
           <div className="domain-meta-subrow">
             <span className="domain-meta-crumb">
-              Scanner: <strong>Aqua Trivy {INITIAL_SUPPLY_CHAIN_SUMMARY.trivyVersion}</strong>
+              Evidence: <strong>3 Saved Offline Reports</strong>
             </span>
             <span className="domain-meta-sep">•</span>
             <span className="domain-meta-crumb">
-              Signatures: <strong>Sigstore Cosign {INITIAL_SUPPLY_CHAIN_SUMMARY.cosignVersion}</strong>
+              Pipeline Engine: <strong>Simulated Demo</strong>
             </span>
             <span className="domain-meta-sep">•</span>
             <span className="domain-meta-crumb">
-              Gatekeeper: <strong>External Data Provider Active</strong>
+              Gatekeeper: <strong>Core Constraints Enforced (No Cosign Provider)</strong>
             </span>
           </div>
         </div>
@@ -62,19 +65,27 @@ export const SupplyChainView: React.FC<SupplyChainViewProps> = ({
         <div className="domain-header-right">
           <div className="domain-header-status-pill">
             <CheckCircle2 size={13} className="text-emerald-400" />
-            <span>Admission Webhook Enforcing</span>
+            <span>Artifacts + Demo Pipeline</span>
           </div>
         </div>
       </div>
 
-      {/* 2. KPI Summary Cards */}
+      {/* 2. Historical Supply Chain Evidence (Milestone ZT-12) */}
+      <HistoricalSupplyChainEvidence />
+
+      {/* Visual boundary separating historical evidence from simulated pipeline */}
+      <div className="demo-section-divider">
+        <span className="demo-section-label">DEMONSTRATION / SIMULATED PIPELINE &amp; INVENTORY</span>
+      </div>
+
+      {/* 3. KPI Summary Cards */}
       <SupplyChainSummaryCards
         summary={INITIAL_SUPPLY_CHAIN_SUMMARY}
         onFilterStatus={(filter) => setStatusFilter(filter)}
         activeFilter={statusFilter}
       />
 
-      {/* 3. Interactive 4-Step Pipeline Hero */}
+      {/* 4. Interactive 4-Step Pipeline Hero */}
       <SupplyChainPipelineHero onNavigateToFinding={onNavigateToFinding} />
 
       {/* 4. Subview Tabs */}

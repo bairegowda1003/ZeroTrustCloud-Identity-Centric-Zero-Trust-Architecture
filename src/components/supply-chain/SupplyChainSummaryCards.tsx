@@ -30,13 +30,13 @@ export const SupplyChainSummaryCards: React.FC<SupplyChainSummaryCardsProps> = (
         title="Filter all monitored images"
       >
         <div className="sc-kpi-header">
-          <span className="sc-kpi-title">Monitored Images</span>
+          <span className="sc-kpi-title">Monitored Images (Demo)</span>
           <div className="sc-kpi-icon-wrap images">
             <Package size={15} />
           </div>
         </div>
         <div className="sc-kpi-val cyan">
-          {summary.totalScannedImages} <span className="sc-kpi-unit">OCI Artifacts</span>
+          {summary.totalScannedImages} <span className="sc-kpi-unit">Demo Images</span>
         </div>
         
         {/* Apple iOS Fluid Bar */}
@@ -48,7 +48,7 @@ export const SupplyChainSummaryCards: React.FC<SupplyChainSummaryCardsProps> = (
 
         <div className="sc-kpi-subtext cyan">
           <CheckCircle2 size={13} />
-          <span>Aqua Trivy {summary.trivyVersion}</span>
+          <span>Aqua Trivy (Demo Inventory)</span>
         </div>
       </div>
 
@@ -67,13 +67,13 @@ export const SupplyChainSummaryCards: React.FC<SupplyChainSummaryCardsProps> = (
         title="Filter verified signed images"
       >
         <div className="sc-kpi-header">
-          <span className="sc-kpi-title">Cosign Signatures</span>
+          <span className="sc-kpi-title">Cosign Signatures (Simulated)</span>
           <div className="sc-kpi-icon-wrap signatures">
             <ShieldCheck size={15} />
           </div>
         </div>
         <div className="sc-kpi-val emerald">
-          {summary.signedPercentage}% <span className="sc-kpi-unit">({summary.signedImagesCount}/{summary.totalScannedImages} Verified)</span>
+          {summary.signedPercentage}% <span className="sc-kpi-unit">({summary.signedImagesCount}/{summary.totalScannedImages} Simulated)</span>
         </div>
 
         {/* Apple iOS Fluid Bar (80% Fill) */}
@@ -85,7 +85,7 @@ export const SupplyChainSummaryCards: React.FC<SupplyChainSummaryCardsProps> = (
 
         <div className="sc-kpi-subtext emerald">
           <Lock size={13} />
-          <span>ECDSA P-256 (cosign.pub)</span>
+          <span>cosign.pub (Test Key ID)</span>
         </div>
       </div>
 
@@ -104,13 +104,13 @@ export const SupplyChainSummaryCards: React.FC<SupplyChainSummaryCardsProps> = (
         title="Filter vulnerable images"
       >
         <div className="sc-kpi-header">
-          <span className="sc-kpi-title">Critical Vulnerabilities</span>
+          <span className="sc-kpi-title">Critical Vulnerabilities (Demo)</span>
           <div className="sc-kpi-icon-wrap critical">
             <ShieldAlert size={15} />
           </div>
         </div>
         <div className="sc-kpi-val red">
-          {summary.criticalCveCount} <span className="sc-kpi-unit">(CVE-2024-21508)</span>
+          {summary.criticalCveCount} <span className="sc-kpi-unit">(Demo CVE-2024-21508)</span>
         </div>
 
         {/* Apple iOS Fluid Bar (Critical Threshold) */}
@@ -121,7 +121,7 @@ export const SupplyChainSummaryCards: React.FC<SupplyChainSummaryCardsProps> = (
         </div>
 
         <div className="sc-kpi-subtext red">
-          <span>Policy: 0 Allowed (FAIL-CLOSED)</span>
+          <span>Policy: 0 Allowed (Simulated Mode)</span>
         </div>
       </div>
 
@@ -140,13 +140,13 @@ export const SupplyChainSummaryCards: React.FC<SupplyChainSummaryCardsProps> = (
         title="Filter blocked admission deployments"
       >
         <div className="sc-kpi-header">
-          <span className="sc-kpi-title">Admission Blocked</span>
+          <span className="sc-kpi-title">Admission Blocked (Simulated)</span>
           <div className="sc-kpi-icon-wrap blocked">
             <Lock size={15} />
           </div>
         </div>
         <div className="sc-kpi-val amber">
-          {summary.blockedDeploymentsCount} <span className="sc-kpi-unit">Deployments Denied</span>
+          {summary.blockedDeploymentsCount} <span className="sc-kpi-unit">Simulated Denials</span>
         </div>
 
         {/* Apple iOS Fluid Bar (Quarantine Threshold) */}
@@ -157,7 +157,7 @@ export const SupplyChainSummaryCards: React.FC<SupplyChainSummaryCardsProps> = (
         </div>
 
         <div className="sc-kpi-subtext amber">
-          <span>1 Unsigned + 1 Vulnerable</span>
+          <span>Simulated Gatekeeper Outcomes</span>
         </div>
       </div>
 

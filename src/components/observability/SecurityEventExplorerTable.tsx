@@ -90,12 +90,34 @@ export const SecurityEventExplorerTable: React.FC<SecurityEventExplorerTableProp
 
   return (
     <div className="obs-table-card">
+      {/* Banner */}
+      <div style={{
+        background: 'rgba(245, 158, 11, 0.08)',
+        borderBottom: '1px solid rgba(245, 158, 11, 0.2)',
+        padding: '8px 16px',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        flexWrap: 'wrap',
+        gap: '8px'
+      }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <AlertTriangle className="w-4 h-4" style={{ color: '#f59e0b' }} />
+          <span style={{ fontSize: '0.72rem', fontFamily: 'var(--font-mono)', fontWeight: 700, color: '#f59e0b' }}>
+            REPRESENTATIVE DEMONSTRATION SCENARIOS — NOT LIVE AUDIT EVENTS
+          </span>
+        </div>
+        <span style={{ fontSize: '0.68rem', color: '#94a3b8' }}>
+          Authored testbed fixtures &amp; scenario models (no live SIEM/collector ingestion)
+        </span>
+      </div>
+
       {/* Table Header controls */}
       <div className="sc-table-header">
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
           <Activity className="w-4 h-4" style={{ color: '#818cf8' }} />
           <h3 className="sc-table-title">
-            Unified Security Event Stream
+            Unified Security Event Stream (Representative Scenarios)
           </h3>
           <span className="sc-count-badge">
             {filteredEvents.length} of {events.length}
@@ -146,11 +168,11 @@ export const SecurityEventExplorerTable: React.FC<SecurityEventExplorerTableProp
         <table className="sc-table">
           <thead>
             <tr>
-              <th className="sc-th">Event ID / Time</th>
-              <th className="sc-th">Source Component</th>
+              <th className="sc-th">Scenario ID / Time (Static)</th>
+              <th className="sc-th">Modeled Source</th>
               <th className="sc-th">Resource & Namespace</th>
-              <th className="sc-th">Enforcement Rule</th>
-              <th className="sc-th">Verdict</th>
+              <th className="sc-th">Rule / Scenario Definition</th>
+              <th className="sc-th">Modeled Outcome</th>
               <th className="sc-th" style={{ textAlign: 'right' }}>Inspect</th>
             </tr>
           </thead>

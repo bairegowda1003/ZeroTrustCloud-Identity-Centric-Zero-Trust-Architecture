@@ -1,3 +1,4 @@
+import { DemoNotice } from '../DemoNotice';
 import React, { useState } from 'react';
 import { 
   X, 
@@ -140,6 +141,7 @@ export const ImageDetailDrawer: React.FC<ImageDetailDrawerProps> = ({
 
         {/* Drawer Content */}
         <div className="sc-drawer-body">
+          <DemoNotice />
           {activeTab === 'VULNS' && (
             <div>
               {image.vulnerabilities.length === 0 ? (
@@ -232,7 +234,7 @@ export const ImageDetailDrawer: React.FC<ImageDetailDrawerProps> = ({
 
               <div>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
-                  <span style={{ fontSize: '0.76rem', fontWeight: 700, color: 'var(--text-primary, #f8fafc)' }}>Raw Attestation Payload</span>
+                  <span style={{ fontSize: '0.76rem', fontWeight: 700, color: 'var(--text-primary, #f8fafc)' }}>Example Attestation Payload</span>
                   <button onClick={handleCopyPayload} style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', fontSize: '0.72rem', color: '#38bdf8', background: 'transparent', border: 'none', cursor: 'pointer' }}>
                     {copiedPayload ? <Check size={13} /> : <Copy size={13} />}
                     <span>{copiedPayload ? 'Copied' : 'Copy JSON'}</span>
