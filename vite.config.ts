@@ -12,6 +12,12 @@ export default defineConfig({
   server: {
     port: 3000,
     open: false,
+    proxy: {
+      '/api': {
+        target: 'http://192.168.33.128:8766',
+        changeOrigin: true,
+      },
+    },
     watch: {
       ignored: ['**/reserach/**', '**/node_modules/**', '**/.git/**', '**/dist/**'],
     },
