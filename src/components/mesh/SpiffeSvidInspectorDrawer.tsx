@@ -1,3 +1,4 @@
+import { DemoNotice } from '../DemoNotice';
 import React, { useState, useEffect } from 'react';
 import {
   X,
@@ -70,7 +71,7 @@ export const SpiffeSvidInspectorDrawer: React.FC<SpiffeSvidInspectorDrawerProps>
                 {isAttested ? (
                   <>
                     <ShieldCheck size={12} />
-                    <span>SPIRE Attested (Valid X.509 SVID)</span>
+                    <span>Example SVID (not validated)</span>
                   </>
                 ) : (
                   <>
@@ -88,6 +89,7 @@ export const SpiffeSvidInspectorDrawer: React.FC<SpiffeSvidInspectorDrawerProps>
 
         {/* Body */}
         <div className="svid-drawer-body">
+          <DemoNotice />
           {/* Section 1: SPIFFE ID URI */}
           <div className="drawer-section">
             <h4 className="drawer-section-title">Cryptographic SPIFFE Identifier</h4>
@@ -122,19 +124,19 @@ export const SpiffeSvidInspectorDrawer: React.FC<SpiffeSvidInspectorDrawerProps>
           {/* Section 3: Lifetime & Auto-Renewal */}
           {isAttested && (
             <div className="drawer-section">
-              <h4 className="drawer-section-title">Short-Lived Ephemeral Validity (1h TTL)</h4>
+              <h4 className="drawer-section-title">Example certificate lifetime (static fixture)</h4>
               <div className="validity-card">
                 <div className="validity-row">
                   <span className="validity-key">Issued At</span>
-                  <span className="validity-val">{new Date(svid.issuedAt).toLocaleTimeString()}</span>
+                  <span className="validity-val">{new Date(svid.issuedAt).toISOString()}</span>
                 </div>
                 <div className="validity-row">
                   <span className="validity-key">Expires At</span>
-                  <span className="validity-val">{new Date(svid.expiresAt).toLocaleTimeString()}</span>
+                  <span className="validity-val">{new Date(svid.expiresAt).toISOString()}</span>
                 </div>
                 <div className="validity-row">
-                  <span className="validity-key">Auto-Rotate In</span>
-                  <span className="validity-val text-cyan">{Math.round(svid.ttlRemainingSeconds / 60)} minutes remaining</span>
+                  <span className="validity-key">Example remaining TTL</span>
+                  <span className="validity-val text-cyan">{Math.round(svid.ttlRemainingSeconds / 60)} minutes in fixture</span>
                 </div>
                 <div className="ttl-bar-track">
                   <div className="ttl-bar-fill" style={{ width: `${Math.round((svid.ttlRemainingSeconds / 3600) * 100)}%` }} />
@@ -146,7 +148,7 @@ export const SpiffeSvidInspectorDrawer: React.FC<SpiffeSvidInspectorDrawerProps>
           {/* Section 4: Raw PEM Certificate */}
           <div className="drawer-section">
             <div className="pem-header-row">
-              <h4 className="drawer-section-title">X.509 SVID Certificate (PEM)</h4>
+              <h4 className="drawer-section-title">Placeholder X.509 PEM (not a usable certificate)</h4>
               <button className="copy-code-btn" onClick={handleCopyPem}>
                 {copiedPem ? <Check size={13} /> : <Copy size={13} />}
                 <span>{copiedPem ? 'Copied' : 'Copy PEM'}</span>

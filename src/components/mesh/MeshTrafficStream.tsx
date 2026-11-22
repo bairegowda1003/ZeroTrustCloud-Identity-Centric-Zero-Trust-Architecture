@@ -25,7 +25,7 @@ export const MeshTrafficStream: React.FC<MeshTrafficStreamProps> = ({
         <div className="stream-header-left">
           <div className="stream-tag">
             <span className="stream-pulse-dot" />
-            <span>RECORDED SERVICE MESH TELEMETRY (DEMO)</span>
+            <span>SYNTHETIC SERVICE MESH SCENARIOS (DEMO)</span>
           </div>
           <h3 className="stream-title">Traffic Authorization Decisions</h3>
           <p className="stream-subtitle">

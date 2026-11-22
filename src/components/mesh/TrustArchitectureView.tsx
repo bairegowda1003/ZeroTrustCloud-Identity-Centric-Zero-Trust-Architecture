@@ -1,3 +1,4 @@
+import { DemoNotice } from '../DemoNotice';
 import React, { useState } from 'react';
 import {
   Lock,
@@ -19,6 +20,7 @@ import {
   MESH_TRAFFIC_EVENTS,
 } from '../../data/demoMesh';
 import { SpiffeSvidRecord } from '../../types/mesh';
+import { LiveNetworkSecurityStatus } from './LiveNetworkSecurityStatus';
 import { MeshSummaryCards } from './MeshSummaryCards';
 import { TrustConduitHero } from './TrustConduitHero';
 import { ServiceMeshMatrix } from './ServiceMeshMatrix';
@@ -39,7 +41,6 @@ export const TrustArchitectureView: React.FC<TrustArchitectureViewProps> = ({
   const [activeTab, setActiveTab] = useState<'routes' | 'traffic' | 'spiffe'>('routes');
   const [selectedSvid, setSelectedSvid] = useState<SpiffeSvidRecord | null>(null);
   const [isDrawerOpen, setIsDrawerOpen] = useState<boolean>(false);
-  const [isSyncing, setIsSyncing] = useState<boolean>(false);
   const [syncNotice, setSyncNotice] = useState<string | null>(null);
 
   const handleInspectSvid = (svid: SpiffeSvidRecord) => {
@@ -48,17 +49,12 @@ export const TrustArchitectureView: React.FC<TrustArchitectureViewProps> = ({
   };
 
   const handleSyncMesh = () => {
-    setIsSyncing(true);
-    setSyncNotice(null);
-    setTimeout(() => {
-      setIsSyncing(false);
-      setSyncNotice('Standalone evaluation: SPIRE SVID inventory & Istio STRICT mTLS baseline verified.');
-      setTimeout(() => setSyncNotice(null), 4000);
-    }, 700);
+    setSyncNotice('Demonstration fixtures only. No synchronization, verification or Kubernetes operation is performed.');
   };
 
   return (
     <div className="trust-architecture-container">
+      <DemoNotice />
       {/* 1. Official Domain Header */}
       <div className="domain-page-header">
         <div className="domain-header-left">
@@ -69,7 +65,7 @@ export const TrustArchitectureView: React.FC<TrustArchitectureViewProps> = ({
             <h1 className="domain-page-title">Trust Architecture & Service Mesh</h1>
             <span className="domain-live-badge mesh">
               <span className="live-pip cyan" />
-              STRICT mTLS Active
+              STRICT mTLS Demo
             </span>
           </div>
           <div className="domain-meta-subrow">
@@ -89,13 +85,12 @@ export const TrustArchitectureView: React.FC<TrustArchitectureViewProps> = ({
 
         <div className="domain-header-right">
           <button
-            className={`domain-action-btn ${isSyncing ? 'syncing' : ''}`}
+            className="domain-action-btn"
             onClick={handleSyncMesh}
-            disabled={isSyncing}
-            title="Verify SPIRE Server & Istio mutual TLS status"
+            title="Explain the demonstration data source"
           >
-            <RefreshCw size={13} className={isSyncing ? 'spin-icon' : ''} />
-            <span>{isSyncing ? 'Negotiating mTLS...' : 'Sync Mesh & SVIDs'}</span>
+            <RefreshCw size={13} />
+            <span>About mesh demo</span>
           </button>
         </div>
       </div>
@@ -107,7 +102,15 @@ export const TrustArchitectureView: React.FC<TrustArchitectureViewProps> = ({
         </div>
       )}
 
-      {/* 2. Dynamic Summary Cards */}
+      {/* 2. Live Kubernetes Telemetry (Milestone ZT-10) */}
+      <LiveNetworkSecurityStatus />
+
+      {/* Visual boundary separating live telemetry from simulated scenarios */}
+      <div className="demo-section-divider">
+        <span className="demo-section-label">DEMONSTRATION / SIMULATED INTERFACE</span>
+      </div>
+
+      {/* 3. Dynamic Summary Cards */}
       <MeshSummaryCards
         svids={svids}
         routes={routes}
@@ -141,7 +144,7 @@ export const TrustArchitectureView: React.FC<TrustArchitectureViewProps> = ({
           onClick={() => setActiveTab('traffic')}
         >
           <Activity size={15} />
-          <span>Live Traffic Stream ({events.length})</span>
+          <span>Demo Traffic Scenarios ({events.length})</span>
         </button>
         <button
           role="tab"
