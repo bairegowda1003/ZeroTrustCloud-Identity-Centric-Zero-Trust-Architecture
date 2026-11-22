@@ -1,3 +1,4 @@
+import { DemoNotice } from './DemoNotice';
 import React from 'react';
 import { X, Cloud, Database, Key, GitBranch, Activity, Wifi } from 'lucide-react';
 import { IntegrationProvider } from '../types/security';
@@ -45,21 +46,21 @@ export const IntegrationModal: React.FC<IntegrationModalProps> = ({ isOpen, onCl
           aria-labelledby="modal-title"
         >
           <div className="modal-header">
-            <h2 id="modal-title" className="modal-title">Connect Data Source</h2>
+            <h2 id="modal-title" className="modal-title">Integration Roadmap</h2>
             <button className="modal-close" onClick={onClose} aria-label="Close modal">
               <X size={18} />
             </button>
           </div>
 
           <div className="modal-body">
+            <DemoNotice />
             <p style={{
               fontSize: '0.857rem',
               color: 'var(--text-tertiary)',
               marginBottom: '20px',
               lineHeight: '1.6',
             }}>
-              Connect cloud providers, identity platforms, and security tools to enable
-              zero-trust telemetry ingestion and admission enforcement.
+              Planned integrations are not connected to this frontend. Only the separate Kubernetes status panel retrieves API data; it does not verify security enforcement.
             </p>
 
             {providers.map((provider) => (
@@ -75,7 +76,7 @@ export const IntegrationModal: React.FC<IntegrationModalProps> = ({ isOpen, onCl
                 </div>
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <div className="modal-integration-name">{provider.name}</div>
-                  <div className="modal-integration-desc">{provider.description}</div>
+                  <div className="modal-integration-desc">Planned capability: {provider.description}</div>
                   <span className="modal-integration-status">
                     {provider.status === 'Not Connected' ? '○ Not Connected' : `◯ ${provider.status}`}
                   </span>
