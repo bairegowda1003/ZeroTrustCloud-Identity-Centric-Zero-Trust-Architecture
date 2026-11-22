@@ -62,7 +62,7 @@ export function IdentityEvidence({inventory, verificationFeed}: {
       <section className="if-section" aria-label="SPIRE evidence" id="if-spire-section" tabIndex={-1}><h2><Fingerprint/> SPIRE infrastructure</h2>
         <small>/api/identity/workloads · {state(inventory)} · <SnapshotTime value={data.collectedAt}/></small>
         <div className="if-spire"><div><h3>ClusterSPIFFEID registration</h3><p>{reg?.available?reg.name:reg?.error || 'Registration unavailable'}</p>
-        {reg?.available && <><code>{reg.spiffeIDTemplate ?? 'Template unavailable'}</code><details><summary>Configured scope and statistics</summary><EvidenceFields value={{namespaceSelector:reg.namespaceSelector,podSelector:reg.podSelector,statistics:reg.statistics}}/><RawEvidence value={reg}/></details></>}</div>
+        {reg?.available && <details><summary>Template, scope and statistics</summary><code>{reg.spiffeIDTemplate ?? 'Template unavailable'}</code><EvidenceFields value={{namespaceSelector:reg.namespaceSelector,podSelector:reg.podSelector,statistics:reg.statistics}}/><RawEvidence value={reg}/></details>}</div>
         <div><h3>Infrastructure readiness</h3>{data.spireComponents.map(c=><div className="if-component" key={c.name}><Boxes size={16} aria-hidden="true"/><span>{c.name}<small>{c.kind}</small></span><strong>{replicaReadiness(c)}</strong>{c.error&&<small>{c.error}</small>}</div>)}{!data.spireComponents.length && <p>No components reported.</p>}</div></div></section>
     </>}
     <section className="if-section if-verification"><h2>Identity verification</h2><small>/api/security/verification · {verificationState} · <SnapshotTime value={verificationFeed.data?.collectedAt}/></small>

@@ -1,10 +1,10 @@
 import React, {useEffect, useRef, useState} from 'react';
-import { ArrowUpRight, Boxes, Check, CircuitBoard, Diamond, Fingerprint, KeyRound, X } from 'lucide-react';
+import { ArrowUpRight, Boxes, Diamond, Fingerprint, KeyRound, X } from 'lucide-react';
 import type { LiveIdentityWorkloadsResponse } from '../../utils/identityWorkloads';
 import { identityRelationships, registrationMatch, replicaReadiness } from '../../utils/identityFabric';
 import type { VerificationCheck } from '../../utils/securityVerification';
 import { CheckEvidence, EvidenceFields, RawEvidence } from './IdentityCheckEvidence';
-import { IdentityChamber, RegistrationSeal } from './IdentityChamber';
+import { IdentityChamber, RegistrationSeal, WorkloadCapsule } from './IdentityChamber';
 import { SnapshotTime } from '../SnapshotTime';
 
 export type FabricPick = {kind: 'pod' | 'account' | 'registration'; name: string};
@@ -33,16 +33,32 @@ export function IdentityFabric({data, freshness, checks, sidecarCheck, verificat
     accounts.reduce<typeof accounts[number]|undefined>((best,a)=>!best || a.pods.length>best.pods.length ? a : best,undefined);
   const trigger = useRef<HTMLElement|null>(null);
   const closeButton = useRef<HTMLButtonElement>(null);
-  const close = ()=>{onPick?.(null);const origin=trigger.current;
+  const inspector = useRef<HTMLElement>(null);
+  const closing = useRef<Animation|null>(null);
+  const finishClose = ()=>{onPick?.(null);const origin=trigger.current;
     const target=origin?.isConnected ? origin : origin?.dataset.name ? document.querySelector<HTMLElement>('.studio-fleet [data-name="'+CSS.escape(origin.dataset.name)+'"]') : null;
     target?.focus({preventScroll:true})};
+  const close = ()=>{
+    if(closing.current) return;
+    if(!inspector.current || window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      finishClose(); return;
+    }
+    const exit=inspector.current.animate([{opacity:1,transform:'translateX(0)'},{opacity:0,transform:'translateX(8px)'}],
+      {duration:130,easing:'ease-in',fill:'forwards'});
+    closing.current=exit;
+    exit.onfinish=finishClose;
+  };
   useEffect(()=>{
     if(!hasSelection) return;
     if(document.activeElement instanceof HTMLButtonElement && document.activeElement!==closeButton.current) trigger.current=document.activeElement;
     closeButton.current?.focus({preventScroll:true});
     const escape=(event:KeyboardEvent)=>{if(event.key==='Escape') close()};
     document.addEventListener('keydown',escape);
-    return ()=>document.removeEventListener('keydown',escape);
+    return ()=>{
+      document.removeEventListener('keydown',escape);
+      closing.current?.cancel();
+      closing.current=null;
+    };
   },[pick,hasSelection,onPick]);
   const related=checks.filter(c=>isReg ? c.id.startsWith('spire-') : account ? c.id==='workload-service-accounts' :
     c.id==='workload-lifecycle-and-identity' || (pod && registrationMatch(data,pod) && c.id==='spire-workload-registration'));
@@ -95,32 +111,35 @@ export function IdentityFabric({data, freshness, checks, sidecarCheck, verificat
     return <button key={p.name} title={p.name} aria-label={p.name+', '+p.phase+' · '+p.readyContainers+'/'+p.totalContainers+' ready, '+p.serviceAccountName}
                 data-name={p.name} data-active={active} aria-pressed={pod?.name===p.name}
                 onClick={e=>{trigger.current=e.currentTarget;onPick?.({kind:'pod',name:p.name})}}>
-                <span className="studio-cartridge" aria-hidden="true">{p.phase==='Succeeded'?<Check/>:<CircuitBoard/>}<i>{p.totalContainers}</i></span>
+                <WorkloadCapsule/>
                 <span className="studio-label"><strong>{short(p.name)}</strong><small>{p.phase} · {p.readyContainers}/{p.totalContainers} ready</small>
                   <span><KeyRound size={10}/>{short(p.serviceAccountName)} {match && <Diamond className="studio-match" size={10} aria-label="Configured selector match"/>}</span></span>
               </button>;
   }
-  return <section className="if-stage studio" data-registration={isReg} aria-label="Identity Access Studio">
+  return <section className="if-stage studio" data-registration={isReg} data-unassigned={!isReg && focal?.pods.length===0} aria-label="Identity Access Studio">
     <div className="studio-layout" data-inspecting={hasSelection}>
       <div className="studio-workspace">
         <header className="studio-bar"><span><Boxes size={16}/> Workload fleet</span>
           {reg.available ? <button className="studio-reg" aria-pressed={isReg} onClick={()=>onPick?.({kind:'registration',name:reg.name})}><Diamond size={13}/> SPIRE registration <b>{selectedPods.length} matched</b><ArrowUpRight size={13}/></button> : <small>Registration unavailable</small>}</header>
-        <div className="studio-scene" ref={scene}>
+        <div className="studio-scene" role="group" aria-label={'Namespace '+data.namespace} ref={scene}>
           <svg className="studio-routes" aria-hidden="true">
             {focused.map(p=><g key={p.name} opacity={pod && pod.name!==p.name ? .36 : 1}>
               <path className="studio-route-bed" d={routes[p.name]}/>
               <path className={isReg?'studio-selector':'if-binding active'}
               data-binding={isReg?undefined:p.name} data-account={isReg?undefined:p.serviceAccountName}
               data-selector={isReg?p.name:undefined}
-              d={routes[p.name]}/></g>)}
+              d={routes[p.name]}/>
+              {isReg && <path className="studio-selector-inlay" d={routes[p.name]}/>}
+              {!isReg && (!pod || pod.name===p.name) && <path className="studio-route-light" pathLength="100" d={routes[p.name]}/>}
+            </g>)}
           </svg>
           <div className="studio-fleet">
-            {focused.map(p=>workload(p,true))}
+            {focused.map(p=>workload(p,!pod || pod.name===p.name))}
             {!focused.length && <p className="studio-no-assignments"><b>0</b><span>{isReg?'Confirmed selector matches':'No reported workload assignments'}</span></p>}
           </div>
           <div className="studio-chamber">
             {isReg ? <div className="studio-register"><RegistrationSeal/><small>Configured registration</small><strong>{short(reg.name)}</strong><span>{selectedPods.length} selector {selectedPods.length===1?'match':'matches'}</span></div> : focal ? <button className="studio-credential" onClick={()=>onPick?.({kind:'account',name:focal.name})} title={'Inspect '+focal.name}>
-              <IdentityChamber key={focal.name} count={focal.pods.length}/><div className="studio-caption"><small>Selected ServiceAccount</small><strong>{short(focal.name)}</strong>
+              <IdentityChamber count={focal.pods.length}/><div key={focal.name} className="studio-caption"><small>{pod?'Assigned identity':'Selected ServiceAccount'}</small><strong>{short(focal.name)}</strong>
               <span>{focal.pods.length>1?'Shared identity · ':''}{focal.pods.length} assigned {focal.pods.length===1?'workload':'workloads'} <ArrowUpRight size={13}/></span></div>
             </button>:<p>No ServiceAccount reported.</p>}
           </div>
@@ -130,10 +149,10 @@ export function IdentityFabric({data, freshness, checks, sidecarCheck, verificat
           {accounts.map(a=><button key={a.name} title={a.name} aria-label={a.name+', '+(a.isDefault?'Default':'Named')+' · '+a.pods.length+' assigned'}
             aria-pressed={!isReg && a===focal} data-name={a.name} onClick={()=>onPick?.({kind:'account',name:a.name})}><KeyRound size={12}/>{short(a.name)} <b>{a.pods.length}</b></button>)}</div></nav>
       </div>
-      {hasSelection && <aside className="if-inspector" role="dialog" aria-labelledby="if-resource">
+      {hasSelection && <aside ref={inspector} className="if-inspector" role="dialog" aria-labelledby="if-resource">
         <header><span>{pod?'Kubernetes workload':account?'ServiceAccount':'ClusterSPIFFEID'}</span><button ref={closeButton} aria-label="Close identity inspector" onClick={close}><X size={16}/></button></header>
         <div key={pick?.kind+'/'+pick?.name} className="if-inspect-body">
-          <h3 id="if-resource">{pick?.name}</h3><small className="studio-ns">{data.namespace}</small>
+          <h3 id="if-resource" title={pick?.name}>{pick && short(pick.name)}</h3>
           {account && <>
             <p className="studio-summary">{account.pods.length>1?'Shared ServiceAccount':account.pods.length?'Single workload assignment':'Unassigned ServiceAccount'} · {account.discovered?'Discovered':'Referenced only'}</p>
             <h4>Assigned workloads · {account.pods.length}</h4>
@@ -151,21 +170,23 @@ export function IdentityFabric({data, freshness, checks, sidecarCheck, verificat
             <h4>Configured selector matches · {selectedPods.length}</h4>
             <ul className="studio-members">{selectedPods.map(p=><li key={p.name}>{p.name}</li>)}</ul>
             {pods.some(p=>registrationMatch(data,p)===undefined) && <p>Some selector conditions cannot be evaluated from this snapshot.</p>}
-            <h4>SPIFFE ID template</h4><code className="studio-template">{reg.spiffeIDTemplate ?? 'Unavailable'}</code>
             <details><summary>Selectors and infrastructure</summary>
+              <h4>SPIFFE ID template</h4><code className="studio-template">{reg.spiffeIDTemplate ?? 'Unavailable'}</code>
               <EvidenceFields value={{namespaceSelector:reg.namespaceSelector,podSelector:reg.podSelector,statistics:reg.statistics}}/>
               {data.spireComponents.map(c=><p key={c.name}>{c.name} · {replicaReadiness(c)}</p>)}</details>
           </>}
           <p className="studio-interpretation">{isReg?'Selector matches describe configured registration. Current SVID validity requires separate evidence.':
             account && account.pods.length>1?'These workloads share a Kubernetes assignment. Network permissions require separate evidence.':
-            'Kubernetes reports the workload assignment. Authorization requires separate evidence.'}</p>
+            account && !account.pods.length?'The namespace inventory reports this account with zero workload assignments.':
+            'Paths illustrate reported Kubernetes assignments. Authorization requires separate evidence.'}</p>
           <details><summary>Automated verification · {inspectorChecks.length} {inspectorChecks.length===1?'check':'checks'}</summary>
             <code>/api/security/verification</code><p>{verificationState} · <SnapshotTime value={verificationTime}/></p>
             {roleCheck && <><h4>Reported sidecars by workload role</h4>
               {sidecarRoles.length ? <dl>{sidecarRoles.map(row=><React.Fragment key={row.role}><dt>{row.role}</dt><dd>{row.present?'Present':'Absent'}</dd></React.Fragment>)}</dl> : <p>Role-level sidecar status unavailable.</p>}</>}
             <CheckEvidence checks={inspectorChecks}/>{!inspectorChecks.length && <p>No related check reported.</p>}</details>
           <details><summary>Source and raw evidence</summary>
-            <p>{data.cluster}</p><code>/api/identity/workloads</code><p>{freshness} · <SnapshotTime value={data.collectedAt}/></p>
+            <dl><dt>Resource</dt><dd>{pick?.name}</dd><dt>Namespace</dt><dd>{data.namespace}</dd><dt>Cluster</dt><dd>{data.cluster}</dd></dl>
+            <code>/api/identity/workloads</code><p>{freshness} · <SnapshotTime value={data.collectedAt}/></p>
             <RawEvidence value={isReg?reg:pod ?? {serviceAccount:inventoryRecord ?? null,workloads:account?.pods}}/>
           </details>
         </div>
