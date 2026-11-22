@@ -1,7 +1,7 @@
 .main-content-viewport:has(.command-overview) {
   min-width: 0;
   padding: clamp(18px, 3vw, 56px);
-  background: #0c0f13;
+  background: var(--bg-primary);
 }
 .command-overview {
   max-width: 1540px;
@@ -87,7 +87,7 @@
   .trustmesh-app-root:has(.command-overview) .apple-dynamic-island.island-expanded { max-width: 100%; padding-inline: 10px; }
   .trustmesh-app-root:has(.command-overview) .header-controls-block { gap: 6px; }
 }
-.main-content-viewport:has(.tm-console){padding:clamp(12px,2vw,34px);background:#090e15}
+.main-content-viewport:has(.tm-console){padding:clamp(12px,2vw,34px)}
 .command-overview.tm-console{max-width:1780px;gap:18px;color:#deeaef;font-family:var(--font-sans,Arial,sans-serif)}
 .tm-console h1,.tm-console h2,.tm-console h3,.tm-console p{margin:0}
 .tm-console small{color:#90acba;font-size:12px;letter-spacing:.045em}
@@ -132,9 +132,6 @@
 .tm-object[aria-pressed=true] text:first-of-type{fill:#bbebef}
 
 /* The scene and rail share a lit seam. Only floating controls use backdrop blur. */
-.main-content-viewport:has(.tm-console){
-  background:radial-gradient(ellipse at 72% 0%,#152337 0,transparent 56%),#090e16;
-}
 .tm-console .tm-composition{
   border:1px solid #374954;border-radius:16px;
   box-shadow:0 18px 50px #02081255,inset 0 1px #c3efff22;
@@ -250,11 +247,6 @@
 @media(max-width:600px){.tm-verdict-instrument{grid-column:1/-1;display:flex;align-items:center;justify-content:space-between}.tm-clock-instrument{grid-column:1/-1;display:flex;align-items:center;gap:8px}}
 
 /* Desktop composition: one continuous field from the title to the ground plane. */
-.main-content-viewport:has(.tm-console){
-  background:radial-gradient(ellipse at 54% 38%,#17425470,transparent 43%),
-    radial-gradient(ellipse at 13% 40%,#302d535e,transparent 42%),
-    radial-gradient(ellipse at 88% 38%,#352b494d,transparent 35%),#0c1623;
-}
 .tm-console .tm-panorama,.tm-panorama .tm-scene{border:0;border-radius:0;background:transparent;box-shadow:none}
 .tm-console .tm-panorama{overflow:visible}
 .tm-panorama .tm-scene-title{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%)}
@@ -313,10 +305,6 @@
 @media(max-width:1000px){.tm-panorama .tm-scene header{align-items:start}.tm-console .tm-clock-instrument{flex-wrap:wrap}.tm-console .tm-floating-inspector[open]{max-height:55dvh}}
 @media(max-width:800px){.tm-workload-columns{display:none}.tm-console .tm-verification-groups>details>.tm-domain-head{grid-template-columns:20px 1fr auto}.tm-domain-head .tm-group-counts{grid-column:2;min-width:0}.tm-console .tm-instruments .tm-cluster{display:grid;gap:2px}.tm-cluster[data-readiness]::before{display:none}}
 
-.main-content-viewport:has(.tm-console){
-  background:radial-gradient(ellipse at 54% 46%,#15333f66,transparent 40%),
-    radial-gradient(ellipse at 18% 48%,#23223c55,transparent 37%),#080d16;
-}
 .tm-first-screen{display:flex;flex-direction:column;gap:10px}
 @media(min-width:801px){
   .main-content-viewport:has(.tm-console){--tm-top-pad:clamp(12px,1.6vh,18px);padding-top:var(--tm-top-pad)}
