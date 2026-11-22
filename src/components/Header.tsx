@@ -23,25 +23,25 @@ const CLUSTERS: ClusterOption[] = [
     id: 'local_k8s',
     name: 'Local Kubernetes',
     context: 'kind-trustmesh-lab',
-    status: 'active',
-    details: '12 Workloads · 6 Services Attested',
-    badge: 'ACTIVE',
+    status: 'planned',
+    details: 'Status available in the Live Kubernetes panel',
+    badge: 'SEE STATUS',
   },
   {
     id: 'aws_eks',
     name: 'AWS EKS Sandbox',
     context: 'eks-us-east-1 · PRJ-34',
-    status: 'active',
-    details: 'Cloud Telemetry & IRSA Ingestion',
-    badge: 'CONNECTED',
+    status: 'planned',
+    details: 'Planned connector; no AWS telemetry integration',
+    badge: 'NOT CONNECTED',
   },
   {
     id: 'azure_aks',
     name: 'Azure AKS Cluster',
     context: 'aks-central-us · PRJ-34',
-    status: 'active',
-    details: 'Multi-Cloud Entra Workload Federation',
-    badge: 'CONNECTED',
+    status: 'planned',
+    details: 'Planned connector; no Azure telemetry integration',
+    badge: 'NOT CONNECTED',
   },
 ];
 
@@ -194,14 +194,14 @@ export const Header: React.FC<HeaderProps> = ({
 
           {/* 2. Center System Health Liquid Capsule */}
           <div className="header-health-block">
-            <div className="system-health-pill" title="Local verification testbed active">
+            <div className="system-health-pill" title="Frontend interface only; cluster status is shown separately">
               <div className="health-ping-wrap" aria-hidden="true">
                 <span className="health-ping-ring" />
                 <span className="health-pulsing-dot" />
               </div>
-              <span className="health-label">SYSTEM HEALTH</span>
+              <span className="health-label">INTERFACE</span>
               <span className="health-divider" aria-hidden="true">|</span>
-              <span className="health-state">Operational</span>
+              <span className="health-state">Dashboard</span>
             </div>
           </div>
 
@@ -215,7 +215,7 @@ export const Header: React.FC<HeaderProps> = ({
                 onClick={() => setIsClusterMenuOpen(!isClusterMenuOpen)}
                 aria-expanded={isClusterMenuOpen}
                 aria-haspopup="true"
-                title="Switch cluster environment context"
+                title="Inspect integration information; does not switch API context"
               >
                 <div className="cluster-icon-orb" aria-hidden="true">
                   <Layers size={13} className="cluster-icon" />
@@ -234,8 +234,8 @@ export const Header: React.FC<HeaderProps> = ({
               {isClusterMenuOpen && (
                 <div className="cluster-dropdown-menu" role="menu">
                   <div className="cluster-dropdown-header">
-                    <span className="dropdown-section-tag">CLUSTER CONTEXT</span>
-                    <span className="dropdown-count-tag">{CLUSTERS.length} ENVIRONMENTS</span>
+                    <span className="dropdown-section-tag">INTEGRATION OPTIONS</span>
+                    <span className="dropdown-count-tag">{CLUSTERS.length} OPTIONS</span>
                   </div>
 
                   <div className="cluster-dropdown-list">
@@ -248,7 +248,7 @@ export const Header: React.FC<HeaderProps> = ({
                           role="menuitem"
                           className={`cluster-option-item ${isSelected ? 'selected' : ''}`}
                           onClick={() => {
-                            onSelectCluster?.(c.name);
+                            onOpenClusterModal?.();
                             setIsClusterMenuOpen(false);
                           }}
                         >
@@ -287,7 +287,7 @@ export const Header: React.FC<HeaderProps> = ({
                         onOpenClusterModal?.();
                       }}
                     >
-                      <span>Connect External Clusters...</span>
+                      <span>View Planned Integrations...</span>
                       <ExternalLink size={12} />
                     </button>
                   </div>

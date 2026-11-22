@@ -9,7 +9,7 @@ export const FooterStatusBar: React.FC = () => {
         <Shield size={16} className="text-cyan-400" />
         <span className="footer-brand">ZeroTrustCloud</span>
         <span className="footer-divider">|</span>
-        <span className="footer-version">TrustMesh v1.0.0-beta</span>
+        <span className="footer-version">TrustMesh Dashboard Foundation</span>
       </div>
 
       {/* Center: Mission Statement */}
@@ -21,7 +21,7 @@ export const FooterStatusBar: React.FC = () => {
       <div className="footer-right">
         <div className="phase-badge">
           <span className="phase-dot" />
-          <span>Zero Trust Enforced</span>
+          <span>Security Controls: Demo</span>
         </div>
       </div>
     </footer>

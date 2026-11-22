@@ -1,3 +1,4 @@
+import { DemoNotice } from './components/DemoNotice';
 import React, { useState, useEffect } from 'react';
 import { Header } from './components/Header';
 import { Sidebar } from './components/Sidebar';
@@ -143,21 +144,19 @@ export const App: React.FC = () => {
               setIsIntegrationsModalOpen(true);
             }
           }}
-          unresolvedFindingsCount={findings.filter((f) => f.status !== 'resolved').length}
+          unresolvedFindingsCount={findings.filter((f) => f.status !== 'resolved' && f.status !== 'suppressed').length}
         />
 
         <main className="main-content-viewport" role="main">
           {currentModule === 'command_center' ? (
             commandCenterTab === 'overview' ? (
               <CommandCenterHero
-                findings={findings}
-                onFindingClick={handleFindingClick}
-                onStatusChange={handleUpdateFindingStatus}
-                onOpenIntegrations={() => setIsIntegrationsModalOpen(true)}
+                onNavigate={setCurrentModule}
                 onViewAllFindings={() => setCommandCenterTab('findings')}
               />
             ) : (
               <div className="findings-subview-wrapper">
+                <DemoNotice>Findings and risk scores are fixtures. Triage is session-only and does not remediate Kubernetes resources.</DemoNotice>
                 <div className="subview-header">
                   <button
                     className="back-to-overview-btn"
@@ -174,7 +173,7 @@ export const App: React.FC = () => {
               </div>
             )
           ) : currentModule === 'workload_identity' ? (
-            <IdentityAccessView onNavigateToFinding={handleNavigateToFinding} />
+            <IdentityAccessView />
           ) : currentModule === 'policy_governance' ? (
             <PolicyGovernanceView onNavigateToFinding={handleNavigateToFinding} />
           ) : currentModule === 'service_mesh' ? (
