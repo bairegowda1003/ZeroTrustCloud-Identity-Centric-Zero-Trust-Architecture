@@ -209,7 +209,7 @@ export const PolicyInventoryTable: React.FC<PolicyInventoryTableProps> = ({
           Showing <strong>{filteredPolicies.length}</strong> of <strong>{policies.length}</strong> Gatekeeper policies
         </span>
         <span className="gatekeeper-version-hint">
-          Engine: <code>OPA Gatekeeper v3.15.0</code> · Validating Webhook Active
+          Engine: <code>OPA Gatekeeper v3.15.0</code> · Example configuration; enforcement unverified
         </span>
       </div>
     </div>

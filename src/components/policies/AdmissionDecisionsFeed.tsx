@@ -41,11 +41,11 @@ export const AdmissionDecisionsFeed: React.FC<AdmissionDecisionsFeedProps> = ({
         <div className="feed-header-left">
           <div className="live-tag">
             <span className="live-pulse-dot" />
-            <span>ADMISSION WEBHOOK EVIDENCE</span>
+            <span>DEMONSTRATION ADMISSION RECORDS</span>
           </div>
           <h3 className="feed-title">Kubernetes Admission Decisions</h3>
           <p className="feed-subtitle">
-            Cryptographic audit of deployment attempts intercepted by the OPA Gatekeeper validating admission controller.
+            Illustrative admission outcomes; no live webhook or cryptographic audit is queried.
           </p>
         </div>
 

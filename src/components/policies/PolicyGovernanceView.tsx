@@ -1,3 +1,4 @@
+import { DemoNotice } from '../DemoNotice';
 import React, { useState } from 'react';
 import {
   ShieldCheck,
@@ -17,6 +18,7 @@ import {
   POLICY_AUDIT_VIOLATIONS,
 } from '../../data/demoPolicies';
 import { GatekeeperPolicyRecord } from '../../types/policy';
+import { LiveGatekeeperStatus } from './LiveGatekeeperStatus';
 import { PolicySummaryCards } from './PolicySummaryCards';
 import { PolicyInventoryTable } from './PolicyInventoryTable';
 import { PolicyDetailDrawer } from './PolicyDetailDrawer';
@@ -38,7 +40,6 @@ export const PolicyGovernanceView: React.FC<PolicyGovernanceViewProps> = ({
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [selectedPolicy, setSelectedPolicy] = useState<GatekeeperPolicyRecord | null>(null);
   const [isDrawerOpen, setIsDrawerOpen] = useState<boolean>(false);
-  const [isSyncing, setIsSyncing] = useState<boolean>(false);
   const [syncNotice, setSyncNotice] = useState<string | null>(null);
 
   const handleSelectPolicy = (policy: GatekeeperPolicyRecord) => {
@@ -47,17 +48,14 @@ export const PolicyGovernanceView: React.FC<PolicyGovernanceViewProps> = ({
   };
 
   const handleSyncEngine = () => {
-    setIsSyncing(true);
-    setSyncNotice(null);
-    setTimeout(() => {
-      setIsSyncing(false);
-      setSyncNotice('Standalone evaluation: 4 Gatekeeper constraint templates verified against testbed baseline.');
-      setTimeout(() => setSyncNotice(null), 4000);
-    }, 700);
+    setSyncNotice(
+      'Demonstration policies, decisions, and audit records are shown below. Live Gatekeeper constraints and webhook statuses are queried directly in the top live status panel.'
+    );
   };
 
   return (
     <div className="policy-governance-container">
+      <DemoNotice />
       {/* 1. Official Domain Header */}
       <div className="domain-page-header">
         <div className="domain-header-left">
@@ -68,33 +66,32 @@ export const PolicyGovernanceView: React.FC<PolicyGovernanceViewProps> = ({
             <h1 className="domain-page-title">Policy-as-Code & Admission Control</h1>
             <span className="domain-live-badge policy">
               <span className="live-pip emerald" />
-              OPA Gatekeeper {GATEKEEPER_ENGINE_INFO.version}
+              INTEGRATED MODULE
             </span>
           </div>
           <div className="domain-meta-subrow">
             <span className="domain-meta-crumb">
-              Mode: <strong>Enforce & Audit</strong>
+              Live Target: <strong>kind-trustmesh-lab</strong>
             </span>
             <span className="domain-meta-sep">•</span>
             <span className="domain-meta-crumb">
-              Cluster: <strong>{GATEKEEPER_ENGINE_INFO.clusterContext}</strong>
+              Namespace: <strong>trustmesh-lab</strong>
             </span>
             <span className="domain-meta-sep">•</span>
             <span className="domain-meta-crumb">
-              Webhook: <strong>Validating Webhook Active (100% Intercept)</strong>
+              Controller: <strong>OPA Gatekeeper</strong>
             </span>
           </div>
         </div>
 
         <div className="domain-header-right">
           <button
-            className={`domain-action-btn ${isSyncing ? 'syncing' : ''}`}
+            className="domain-action-btn"
             onClick={handleSyncEngine}
-            disabled={isSyncing}
-            title="Verify Gatekeeper admission webhook status"
+            title="Explain the policy data sources"
           >
-            <RefreshCw size={13} className={isSyncing ? 'spin-icon' : ''} />
-            <span>{isSyncing ? 'Evaluating Webhook...' : 'Sync Constraints'}</span>
+            <RefreshCw size={13} />
+            <span>About policy sources</span>
           </button>
         </div>
       </div>
@@ -106,7 +103,15 @@ export const PolicyGovernanceView: React.FC<PolicyGovernanceViewProps> = ({
         </div>
       )}
 
-      {/* 2. Dynamic KPI Summary Cards */}
+      {/* 2. Verified Live Gatekeeper Policies Panel */}
+      <LiveGatekeeperStatus />
+
+      {/* 3. Demonstration & Simulated Interface Section Header */}
+      <div className="demo-section-divider">
+        <span className="demo-section-label">DEMONSTRATION / SIMULATED INTERFACE</span>
+      </div>
+
+      {/* 4. Dynamic KPI Summary Cards */}
       <PolicySummaryCards
         policies={policies}
         decisions={decisions}

@@ -1,3 +1,4 @@
+import { DemoNotice } from '../DemoNotice';
 import React, { useState, useEffect } from 'react';
 import {
   X,
@@ -75,7 +76,7 @@ export const PolicyDetailDrawer: React.FC<PolicyDetailDrawerProps> = ({
               <span className="drawer-category-pill">{policy.category}</span>
               <span className="drawer-mode-pill enforce">
                 <ShieldCheck size={12} />
-                <span>Enforce (Deny on Admission)</span>
+                <span>Example: Deny on Admission</span>
               </span>
             </div>
           </div>
@@ -121,6 +122,7 @@ export const PolicyDetailDrawer: React.FC<PolicyDetailDrawerProps> = ({
 
         {/* Drawer Body */}
         <div className="policy-drawer-body">
+          <DemoNotice />
           {activeTab === 'rego' && (
             <div className="drawer-tab-pane">
               {/* Policy Meta Grid */}
@@ -190,7 +192,7 @@ export const PolicyDetailDrawer: React.FC<PolicyDetailDrawerProps> = ({
               </div>
 
               <div className="drawer-section">
-                <h4 className="drawer-section-title">Enforcement Metrics</h4>
+                <h4 className="drawer-section-title">Demonstration Metrics</h4>
                 <div className="policy-metrics-pill-grid">
                   <div className="metric-pill">
                     <span className="metric-label">Active Audit Violations</span>
