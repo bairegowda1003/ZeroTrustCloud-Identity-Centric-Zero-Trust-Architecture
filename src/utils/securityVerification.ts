@@ -37,13 +37,16 @@ export function validateSecurityVerification(payload: unknown): LiveSecurityVeri
 
   const validStatuses = new Set<VerificationStatus>(['PASS', 'FAIL', 'UNKNOWN']);
 
+  const ids = new Set<string>();
   const checks: VerificationCheck[] = record.checks.map((item, idx) => {
     if (!item || typeof item !== 'object') {
       throw new Error(`Invalid verification check at index ${idx}`);
     }
     const it = item as Record<string, unknown>;
 
-    const id = typeof it.id === 'string' && it.id.trim() ? it.id.trim() : `check-${idx}`;
+    const id = typeof it.id === 'string' ? it.id.trim() : '';
+    if (!id || ids.has(id)) throw new Error(`Missing or duplicate verification check ID at index ${idx}`);
+    ids.add(id);
     const control = typeof it.control === 'string' && it.control.trim() ? it.control.trim() : 'Unknown Control';
     const rawStatus = typeof it.status === 'string' ? it.status.toUpperCase() : 'UNKNOWN';
     const status: VerificationStatus = validStatuses.has(rawStatus as VerificationStatus)
@@ -53,10 +56,10 @@ export function validateSecurityVerification(payload: unknown): LiveSecurityVeri
     const evidence = (it.evidence && typeof it.evidence === 'object' && !Array.isArray(it.evidence))
       ? (it.evidence as Record<string, unknown>)
       : {};
-    const source = typeof it.source === 'string' ? it.source : 'Kubernetes collector';
+    const source = typeof it.source === 'string' ? it.source : 'Source not reported';
     const observedAt = (typeof it.observedAt === 'string' && !Number.isNaN(Date.parse(it.observedAt)))
       ? it.observedAt
-      : record.collectedAt as string;
+      : '';
 
     return {
       id,
