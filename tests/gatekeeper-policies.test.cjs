@@ -196,22 +196,34 @@ test('11. Malformed response rejected by schema validator', () => {
   }
 });
 
-test('12. PolicyGovernanceView renders both live Gatekeeper section and demonstration section', () => {
+test('studio separates operational evidence from collapsed admission examples', () => {
   const { PolicyGovernanceView } = require('../src/components/policies/PolicyGovernanceView.tsx');
   const html = renderToStaticMarkup(React.createElement(PolicyGovernanceView));
+  assert.match(html, /Policy Enforcement Studio/);
+  assert.match(html, /<details class="ps-demo"><summary>Historical Experiments/);
+  assert.match(html, /DEMONSTRATION \/ SIMULATED/);
+  assert.doesNotMatch(html, /100%|Severity Distribution|Active Policies/);
+});
 
-  // Must render live container
-  assert.match(html, /Verified Live Gatekeeper Policies &amp; Webhook Status/);
-  assert.match(html, /kind-trustmesh-lab/);
+test('scene summarizes only reported scope, webhook and complete audit counts', () => {
+  const { summary, guardian } = require('../src/components/policies/policyPresentation.ts');
+  const { constraints } = fixture();
+  assert.deepEqual(constraints.map(c => guardian(c.name)[1]), ['shield', 'key', 'layers']);
+  assert.deepEqual(summary(constraints), {
+    scope: {resources:'apps/Deployment', namespaces:'trustmesh-lab'},
+    violations: 0, webhook:'Reported enforced',
+  });
+  constraints[0].webhookEnforced = null;
+  constraints[0].audit.totalViolations = null;
+  constraints[0].match.namespaces = ['other'];
+  assert.equal(summary(constraints).violations, 'Unknown');
+  assert.equal(summary(constraints).webhook, 'Mixed reports');
+  assert.equal(summary(constraints).scope.resources, 'Multiple scopes');
+  assert.equal(summary([]).violations, 'Unknown');
+});
 
-  // Must render demonstration provenance and section divider
-  assert.match(html, /DEMONSTRATION DATA/);
-  assert.match(html, /DEMONSTRATION \/ SIMULATED INTERFACE/);
-  assert.match(html, /Policy Inventory/);
-  assert.match(html, /Admission Decisions/);
-  assert.match(html, /Cluster Audit Violations/);
-
-  // Must contain disclaimers preventing misrepresentation
-  assert.match(html, /Reported webhook status reflects controller-manager pod health/);
-  assert.match(html, /Constraints target Deployments in the trustmesh-lab namespace; enforcement is not cluster-wide/);
+test('malformed selectors are rejected before scene mapping', () => {
+  const payload = fixture();
+  payload.constraints[0].match.kinds = [null];
+  assert.throws(() => validateGatekeeperPolicies(payload));
 });

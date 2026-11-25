@@ -56,14 +56,18 @@ export function useSource<T extends { collectedAt: string }>(
   return { data, retrievedAt, error, isLoading, staleReason, refresh };
 }
 
-export function useCommandSources() {
+export function useLabSources() {
   return {
-    cluster: useSource(cluster.requestKubernetesStatus, cluster.snapshotAgeReason),
     policy: useSource(policy.requestGatekeeperPolicies, policy.snapshotAgeReason),
     network: useSource(network.requestSecurityNetwork, network.snapshotAgeReason),
     identity: useSource(identity.requestIdentityWorkloads, identity.snapshotAgeReason),
     verification: useSource(verification.requestSecurityVerification, verification.snapshotAgeReason),
   };
+}
+
+export function useCommandSources() {
+  const clusterFeed = useSource(cluster.requestKubernetesStatus, cluster.snapshotAgeReason);
+  return { cluster: clusterFeed, ...useLabSources() };
 }
 
 export type CommandSources = ReturnType<typeof useCommandSources>;

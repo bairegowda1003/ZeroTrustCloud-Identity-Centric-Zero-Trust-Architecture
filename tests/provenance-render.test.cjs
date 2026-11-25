@@ -31,18 +31,14 @@ test('security pages identify their actual evidence sources', () => {
   for (const [name, filename] of pages) {
     const html = render(require(filename)[name], { findings: INITIAL_DEMO_FINDINGS, onFindingClick() {} });
     const expectedNotice = name === 'SecurityObservabilityView'
-      ? 'LIVE VERIFICATION + DEMONSTRATION DATA'
+      ? 'HISTORICAL EXPERIMENT / DEMONSTRATION'
+      : name === 'TrustArchitectureView' ? 'Connections illustrate configured architecture'
+      : name === 'SupplyChainView' ? 'Historical / offline evidence'
+      : name === 'PolicyGovernanceView' ? 'DEMONSTRATION / SIMULATED'
       : name === 'IdentityAccessView' ? 'Kubernetes reports the assignments' : notice;
     assert.ok(html.includes(expectedNotice), name);
     assert.doesNotMatch(html, /Mathematically Proven|6\/6 Controls Verified|Zero Trust Enforced|>Live<|Negotiating mTLS/);
   }
-});
-
-test('scorecard renders examples instead of successful verification verdicts', () => {
-  const { ZeroTrustScorecardMatrix } = require('../src/components/observability/ZeroTrustScorecardMatrix.tsx');
-  const html = render(ZeroTrustScorecardMatrix);
-  assert.doesNotMatch(html, /PASSED|6\/6 Controls Verified/);
-  assert.match(html, /DEMO ONLY/);
 });
 
 test('session triage removes resolved and suppressed items from priorities', () => {

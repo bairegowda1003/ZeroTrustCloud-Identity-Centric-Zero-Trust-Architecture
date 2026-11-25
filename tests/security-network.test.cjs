@@ -302,13 +302,63 @@ test('9. HTTP 503 and network errors rejected properly by request function', asy
   }
 });
 
-test('10. TrustArchitectureView renders both live telemetry section and demonstration section', () => {
+test('architecture initial render distinguishes unknown evidence from observed controls', () => {
   const { TrustArchitectureView } = require('../src/components/mesh/TrustArchitectureView');
   const html = renderToStaticMarkup(React.createElement(TrustArchitectureView));
+  assert.match(html, /Awaiting evidence/);
+  assert.match(html, /Scope unconfirmed/);
+  assert.match(html, /No server reported/);
+  assert.match(html, /Automated verification/);
+  assert.doesNotMatch(html, /Service Mesh Paths|mesh-ring-grid|STRICT mTLS Demo/);
+});
 
-  assert.ok(html.includes('live-network-security-container'), 'Renders LiveNetworkSecurityStatus container');
-  assert.ok(html.includes('LIVE KUBERNETES'), 'Renders LIVE KUBERNETES source badge');
-  assert.ok(html.includes('DEMONSTRATION / SIMULATED INTERFACE'), 'Renders demonstration interface boundary');
-  assert.ok(html.includes('mesh-ring-grid'), 'Renders existing mesh summary cards below divider');
-  assert.ok(html.includes('Service Mesh Paths'), 'Renders subview navigation tabs');
+test('malformed nested records cannot produce sidecar or policy claims', () => {
+  for (const corrupt of [
+    data => { data.workloads[0].sidecar.present = 'false'; },
+    data => { data.networkPolicies[0].ingress = null; },
+    data => { data.peerAuthentications[0].selector.matchLabels = { app: {} }; },
+    data => { data.networkPolicies[1].ingress[0].from[0].podSelector = { matchExpressions: [{}] }; },
+  ]) {
+    const data = fixture();
+    corrupt(data);
+    assert.throws(() => validateSecurityNetwork(data), /Malformed|Unsupported/);
+  }
+});
+
+test('plaintext test label takes precedence over the authorized ingress role', () => {
+  const { podTitle } = require('../src/components/mesh/NetworkEvidence');
+  const pod = fixture().workloads[0];
+  pod.labels['trustmesh.io/test'] = 'plaintext-negative';
+  assert.equal(podTitle(pod), 'Plaintext client');
+});
+
+test('architecture ties ingress selectors and mTLS scope to observed server Pods', () => {
+  const { serverScope } = require('../src/components/mesh/ArchitectureScene');
+  const data = validateSecurityNetwork(fixture());
+  const scope = serverScope(data);
+  const authorized = data.workloads.find(p => p.labels.role === 'authorized');
+  const unauthorized = data.workloads.find(p => p.labels.role === 'unauthorized');
+  const plaintext = { ...authorized, sidecar: { ...authorized.sidecar, present: false } };
+  assert.equal(scope.policies.length, 2);
+  assert.deepEqual(scope.ports, ['TCP/8080']);
+  assert.equal(scope.auth[0].mode, 'STRICT');
+  assert.equal(scope.matchesSource(authorized), true);
+  assert.equal(scope.matchesSource(plaintext), true);
+  assert.equal(scope.matchesSource(unauthorized), false);
+  data.workloadsAvailable = false;
+  assert.equal(serverScope(data).policies.length, 0);
+  assert.equal(serverScope(data).auth.length, 0);
+});
+
+test('unresolved namespace evidence cannot establish a missing ingress allowance', () => {
+  const { serverScope } = require('../src/components/mesh/ArchitectureScene');
+  const data = validateSecurityNetwork(fixture());
+  const pod = data.workloads.find(p => p.labels.role === 'unauthorized');
+  const rule = data.networkPolicies.find(policy => policy.ingress.length).ingress[0];
+  rule.from.push({ namespaceSelector: { matchLabels: { team: 'integration' } } });
+  assert.equal(serverScope(data).matchesSource(pod), null);
+  rule.from.push({ podSelector: { matchLabels: { role: 'unauthorized' } } });
+  assert.equal(serverScope(data).matchesSource(pod), true);
+  data.networkPoliciesAvailable = false;
+  assert.equal(serverScope(data).matchesSource(pod), null);
 });

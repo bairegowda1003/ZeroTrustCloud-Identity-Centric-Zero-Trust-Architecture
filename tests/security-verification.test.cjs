@@ -341,14 +341,18 @@ test('13. CommandCenterHero renders LiveVerificationCard alongside LiveKubernete
   assert.ok(html.includes('live-k8s-panel'), 'Renders LiveKubernetesStatus panel');
 });
 
-test('14. SecurityObservabilityView renders LiveVerificationDetail above demonstration section', () => {
-  const { SecurityObservabilityView } = require('../src/components/observability/SecurityObservabilityView');
-  const html = renderToStaticMarkup(React.createElement(SecurityObservabilityView));
-
-  assert.ok(html.includes('live-verification-detail-container'), 'Renders LiveVerificationDetail container');
-  assert.ok(html.includes('AUTOMATED VERIFICATION'), 'Renders AUTOMATED VERIFICATION badge');
-  assert.ok(html.includes('DEMONSTRATION / SIMULATED INTERFACE'), 'Renders demonstration boundary');
-  assert.ok(html.includes('Unified Security Events'), 'Renders existing demo events tab');
+test('14. Missing identity cannot alias another check; absent provenance stays unreported', () => {
+  const fixture = validFixture();
+  const check = fixture.checks[0];
+  delete check.source;
+  delete check.observedAt;
+  const parsed = validateSecurityVerification(fixture).checks[0];
+  assert.equal(parsed.observedAt, '');
+  assert.equal(parsed.source, 'Source not reported');
+  fixture.checks.push(check);
+  assert.throws(() => validateSecurityVerification(fixture), /duplicate/);
+  delete check.id;
+  assert.throws(() => validateSecurityVerification(fixture), /Missing/);
 });
 
 test('15. Regression: recognizes plaintext client with actual live labels (app=trustmesh-integration-client, role=authorized, trustmesh.io/test=plaintext-negative)', () => {
