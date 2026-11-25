@@ -89,6 +89,38 @@ export interface LiveSecurityNetworkResponse {
   networkPoliciesError?: string | null;
 }
 
+function fields(value: unknown): Record<string, unknown> {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) throw new Error('Malformed network resource');
+  return value as Record<string, unknown>;
+}
+
+function stringField(value: unknown): string {
+  if (typeof value !== 'string' || !value.trim()) throw new Error('Malformed network resource name or state');
+  return value;
+}
+
+function flag(value: unknown): boolean {
+  if (typeof value !== 'boolean') throw new Error('Malformed network observation flag');
+  return value;
+}
+
+function labelMap(value: unknown): Record<string,string> {
+  const map = fields(value);
+  if (Object.values(map).some(v => typeof v !== 'string')) throw new Error('Malformed Kubernetes labels');
+  return map as Record<string,string>;
+}
+
+function list(value: unknown): unknown[] {
+  if (!Array.isArray(value)) throw new Error('Malformed network resource inventory');
+  return value;
+}
+
+function selector(value: unknown) {
+  const raw = fields(value);
+  if (Object.keys(raw).some(k => k !== 'matchLabels')) throw new Error('Unsupported selector in network evidence');
+  return { matchLabels: labelMap(raw.matchLabels ?? {}) };
+}
+
 export function validateSecurityNetwork(payload: unknown): LiveSecurityNetworkResponse {
   if (!payload || typeof payload !== 'object') {
     throw new Error('Malformed security network response: payload is not an object');
@@ -123,10 +155,10 @@ export function validateSecurityNetwork(payload: unknown): LiveSecurityNetworkRe
   }
   const istiod: LiveSecurityNetworkIstiod = {
     name: typeof rawIstiod.name === 'string' ? rawIstiod.name : 'istiod',
-    ready: Boolean(rawIstiod.ready),
+    ready: flag(rawIstiod.ready),
     desiredReplicas: typeof rawIstiod.desiredReplicas === 'number' ? rawIstiod.desiredReplicas : null,
     readyReplicas: typeof rawIstiod.readyReplicas === 'number' ? rawIstiod.readyReplicas : null,
-    available: Boolean(rawIstiod.available),
+    available: flag(rawIstiod.available),
     error: typeof rawIstiod.error === 'string' ? rawIstiod.error : null,
   };
 
@@ -137,120 +169,50 @@ export function validateSecurityNetwork(payload: unknown): LiveSecurityNetworkRe
   }
   const namespaceInjection: LiveSecurityNetworkNamespaceInjection = {
     namespace: typeof rawNsInj.namespace === 'string' ? rawNsInj.namespace : record.namespace,
-    enabled: Boolean(rawNsInj.enabled),
+    enabled: flag(rawNsInj.enabled),
     labelValue: typeof rawNsInj.labelValue === 'string' ? rawNsInj.labelValue : null,
-    available: Boolean(rawNsInj.available),
+    available: flag(rawNsInj.available),
     error: typeof rawNsInj.error === 'string' ? rawNsInj.error : null,
   };
 
-  // Validate peerAuthentications
-  const rawPA = record.peerAuthentications;
-  if (!Array.isArray(rawPA)) {
-    throw new Error('Malformed security network response: peerAuthentications must be an array');
-  }
-  const peerAuthentications: LiveSecurityNetworkPeerAuth[] = rawPA.map((item, idx) => {
-    if (!item || typeof item !== 'object') {
-      throw new Error(`Invalid peerAuthentication at index ${idx}`);
-    }
-    const it = item as Record<string, unknown>;
-    const name = typeof it.name === 'string' ? it.name : `peerauth-${idx}`;
-    const mode = typeof it.mode === 'string' ? it.mode : 'UNSPECIFIED';
-    const selector = (it.selector && typeof it.selector === 'object') ? (it.selector as Record<string, unknown>) : {};
-    const matchLabels = (selector.matchLabels && typeof selector.matchLabels === 'object')
-      ? (selector.matchLabels as Record<string, string>)
-      : {};
-    return {
-      name,
-      mode,
-      selector: { matchLabels },
-      workloadScoped: Boolean(it.workloadScoped ?? (Object.keys(matchLabels).length > 0)),
-    };
+  const peerAuthentications = list(record.peerAuthentications).map(item => {
+    const p = fields(item);
+    const target = selector(p.selector);
+    return { name: stringField(p.name), mode: stringField(p.mode), selector: target,
+      workloadScoped: Object.keys(target.matchLabels).length > 0 };
   });
 
-  // Validate workloads
-  const rawWorkloads = record.workloads;
-  if (!Array.isArray(rawWorkloads)) {
-    throw new Error('Malformed security network response: workloads must be an array');
-  }
-  const workloads: LiveSecurityNetworkWorkload[] = rawWorkloads.map((item, idx) => {
-    if (!item || typeof item !== 'object') {
-      throw new Error(`Invalid workload at index ${idx}`);
-    }
-    const it = item as Record<string, unknown>;
-    const name = typeof it.name === 'string' ? it.name : `pod-${idx}`;
-    const phase = typeof it.phase === 'string' ? it.phase : 'Unknown';
-    const labels = (it.labels && typeof it.labels === 'object') ? (it.labels as Record<string, string>) : {};
-    const rawSidecar = (it.sidecar && typeof it.sidecar === 'object') ? (it.sidecar as Record<string, unknown>) : {};
-    const loc = rawSidecar.location;
-    const location: 'initContainers' | 'containers' | 'none' =
-      loc === 'initContainers' || loc === 'containers' ? loc : 'none';
-
-    return {
-      name,
-      phase,
-      labels,
-      sidecar: {
-        present: Boolean(rawSidecar.present),
-        containerName: typeof rawSidecar.containerName === 'string' ? rawSidecar.containerName : null,
-        location,
-        nativeSidecar: Boolean(rawSidecar.nativeSidecar),
-        ready: Boolean(rawSidecar.ready),
-      },
-    };
+  const workloads: LiveSecurityNetworkWorkload[] = list(record.workloads).map(item => {
+    const p = fields(item);
+    const sidecar = fields(p.sidecar);
+    const location = sidecar.location;
+    if (location !== 'containers' && location !== 'initContainers' && location !== 'none')
+      throw new Error('Malformed sidecar location');
+    return { name: stringField(p.name), phase: stringField(p.phase), labels: labelMap(p.labels),
+      sidecar: { present: flag(sidecar.present), nativeSidecar: flag(sidecar.nativeSidecar),
+        ready: flag(sidecar.ready), location, containerName: typeof sidecar.containerName === 'string' ? sidecar.containerName : null } };
   });
 
-  // Validate networkPolicies
-  const rawNP = record.networkPolicies;
-  if (!Array.isArray(rawNP)) {
-    throw new Error('Malformed security network response: networkPolicies must be an array');
-  }
-  const networkPolicies: LiveSecurityNetworkPolicy[] = rawNP.map((item, idx) => {
-    if (!item || typeof item !== 'object') {
-      throw new Error(`Invalid networkPolicy at index ${idx}`);
-    }
-    const it = item as Record<string, unknown>;
-    const name = typeof it.name === 'string' ? it.name : `netpol-${idx}`;
-    const podSelector = (it.podSelector && typeof it.podSelector === 'object')
-      ? (it.podSelector as Record<string, unknown>)
-      : {};
-    const matchLabels = (podSelector.matchLabels && typeof podSelector.matchLabels === 'object')
-      ? (podSelector.matchLabels as Record<string, string>)
-      : {};
-    const policyTypes = Array.isArray(it.policyTypes) ? (it.policyTypes as string[]) : [];
-
-    const rawIngress = Array.isArray(it.ingress) ? (it.ingress as unknown[]) : [];
-    const ingress: LiveSecurityNetworkIngressRule[] = rawIngress.map((rule) => {
-      const r = (rule && typeof rule === 'object') ? (rule as Record<string, unknown>) : {};
-      const rawFrom = Array.isArray(r.from) ? (r.from as unknown[]) : [];
-      const from: LiveSecurityNetworkIngressPeer[] = rawFrom.map((peer) => {
-        const p = (peer && typeof peer === 'object') ? (peer as Record<string, unknown>) : {};
-        return {
-          podSelector: p.podSelector && typeof p.podSelector === 'object'
-            ? (p.podSelector as { matchLabels?: Record<string, string> })
-            : undefined,
-          namespaceSelector: p.namespaceSelector && typeof p.namespaceSelector === 'object'
-            ? (p.namespaceSelector as { matchLabels?: Record<string, string> })
-            : undefined,
-        };
+  const networkPolicies = list(record.networkPolicies).map(item => {
+    const p = fields(item);
+    const podSelector = selector(p.podSelector);
+    const ingress = list(p.ingress).map(item => {
+      const rule = fields(item);
+      const from = list(rule.from).map(item => {
+        const peer = fields(item);
+        return { podSelector: peer.podSelector === undefined ? undefined : selector(peer.podSelector),
+          namespaceSelector: peer.namespaceSelector === undefined ? undefined : selector(peer.namespaceSelector) };
       });
-      const rawPorts = Array.isArray(r.ports) ? (r.ports as unknown[]) : [];
-      const ports: LiveSecurityNetworkIngressPort[] = rawPorts.map((pt) => {
-        const p = (pt && typeof pt === 'object') ? (pt as Record<string, unknown>) : {};
-        return {
-          port: (typeof p.port === 'number' || typeof p.port === 'string') ? p.port : undefined,
-          protocol: typeof p.protocol === 'string' ? p.protocol : 'TCP',
-        };
+      const ports = list(rule.ports).map(item => {
+        const p = fields(item);
+        if (p.port != null && typeof p.port !== 'string' && typeof p.port !== 'number')
+          throw new Error('Malformed ingress port');
+        return { protocol: stringField(p.protocol), port: p.port ?? undefined };
       });
       return { from, ports };
     });
-
-    return {
-      name,
-      podSelector: { matchLabels },
-      policyTypes,
-      ingress,
-      workloadScoped: Boolean(it.workloadScoped ?? (Object.keys(matchLabels).length > 0)),
-    };
+    return { name: stringField(p.name), podSelector, policyTypes: list(p.policyTypes).map(stringField),
+      workloadScoped: Object.keys(podSelector.matchLabels).length > 0, ingress };
   });
 
   return {
@@ -264,13 +226,13 @@ export function validateSecurityNetwork(payload: unknown): LiveSecurityNetworkRe
     istiod,
     namespaceInjection,
     peerAuthentications,
-    peerAuthenticationsAvailable: Boolean(record.peerAuthenticationsAvailable ?? true),
+    peerAuthenticationsAvailable: flag(record.peerAuthenticationsAvailable),
     peerAuthenticationsError: typeof record.peerAuthenticationsError === 'string' ? record.peerAuthenticationsError : null,
     workloads,
-    workloadsAvailable: Boolean(record.workloadsAvailable ?? true),
+    workloadsAvailable: flag(record.workloadsAvailable),
     workloadsError: typeof record.workloadsError === 'string' ? record.workloadsError : null,
     networkPolicies,
-    networkPoliciesAvailable: Boolean(record.networkPoliciesAvailable ?? true),
+    networkPoliciesAvailable: flag(record.networkPoliciesAvailable),
     networkPoliciesError: typeof record.networkPoliciesError === 'string' ? record.networkPoliciesError : null,
   };
 }
