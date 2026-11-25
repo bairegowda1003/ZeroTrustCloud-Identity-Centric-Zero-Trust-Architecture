@@ -4,6 +4,11 @@ import App from './App';
 import './styles/index.css';
 import './styles/command-center.css';
 import './styles/identity-fabric.css';
+import './styles/policy-studio.css';
+import './styles/network-studio.css';
+import './styles/supply-studio.css';
+import './styles/verification-studio.css';
+import './styles/app-shell.css';
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
