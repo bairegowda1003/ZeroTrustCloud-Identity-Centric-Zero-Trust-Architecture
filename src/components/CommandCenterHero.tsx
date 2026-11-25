@@ -11,7 +11,7 @@ import { topologyNodes } from '../utils/commandTopology';
 import type { ActiveModule } from '../types/security';
 
 const routeName: Partial<Record<ActiveModule,string>> = {
-  service_mesh:'Trust Architecture', policy_governance:'Policies', workload_identity:'Identity', experiments:'Audit & Observability',
+  service_mesh:'Trust Architecture', policy_governance:'Policies', workload_identity:'Identity', experiments:'Security Verification',
 };
 const documented: Record<string,string> = {
   gate:'Expected constraints: trustmesh-container-security, trustmesh-require-dedicated-sa and trustmesh-workload-hardening.',
@@ -122,7 +122,7 @@ export function CommandCenterHero({onViewAllFindings,onNavigate}: {onViewAllFind
     <div className="tm-evidence tm-explorers"><section aria-label="Workload explorer">
       <LiveKubernetesStatus source={sources.cluster} identity={sources.identity} network={sources.network}/></section>
       <section aria-label="Verification explorer"><LiveVerificationCard source={verification}/>
-      <button className="tm-audit-link" onClick={()=>onNavigate('experiments')}>Audit &amp; Observability <ArrowUpRight size={14}/></button></section></div>
+      <button className="tm-audit-link" onClick={()=>onNavigate('experiments')}>Security Verification <ArrowUpRight size={14}/></button></section></div>
     <details className="tm-examples"><summary>Demonstration workspace</summary><DemoNotice>Findings in this workspace are examples.</DemoNotice><button onClick={onViewAllFindings}>Explore demo findings <ArrowUpRight size={14}/></button></details>
   </article>;
 }
