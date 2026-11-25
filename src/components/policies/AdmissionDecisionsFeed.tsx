@@ -39,41 +39,31 @@ export const AdmissionDecisionsFeed: React.FC<AdmissionDecisionsFeedProps> = ({
       {/* Header & Filter Controls */}
       <div className="admission-feed-header">
         <div className="feed-header-left">
-          <div className="live-tag">
-            <span className="live-pulse-dot" />
-            <span>DEMONSTRATION ADMISSION RECORDS</span>
-          </div>
-          <h3 className="feed-title">Kubernetes Admission Decisions</h3>
-          <p className="feed-subtitle">
-            Illustrative admission outcomes; no live webhook or cryptographic audit is queried.
-          </p>
+          <h3 className="feed-title">Admission scenarios</h3>
         </div>
 
         {/* Filter Pills */}
-        <div className="decision-filter-pills" role="tablist">
+        <div className="decision-filter-pills" role="group" aria-label="Filter simulated scenarios">
           <button
-            role="tab"
-            aria-selected={decisionFilter === 'ALL'}
+            aria-pressed={decisionFilter === 'ALL'}
             className={`decision-filter-pill ${decisionFilter === 'ALL' ? 'active' : ''}`}
             onClick={() => setDecisionFilter('ALL')}
           >
             All ({decisions.length})
           </button>
           <button
-            role="tab"
-            aria-selected={decisionFilter === 'ALLOW'}
+            aria-pressed={decisionFilter === 'ALLOW'}
             className={`decision-filter-pill allow ${decisionFilter === 'ALLOW' ? 'active' : ''}`}
             onClick={() => setDecisionFilter('ALLOW')}
           >
-            Admitted ({decisions.filter((d) => d.decision === 'ALLOW').length})
+            Allow ({decisions.filter((d) => d.decision === 'ALLOW').length})
           </button>
           <button
-            role="tab"
-            aria-selected={decisionFilter === 'DENY'}
+            aria-pressed={decisionFilter === 'DENY'}
             className={`decision-filter-pill deny ${decisionFilter === 'DENY' ? 'active' : ''}`}
             onClick={() => setDecisionFilter('DENY')}
           >
-            Blocked ({decisions.filter((d) => d.decision === 'DENY').length})
+            Deny ({decisions.filter((d) => d.decision === 'DENY').length})
           </button>
         </div>
       </div>
@@ -91,51 +81,39 @@ export const AdmissionDecisionsFeed: React.FC<AdmissionDecisionsFeedProps> = ({
                 isExpanded ? 'expanded' : ''
               }`}
             >
-              <div
+              <button type="button"
                 className="admission-card-summary"
                 onClick={() => toggleExpand(dec.id)}
-                role="button"
-                tabIndex={0}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter' || e.key === ' ') {
-                    e.preventDefault();
-                    toggleExpand(dec.id);
-                  }
-                }}
+                aria-expanded={isExpanded}
               >
-                <div className="card-left-group">
-                  <div className={`decision-icon-badge ${isAllow ? 'allow' : 'deny'}`}>
+                <span className="card-left-group">
+                  <span className={`decision-icon-badge ${isAllow ? 'allow' : 'deny'}`}>
                     {isAllow ? <CheckCircle2 size={18} /> : <XCircle size={18} />}
-                  </div>
-                  <div className="workload-info-group">
-                    <div className="workload-name-row">
+                  </span>
+                  <span className="workload-info-group">
+                    <span className="workload-name-row">
                       <span className="workload-name">{dec.workloadName}</span>
                       <span className="workload-kind-tag">{dec.workloadKind}</span>
                       <span className={`namespace-pill ns-${dec.namespace}`}>{dec.namespace}</span>
                       <span className="source-tag">{dec.sourceType}</span>
-                    </div>
-                    <div className="policy-eval-text">
+                    </span>
+                    <span className="policy-eval-text">
                       <span>Evaluated: <strong>{dec.evaluatingPolicyName}</strong></span>
-                    </div>
-                  </div>
-                </div>
+                    </span>
+                  </span>
+                </span>
 
-                <div className="card-right-group">
-                  <div className="timestamp-box">
+                <span className="card-right-group">
+                  <span className="timestamp-box">
                     <Clock size={12} />
                     <span>{dec.timestamp}</span>
-                  </div>
-                  <div className={`verdict-badge ${isAllow ? 'allow' : 'deny'}`}>
+                  </span>
+                  <span className={`verdict-badge ${isAllow ? 'allow' : 'deny'}`}>
                     {dec.decision}
-                  </div>
-                  <button
-                    className="expand-arrow-btn"
-                    aria-label={isExpanded ? 'Collapse' : 'Expand Details'}
-                  >
-                    {isExpanded ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
-                  </button>
-                </div>
-              </div>
+                  </span>
+                  {isExpanded ? <ChevronUp size={16}/> : <ChevronDown size={16}/>}
+                </span>
+              </button>
 
               {/* Expandable Webhook Payload & Details */}
               {isExpanded && (
@@ -148,7 +126,7 @@ export const AdmissionDecisionsFeed: React.FC<AdmissionDecisionsFeedProps> = ({
                   <div className="expanded-section">
                     <div className="raw-response-header">
                       <Terminal size={14} />
-                      <span className="expanded-label">RAW KUBERNETES ADMISSION WEBHOOK OUTPUT:</span>
+                      <span className="expanded-label">SIMULATED WEBHOOK RESPONSE</span>
                     </div>
                     <div className="raw-response-block">
                       <pre>

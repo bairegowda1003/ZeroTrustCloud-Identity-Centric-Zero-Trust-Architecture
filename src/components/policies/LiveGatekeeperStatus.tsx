@@ -1,380 +1,143 @@
-import React, { useState, useEffect, useCallback, useRef } from 'react';
-import {
-  ShieldCheck,
-  XCircle,
-  AlertTriangle,
-  RefreshCw,
-  Clock,
-  Layers,
-  Radio,
-  FileCode,
-  Info,
-  CheckCircle2,
-  AlertOctagon,
-} from 'lucide-react';
-import {
-  LiveGatekeeperPoliciesResponse,
-  LiveGatekeeperConstraint,
-  requestGatekeeperPolicies,
-  snapshotAgeReason,
-} from '../../utils/gatekeeperPolicies';
+import React, { useEffect, useRef, useState } from 'react';
+import { ArrowUpRight, ChevronLeft, ChevronRight, Database, GitBranch, Layers3, RefreshCw, Shield, X } from 'lucide-react';
+import { useSource, type Observation } from '../../hooks/useCommandSources';
+import { requestGatekeeperPolicies, snapshotAgeReason, type LiveGatekeeperConstraint as Constraint } from '../../utils/gatekeeperPolicies';
+import * as verification from '../../utils/securityVerification';
+import { SnapshotTime } from '../SnapshotTime';
+import { PolicyRelationships } from './PolicyRelationships';
+import { GatekeeperCore, PolicyObject } from './PolicyMaterials';
+import { guardian, scope, summary, webhook } from './policyPresentation';
 
-export const LiveGatekeeperStatus: React.FC = () => {
-  const [snapshot, setSnapshot] = useState<{
-    data: LiveGatekeeperPoliciesResponse;
-    retrievedAt: string;
-  } | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [now, setNow] = useState(Date.now);
-  const requestId = useRef(0);
-  const activeRequest = useRef<AbortController | null>(null);
+const policyApi = '/api/policies/gatekeeper';
+const verifyApi = '/api/security/verification';
 
-  const data = snapshot?.data ?? null;
-  const staleReason = data
-    ? isLoading
-      ? 'Refresh pending; showing previous snapshot'
-      : error
-      ? 'Latest refresh failed; showing previous snapshot'
-      : snapshotAgeReason(data.collectedAt, now)
-    : null;
-  const isStale = Boolean(staleReason);
-
-  const fetchStatus = useCallback(async () => {
-    const id = ++requestId.current;
-    activeRequest.current?.abort();
-    const controller = new AbortController();
-    activeRequest.current = controller;
-    setIsLoading(true);
-    setError(null);
-    try {
-      const result = await requestGatekeeperPolicies(controller.signal);
-      if (id !== requestId.current || controller.signal.aborted) return;
-      const received = Date.now();
-      setSnapshot({ data: result, retrievedAt: new Date(received).toISOString() });
-      setNow(received);
-    } catch (err: unknown) {
-      if (id !== requestId.current || controller.signal.aborted) return;
-      setError(err instanceof Error ? err.message : 'Unable to retrieve Gatekeeper Policies');
-    } finally {
-      if (id === requestId.current && !controller.signal.aborted) {
-        setIsLoading(false);
-        activeRequest.current = null;
-      }
-    }
-  }, []);
-
-  useEffect(() => {
-    void fetchStatus();
-    const timer = setInterval(() => setNow(Date.now()), 1000);
-    return () => {
-      ++requestId.current;
-      activeRequest.current?.abort();
-      clearInterval(timer);
-    };
-  }, [fetchStatus]);
-
-  const formatTimestamp = (isoString?: string | null) => {
-    if (!isoString) return 'Not reported';
-    try {
-      const d = new Date(isoString);
-      return d.toISOString().replace('T', ' ').substring(0, 19) + ' UTC';
-    } catch {
-      return isoString;
-    }
-  };
-
-  const formatEnforcementAction = (action?: string | null) => {
-    if (!action) return 'Configured action: Unknown / Not reported';
-    const capitalized = action.charAt(0).toUpperCase() + action.slice(1).toLowerCase();
-    return `Configured action: ${capitalized}`;
-  };
-
-  const formatWebhookStatus = (webhookEnforced?: boolean | null) => {
-    if (webhookEnforced === true) return 'Webhook: Reported enforced';
-    if (webhookEnforced === false) return 'Webhook: Reported NOT enforced';
-    return 'Webhook: Unknown / Not reported';
-  };
-
-  const formatAuditViolations = (totalViolations?: number | null) => {
-    if (typeof totalViolations === 'number') {
-      return `Audit: ${totalViolations} reported violations`;
-    }
-    return 'Audit: Unknown / Not reported';
-  };
-
-  const formatKinds = (kinds: { apiGroups?: string[]; kinds?: string[] }[]) => {
-    if (!kinds || kinds.length === 0) return 'None specified';
-    return kinds
-      .map((k) => {
-        const group = k.apiGroups && k.apiGroups.length > 0 ? k.apiGroups.join(',') : 'core';
-        const kindNames = k.kinds && k.kinds.length > 0 ? k.kinds.join(',') : '*';
-        return `${group}/${kindNames}`;
-      })
-      .join(', ');
-  };
-
-  return (
-    <div
-      className="live-gatekeeper-container"
-      role="region"
-      aria-label="Verified Live Gatekeeper Policies and Admission Telemetry"
-    >
-      {/* 1. Header Bar */}
-      <div className="live-k8s-header">
-        <div className="live-k8s-title-group">
-          <div className="live-k8s-icon-wrap" aria-hidden="true">
-            <Radio size={18} className="live-k8s-icon-svg" />
-          </div>
-          <div>
-            <div className="live-k8s-title-row">
-              <h2 className="live-k8s-title">Verified Live Gatekeeper Policies & Webhook Status</h2>
-              {data && !error && !isStale && (
-                <span className="live-verified-badge" title="Authenticated live Gatekeeper status">
-                  <span className="live-pip-beacon" />
-                  LIVE KUBERNETES
-                </span>
-              )}
-              {isStale && data && (
-                <span className="live-stale-badge" title={staleReason || 'Snapshot is stale'}>
-                  <AlertTriangle size={11} />
-                  STALE SNAPSHOT
-                </span>
-              )}
-              {error && !data && (
-                <span className="live-error-badge" title={error}>
-                  <XCircle size={11} />
-                  API DISCONNECTED
-                </span>
-              )}
-            </div>
-            <div className="live-k8s-meta-row">
-              <span className="meta-item">
-                Cluster: <strong>{data?.cluster || 'kind-trustmesh-lab'}</strong>
-              </span>
-              <span className="meta-sep">•</span>
-              <span className="meta-item">
-                Constraints Returned:{' '}
-                <strong>{data ? `${data.constraints.length} Constraints` : isLoading ? 'Querying...' : 'Unavailable'}</strong>
-              </span>
-              <span className="meta-sep">•</span>
-              <span className="meta-item">
-                <Clock size={11} style={{ verticalAlign: 'middle', marginRight: '3px' }} />
-                Collected:{' '}
-                <strong>
-                  {data ? formatTimestamp(data.collectedAt) : isLoading ? 'Querying...' : 'Unavailable'}
-                </strong>
-              </span>
-            </div>
-          </div>
-        </div>
-
-        <div className="live-k8s-actions">
-          <button
-            type="button"
-            className="live-k8s-refresh-btn"
-            onClick={() => void fetchStatus()}
-            disabled={isLoading}
-            aria-label="Refresh live Gatekeeper policies"
-          >
-            <RefreshCw size={13} className={isLoading ? 'spinning' : ''} />
-            <span>{isLoading ? 'Querying...' : 'Refresh'}</span>
-          </button>
-        </div>
-      </div>
-
-      {/* 2. Notice Banners (Stale or Error) */}
-      {staleReason && (
-        <div className="live-k8s-banner stale" role="status">
-          <AlertTriangle size={14} className="banner-icon" />
-          <span>{staleReason}</span>
-        </div>
-      )}
-
-      {error && !data && (
-        <div className="live-k8s-banner error" role="alert">
-          <XCircle size={14} className="banner-icon" />
-          <div className="banner-text-col">
-            <strong>Live Gatekeeper API Unavailable: {error}</strong>
-            <span>
-              Unable to query Gatekeeper constraints from Kali. The demonstration interface below remains
-              available for UI inspection.
-            </span>
-          </div>
-        </div>
-      )}
-
-      {/* 3. Loading Skeleton */}
-      {isLoading && !data && (
-        <div className="live-k8s-skeleton" aria-label="Loading Gatekeeper policies">
-          <div className="skeleton-grid">
-            <div className="skeleton-card" />
-            <div className="skeleton-card" />
-          </div>
-          <div className="skeleton-table" />
-        </div>
-      )}
-
-      {/* 4. Architectural Boundaries and Admission Disclaimers */}
-      <div className="live-gatekeeper-disclaimers">
-        <div className="policy-disclaimer-notice">
-          <Info size={12} className="disclaimer-icon" />
-          <span>
-            Webhook Enforcement: Reported webhook status reflects controller-manager pod health in status.byPod. It does not
-            constitute proof of an individual real-time admission decision.
-          </span>
-        </div>
-        <div className="policy-disclaimer-notice">
-          <Info size={12} className="disclaimer-icon" />
-          <span>
-            Scope & Audit Notice: Constraints target Deployments in the trustmesh-lab namespace; enforcement is not cluster-wide.
-            Zero audit violations indicate no non-compliant resources were discovered during the last audit cycle; it does not measure rejected admission attempts.
-          </span>
-        </div>
-      </div>
-
-      {/* 5. Live Constraints Data View */}
-      {data && (
-        <div className="live-gatekeeper-body">
-          {/* Top Metric Bar */}
-          <div className="live-gatekeeper-stats-row">
-            <div className="live-stat-chip">
-              <Layers size={14} className="text-amber-400" />
-              <span>Live Constraints:</span>
-              <strong>{data.constraints.length}</strong>
-            </div>
-            <div className="live-stat-chip">
-              <CheckCircle2 size={14} className="text-emerald-400" />
-              <span>Webhook Enforced:</span>
-              <strong>
-                {data.constraints.filter((c) => c.webhookEnforced === true).length}/{data.constraints.length}
-              </strong>
-            </div>
-            <div className="live-stat-chip">
-              <ShieldCheck size={14} className="text-cyan-400" />
-              <span>Target Namespace:</span>
-              <strong>trustmesh-lab</strong>
-            </div>
-            <div className="live-stat-chip">
-              <AlertOctagon size={14} className="text-rose-400" />
-              <span>Reported Violations:</span>
-              <strong>
-                {data.constraints.reduce((sum, c) => sum + (c.audit.totalViolations ?? 0), 0)}
-              </strong>
-            </div>
-          </div>
-
-          {/* Empty Inventory State */}
-          {data.constraints.length === 0 && (
-            <div className="live-empty-constraints-card" role="status">
-              <FileCode size={24} className="text-slate-400" />
-              <h4>0 Constraints Returned</h4>
-              <p>
-                Gatekeeper API connected to cluster kind-trustmesh-lab, but no active constraint objects were
-                returned for the queried kinds.
-              </p>
-            </div>
-          )}
-
-          {/* Constraint Cards Grid */}
-          {data.constraints.length > 0 && (
-            <div className="live-constraints-grid">
-              {data.constraints.map((constraint: LiveGatekeeperConstraint) => {
-                const actionText = formatEnforcementAction(constraint.enforcementAction);
-                const webhookText = formatWebhookStatus(constraint.webhookEnforced);
-                const auditText = formatAuditViolations(constraint.audit.totalViolations);
-                const isDeny = constraint.enforcementAction?.toLowerCase() === 'deny';
-                const isWebhookOk = constraint.webhookEnforced === true;
-
-                return (
-                  <div key={constraint.name} className="live-constraint-card">
-                    {/* Card Header */}
-                    <div className="constraint-card-header">
-                      <div className="constraint-title-box">
-                        <FileCode size={16} className="text-amber-400" />
-                        <div>
-                          <h3 className="constraint-name-str">{constraint.name}</h3>
-                          <span className="constraint-kind-badge">{constraint.kind}</span>
-                        </div>
-                      </div>
-                      <span className={`constraint-action-pill ${isDeny ? 'deny' : 'other'}`}>
-                        {actionText}
-                      </span>
-                    </div>
-
-                    {/* Status Strip */}
-                    <div className="constraint-status-strip">
-                      <div className={`status-strip-item ${isWebhookOk ? 'ok' : 'unknown'}`}>
-                        <span className="status-dot" />
-                        <span className="status-label">{webhookText}</span>
-                      </div>
-                      <div className="status-strip-item audit">
-                        <span className="status-dot" />
-                        <span className="status-label">{auditText}</span>
-                      </div>
-                    </div>
-
-                    {/* Metadata Details */}
-                    <div className="constraint-details-grid">
-                      <div className="detail-item">
-                        <span className="detail-key">Namespace Scope:</span>
-                        <div className="detail-val-pills">
-                          {constraint.match.namespaces.length > 0 ? (
-                            constraint.match.namespaces.map((ns) => (
-                              <span key={ns} className="scope-pill namespace">
-                                {ns}
-                              </span>
-                            ))
-                          ) : (
-                            <span className="scope-pill none">None specified</span>
-                          )}
-                        </div>
-                      </div>
-
-                      <div className="detail-item">
-                        <span className="detail-key">Target Resources:</span>
-                        <span className="detail-val mono">{formatKinds(constraint.match.kinds)}</span>
-                      </div>
-
-                      <div className="detail-item">
-                        <span className="detail-key">Audit Timestamp:</span>
-                        <span className="detail-val mono">{formatTimestamp(constraint.audit.auditTimestamp)}</span>
-                      </div>
-                    </div>
-
-                    {/* Native Validation Enforcement Points */}
-                    <div className="enforcement-points-section">
-                      <span className="ep-section-title">Native Validation Engine:</span>
-                      {constraint.enforcementPoints.length > 0 ? (
-                        constraint.enforcementPoints.map((ep) => {
-                          const isError = ep.state === 'error';
-                          return (
-                            <div key={ep.name} className={`enforcement-point-item ${isError ? 'error' : 'normal'}`}>
-                              <AlertTriangle size={13} className="ep-icon" />
-                              <div className="ep-text-group">
-                                <span className="ep-main-text">
-                                  Native validation: {isError ? 'Error — ' : ''}
-                                  {ep.message || ep.state || 'Reported'}
-                                </span>
-                                <span className="ep-point-name">Point: {ep.name}</span>
-                              </div>
-                            </div>
-                          );
-                        })
-                      ) : (
-                        <div className="enforcement-point-item normal">
-                          <CheckCircle2 size={13} className="ep-icon" />
-                          <span className="ep-main-text">Native validation: None reported</span>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          )}
-        </div>
-      )}
+async function availablePolicies(signal: AbortSignal) {
+  const response = await requestGatekeeperPolicies(signal);
+  if (!response.available) throw new Error(response.error || 'Gatekeeper inventory unavailable');
+  return response;
+}
+function freshness(source: Observation<unknown>) {
+  if (source.staleReason) return 'Last-known snapshot';
+  if (source.isLoading) return 'Collecting';
+  return source.error ? 'Unavailable' : 'Current snapshot';
+}
+function CheckRows({checks, state}: {checks:verification.VerificationCheck[]; state:string}) {
+  return <>{checks.map(check=><details key={check.id} className="ps-check">
+    <summary><b className="ps-result" data-state={state==='Current snapshot' && !verification.snapshotAgeReason(check.observedAt) ? check.status : 'past'}>
+      {state!=='Current snapshot' || verification.snapshotAgeReason(check.observedAt) ? 'Last observed · ' : ''}{check.status}</b><span>{check.control}</span><ChevronRight size={14}/></summary>
+    <p>{check.reason}</p><small>{check.source} · <SnapshotTime value={check.observedAt}/></small>
+    <details className="ps-raw"><summary>Observed evidence</summary><pre tabIndex={0}>{JSON.stringify(check.evidence,null,2)}</pre></details>
+  </details>)}</>;
+}
+function Inspector({row, state, collected, checks, verificationState, navigate, close}: {
+  row:Constraint; state:string; collected:string; checks:verification.VerificationCheck[]; verificationState:string; navigate:(direction:number)=>void; close:()=>void
+}) {
+  const closeButton = useRef<HTMLButtonElement>(null);
+  useEffect(()=>{closeButton.current?.focus();},[]);
+  const target=scope(row);
+  const related=checks.filter(check=>Object.hasOwnProperty.call(check.evidence,row.name) ||
+    Object.values(check.evidence).some(value=>Array.isArray(value) ? value.includes(row.name) :
+      value && typeof value==='object' && Object.hasOwnProperty.call(value,row.name)));
+  return <aside className="ps-inspector" aria-label="Constraint evidence inspector">
+    <header><div><span className="ps-label">Constraint evidence</span>
+      <h3>{row.name}</h3><code>{row.kind}</code></div>
+      <nav aria-label="Browse constraints">
+        <button onClick={()=>navigate(-1)} aria-label="Previous constraint"><ChevronLeft size={15}/></button>
+        <button onClick={()=>navigate(1)} aria-label="Next constraint"><ChevronRight size={15}/></button>
+        <button ref={closeButton} onClick={close} aria-label="Close evidence inspector"><X size={17}/></button>
+      </nav>
+    </header>
+    <dl className="ps-primary">
+      <dt>Configured action</dt><dd>{row.enforcementAction ?? 'Unknown'}</dd>
+      <dt>Resource</dt><dd>{target.resources}</dd>
+      <dt>Namespace</dt><dd>{target.namespaces}</dd>
+      <dt>Webhook</dt><dd>{webhook(row.webhookEnforced)}</dd>
+      <dt>Audit violations</dt><dd>{row.audit.totalViolations ?? 'Unknown'}</dd>
+      <dt>Audit time</dt><dd><SnapshotTime value={row.audit.auditTimestamp ?? undefined}/></dd>
+    </dl>
+    <div className="ps-inspect-body" key={row.name} aria-label="Technical evidence">
+      <details><summary>Associated verification ({related.length})</summary><small>Group checks referencing this constraint ? {verificationState}</small>
+        <CheckRows checks={related} state={verificationState}/></details>
+      <details><summary>Match selectors</summary><pre tabIndex={0}>{JSON.stringify(row.match,null,2)}</pre></details>
+      <details><summary>Raw constraint evidence</summary><small>{state} ? <SnapshotTime value={collected}/></small>
+        <code>{policyApi}</code><p>Audit counts describe the resources observed during an audit. Individual admission outcomes require separate evidence.</p><pre tabIndex={0}>{JSON.stringify(row,null,2)}</pre></details>
     </div>
-  );
-};
+  </aside>;
+}
+
+export function LiveGatekeeperStatus() {
+  const policy=useSource(availablePolicies,snapshotAgeReason);
+  const verified=useSource(verification.requestSecurityVerification,verification.snapshotAgeReason);
+  const [selection,select]=useState<string|null>(null);
+  const [traceRun, replayTrace] = useState(0);
+  const [preview, setPreview] = useState<string|null>(null);
+  const stage = useRef<HTMLDivElement>(null);
+  const [visible, setVisible] = useState(false);
+  useEffect(() => {
+    if (!stage.current) return;
+    const observer = new IntersectionObserver(([entry]) => setVisible(entry.isIntersecting));
+    observer.observe(stage.current);
+    return () => observer.disconnect();
+  }, []);
+  const trigger=useRef<HTMLButtonElement|null>(null);
+  const rows=policy.data?.constraints ?? [];
+  const selected=rows.find(row=>row.name===selection);
+  const checks=verified.data?.checks.filter(c=>c.id.startsWith('gatekeeper-')) ?? [];
+  const status=freshness(policy), verifyStatus=freshness(verified);
+  const report=summary(rows);
+  function close() { select(null); trigger.current?.focus(); }
+  useEffect(()=>{
+    if (!selected) return;
+    function escape(event:KeyboardEvent) { if(event.key==='Escape') close(); }
+    document.addEventListener('keydown',escape);
+    return ()=>document.removeEventListener('keydown',escape);
+  },[selected]);
+  useEffect(()=>{if(selection && !selected) select(null);},[selected,selection]);
+  function inspect(row:Constraint, button:HTMLButtonElement) {
+    trigger.current = button;
+    select(row.name);
+    replayTrace(run=>run+1);
+    if (selected) stage.current?.querySelector<HTMLButtonElement>('[aria-label="Close evidence inspector"]')?.focus();
+  }
+  const notice = [policy.staleReason, policy.error].filter(Boolean).join(' ? ');
+  const emphasized = rows.find(row=>row.name===preview) ?? selected;
+  const diagnosticRows=rows.flatMap(row=>row.enforcementPoints.map((point,i)=><div key={row.name+i}><strong>{row.name}</strong><p>{point.name} · {point.state ?? 'Unknown'} · {point.message ?? 'No message'}</p></div>));
+  return <>
+    <header className="ps-head"><div><h1>Policy Enforcement Studio</h1>
+      <small>{policy.data?.cluster ?? 'Lab target ? kind-trustmesh-lab'}{policy.data && <> ? <SnapshotTime value={policy.data.collectedAt}/></>}</small></div>
+      <div className="ps-tools"><div aria-live="polite" aria-atomic="true">
+        {notice ? <details className="ps-freshness"><summary className="ps-status">{status}</summary>
+          <p className="ps-notice">{notice}</p></details> : <span className="ps-status">{status}</span>}</div>
+        <button onClick={()=>{policy.refresh();verified.refresh();}} disabled={policy.isLoading || verified.isLoading}><RefreshCw size={14}/> Refresh</button></div>
+    </header>
+    <section className="ps-atlas" aria-label="Gatekeeper admission architecture">
+      <div className="ps-atlas-head"><h2><GitBranch size={17}/> Admission architecture</h2></div>
+      <div ref={stage} data-visible={visible} className={'ps-stage'+(selected?' inspecting':'')}><div className="ps-scene">
+        <PolicyRelationships inventory={JSON.stringify(rows.map(row=>row.name))} selected={selected?.name} preview={preview} run={traceRun}/>
+        <div className="ps-guardians"><span className="ps-label">Policy constraints</span>
+        {rows.map(row=>{const [label,material]=guardian(row.name);return <button key={row.name} data-constraint={row.name} data-material={material} aria-pressed={row.name===selection} className="ps-guardian"
+          onPointerEnter={()=>setPreview(row.name)} onPointerLeave={()=>setPreview(null)}
+          onFocus={()=>setPreview(row.name)} onBlur={()=>setPreview(null)} onClick={e=>inspect(row,e.currentTarget)}>
+          <PolicyObject material={material}/><span>{label}<small>{row.kind}</small></span><ChevronRight size={13}/><em>{row.enforcementAction ?? 'Unknown'} · {webhook(row.webhookEnforced)}</em>
+        </button>;})}
+        {!rows.length && <p>{policy.isLoading?'Collecting inventory…':policy.data?'No constraints returned':'Inventory unavailable'}</p>}</div>
+        <div className="ps-core" data-material={emphasized ? guardian(emphasized.name)[1] : undefined}><GatekeeperCore/><h3>OPA Gatekeeper</h3><small>{rows.length?'Configured admission enforcement':'Admission control architecture'}</small></div>
+        <div className="ps-scope" data-material="scope"><span className="ps-label">Deployment scope</span><PolicyObject material="scope"/><h3>{report.scope.resources}</h3><small>{report.scope.namespaces}</small></div>
+      </div>{selected && <Inspector row={selected} collected={policy.data!.collectedAt} checks={checks} state={status} verificationState={verifyStatus}
+        navigate={direction=>select(rows[(rows.indexOf(selected)+direction+rows.length)%rows.length].name)} close={close}/>}</div>
+      <div className="ps-legend"><i/>Configured policy relationships — not observed admission traffic</div>
+      <div className="ps-band">{[['Configured constraints',policy.data?rows.length:'Unknown'],['Configured deny',policy.data?rows.filter(c=>c.enforcementAction==='deny').length:'Unknown'],['Webhook status',report.webhook],['Audit violations',report.violations]].map(([label,value])=><div key={label}><span className="ps-label">{label}</span><strong>{value}</strong></div>)}</div>
+      <footer className="ps-source"><Database size={12}/><code>{policyApi}</code>{policy.staleReason && <span>Last-known configuration and audit</span>}</footer>
+    </section>
+    <div className="ps-lower"><section><h2><Layers3 size={18}/>Policy explorer</h2><small>{status} · constraint configuration</small>
+      <div className="ps-table"><div className="ps-columns ps-label"><span>Constraint</span><span>Action</span><span>Audit</span></div>
+      {rows.map(row=><button className="ps-columns" key={row.name} aria-pressed={row.name===selection} onClick={e=>inspect(row,e.currentTarget)}>
+        <span>{row.name}<small>{scope(row).namespaces} / {scope(row).resources}</small></span><code>{row.enforcementAction ?? 'Unknown'}</code><span>{row.audit.totalViolations ?? 'Unknown'} <ArrowUpRight size={12}/></span></button>)}
+      {!rows.length && <p>No constraint records to inspect.</p>}</div>
+      <details className="ps-diag"><summary>Gatekeeper diagnostics <span>{policy.data ? diagnosticRows.length+' reported' : 'Unavailable'}</span></summary><p>The vap.k8s.io native-validation engine is reported by audit. Webhook enforcement has its own controller-manager status.</p>{diagnosticRows.length ? diagnosticRows : <small>{policy.data?'No enforcement-point diagnostics returned.':'Diagnostic evidence unavailable.'}</small>}</details>
+    </section><section><h2><Shield size={18}/>Security verification</h2><small>{verifyStatus} · <SnapshotTime value={verified.data?.collectedAt}/></small>
+      {(verified.error || verified.staleReason) && <p className="ps-notice">{[verified.staleReason,verified.error].filter(Boolean).join(' · ')}</p>}
+      <CheckRows checks={checks} state={verifyStatus}/>{!checks.length && <p>{verified.isLoading?'Collecting verification…':'No Gatekeeper check results available.'}</p>}
+      <footer><code>{verifyApi}</code></footer></section></div>
+  </>;
+}

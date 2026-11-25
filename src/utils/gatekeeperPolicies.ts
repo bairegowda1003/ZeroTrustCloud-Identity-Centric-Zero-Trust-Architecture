@@ -65,6 +65,12 @@ export function validateGatekeeperPolicies(value: unknown): LiveGatekeeperPolici
       if (!isRecord(c.match)) return false;
       if (!Array.isArray(c.match.kinds) || !Array.isArray(c.match.namespaces)) return false;
 
+      if (!c.match.namespaces.every(isText) || !c.match.kinds.every((entry: unknown) =>
+        isRecord(entry) &&
+        (entry.apiGroups === undefined || (Array.isArray(entry.apiGroups) && entry.apiGroups.every(v => typeof v === 'string'))) &&
+        (entry.kinds === undefined || (Array.isArray(entry.kinds) && entry.kinds.every(isText)))
+      )) return false;
+
       // Validate audit
       if (!isRecord(c.audit)) return false;
       if (
