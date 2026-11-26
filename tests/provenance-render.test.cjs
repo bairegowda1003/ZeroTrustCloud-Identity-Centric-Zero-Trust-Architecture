@@ -29,7 +29,9 @@ test('security pages identify their actual evidence sources', () => {
     ['SecurityObservabilityView', '../src/components/observability/SecurityObservabilityView.tsx'],
   ];
   for (const [name, filename] of pages) {
-    const html = render(require(filename)[name], { findings: INITIAL_DEMO_FINDINGS, onFindingClick() {} });
+    const props = { findings: INITIAL_DEMO_FINDINGS, onFindingClick() {} };
+    if (name === 'CommandCenterHero') props.cluster = { data: null, isLoading: true };
+    const html = render(require(filename)[name], props);
     const expectedNotice = name === 'SecurityObservabilityView'
       ? 'HISTORICAL EXPERIMENT / DEMONSTRATION'
       : name === 'TrustArchitectureView' ? 'Connections illustrate configured architecture'

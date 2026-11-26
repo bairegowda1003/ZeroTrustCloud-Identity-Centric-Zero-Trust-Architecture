@@ -1,4 +1,5 @@
 import json
+import re
 import subprocess
 from datetime import datetime, timezone
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
@@ -26,7 +27,12 @@ def kubectl_json(context, *args):
         timeout=12,
         check=True,
     )
-    return json.loads(result.stdout)
+    if "--ignore-not-found" in args and not result.stdout.strip():
+        return None
+    resource = json.loads(result.stdout)
+    if resource is None and "--ignore-not-found" in args:
+        raise ValueError("Invalid null resource in named GET")
+    return resource
 
 def cluster_status(name, context):
     try:
@@ -122,7 +128,7 @@ IDENTITY_QUERY_ERRORS = (
 )
 
 
-def identity_workloads():
+def identity_workloads(observations=None):
     registration = {
         "name": "trustmesh-integration-workload-identity",
         "spiffeIDTemplate": None, "namespaceSelector": None, "podSelector": None,
@@ -152,6 +158,8 @@ def identity_workloads():
         )["items"]
         if not isinstance(pods, list) or not isinstance(accounts, list):
             raise ValueError("Invalid inventory")
+        if observations is not None:
+            observations["identityPods"] = pods
         workloads = []
         for pod in pods:
             labels = pod["metadata"].get("labels") or {}
@@ -174,8 +182,12 @@ def identity_workloads():
     try:
         resource = kubectl_json(
             IDENTITY_CONTEXT, "get", "clusterspiffeids.spire.spiffe.io",
-            "trustmesh-integration-workload-identity",
+            "trustmesh-integration-workload-identity", "--ignore-not-found",
         )
+        if observations is not None:
+            observations["registration"] = resource
+        if resource is None:
+            raise ValueError("Registration absent")
         spec = resource["spec"]
         stats = resource.get("status", {}).get("stats")
         statistics = None if stats is None else {
@@ -198,13 +210,20 @@ def identity_workloads():
         try:
             resource = kubectl_json(
                 IDENTITY_CONTEXT, "-n", SPIRE_NAMESPACE,
-                "get", component["kind"].lower(), component["name"],
+                "get", component["kind"].lower(), component["name"], "--ignore-not-found",
             )
+            if observations is not None:
+                observations[component["name"]] = resource
+            if resource is None:
+                raise ValueError("Controller absent")
             status = resource.get("status", {})
-            desired = ((resource.get("spec") or {}).get("replicas", 1) if component["kind"] == "StatefulSet"
-                       else status.get("desiredNumberScheduled"))
+            if component["kind"] == "StatefulSet":
+                spec = field(resource, "spec", dict)
+                desired = spec.get("replicas", 1)
+            else:
+                desired = status.get("desiredNumberScheduled")
             ready = status.get("readyReplicas" if component["kind"] == "StatefulSet"
-                               else "numberReady", 0)
+                               else "numberReady")
             component.update(
                 name=resource["metadata"]["name"], desiredReplicas=desired,
                 readyReplicas=ready, available=True, error=None,
@@ -226,7 +245,7 @@ POLICY_QUERY_ERRORS = (
     AttributeError, TypeError,
 )
 
-def gatekeeper_policies():
+def gatekeeper_policies(observations=None):
     response = {
         "source": "live-kubernetes",
         "cluster": GATEKEEPER_CONTEXT,
@@ -247,6 +266,8 @@ def gatekeeper_policies():
         response["collectedAt"] = datetime.now(timezone.utc).isoformat()
         return 503, response
 
+    if observations is not None:
+        observations["constraints"] = raw_items
     constraints = []
     for item in raw_items:
         if not isinstance(item, dict):
@@ -286,13 +307,15 @@ def gatekeeper_policies():
 
         if isinstance(by_pod, list):
             webhook_entries = []
+            incomplete_operations = False
             for pod_entry in by_pod:
                 if not isinstance(pod_entry, dict):
+                    incomplete_operations = True
                     continue
 
                 ops = pod_entry.get("operations")
                 is_webhook = False
-                if isinstance(ops, list) and "webhook" in ops:
+                if isinstance(ops, list) and all(isinstance(op, str) for op in ops) and "webhook" in ops:
                     is_webhook = True
                 elif isinstance(ops, str) and ops == "webhook":
                     is_webhook = True
@@ -300,7 +323,10 @@ def gatekeeper_policies():
                     is_webhook = True
 
                 if is_webhook:
-                    webhook_entries.append(pod_entry)
+                    webhook_entries.append(pod_entry.get("enforced"))
+                elif not (isinstance(ops, str) or isinstance(pod_entry.get("operation"), str)
+                          or isinstance(ops, list) and all(isinstance(op, str) for op in ops)):
+                    incomplete_operations = True
 
                 ep_list = pod_entry.get("enforcementPointsStatus")
                 if isinstance(ep_list, list):
@@ -321,8 +347,10 @@ def gatekeeper_policies():
                                 "message": ep_msg if isinstance(ep_msg, str) else None,
                             })
 
-            if webhook_entries:
-                webhook_enforced = all(entry.get("enforced") is True for entry in webhook_entries)
+            if any(flag is False for flag in webhook_entries):
+                webhook_enforced = False
+            elif webhook_entries and not incomplete_operations and all(flag is True for flag in webhook_entries):
+                webhook_enforced = True
 
         constraints.append({
             "name": name,
@@ -402,7 +430,7 @@ def detect_sidecar(pod):
         "ready": False,
     }
 
-def network_security():
+def network_security(observations=None):
     response = {
         "source": "live-kubernetes",
         "cluster": NETWORK_CONTEXT,
@@ -481,6 +509,8 @@ def network_security():
         raw_pods = pods_data.get("items")
         if not isinstance(raw_pods, list):
             raise ValueError("Invalid pods response")
+        if observations is not None:
+            observations["networkPods"] = raw_pods
         parsed_workloads = []
         for pod in raw_pods:
             if not isinstance(pod, dict):
@@ -512,6 +542,8 @@ def network_security():
         raw_pa = pa_data.get("items")
         if not isinstance(raw_pa, list):
             raise ValueError("Invalid peerauthentications response")
+        if observations is not None:
+            observations["peerAuthentications"] = raw_pa
         parsed_pa = []
         for item in raw_pa:
             if not isinstance(item, dict):
@@ -548,6 +580,8 @@ def network_security():
         raw_np = np_data.get("items")
         if not isinstance(raw_np, list):
             raise ValueError("Invalid networkpolicies response")
+        if observations is not None:
+            observations["networkPolicies"] = raw_np
         parsed_np = []
         for item in raw_np:
             if not isinstance(item, dict):
@@ -621,9 +655,350 @@ def network_security():
     response["available"] = True
     return 200, response
 
+
+class ConfigurationMismatch(Exception):
+    """Usable observations contradict the expected configuration."""
+
+
+def require(condition, message):
+    if not condition:
+        raise ConfigurationMismatch(message)
+
+
+def field(obj, key, kind):
+    value = obj.get(key)
+    if type(value) is not kind or (kind is str and not value):
+        raise ValueError(f"missing or invalid {key}")
+    return value
+
+
+def objects(entries):
+    if not isinstance(entries, list) or any(not isinstance(x, dict) for x in entries):
+        raise ValueError("expected a list of objects")
+    return entries
+
+
+def strings(values):
+    if not isinstance(values, list) or any(not isinstance(x, str) for x in values):
+        raise ValueError("expected a list of strings")
+    return values
+
+
+def named_item(items, name):
+    matches = [item for item in objects(items) if field(item["metadata"], "name", str) == name]
+    require(matches, f"{name} is absent from the collected inventory.")
+    if len(matches) != 1:
+        raise ValueError(f"ambiguous inventory for {name}")
+    return matches[0]
+
+
+def selector_matches(selector, labels):
+    observed = selector.get("matchLabels", {})
+    if not isinstance(observed, dict) or any(type(v) is not str for v in observed.values()):
+        raise ValueError("invalid selector labels")
+    expressions = objects(selector.get("matchExpressions", []))
+    for entry in expressions:
+        field(entry, "key", str)
+        operator = field(entry, "operator", str)
+        values = strings(entry.get("values", []))
+        if operator not in ("In", "NotIn", "Exists", "DoesNotExist") or bool(values) != (operator in ("In", "NotIn")):
+            raise ValueError("invalid selector expression")
+    return observed == labels and not expressions and selector.keys() <= {"matchLabels", "matchExpressions"}
+
+
+def constraint_scope(evidence, observations, names):
+    for name in names:
+        match = field(named_item(observations["constraints"], name)["spec"], "match", dict)
+        evidence[name] = match
+        namespaces = strings(match["namespaces"])
+        kinds = [(strings(entry["apiGroups"]), strings(entry["kinds"]))
+                 for entry in objects(match["kinds"])]
+        require("trustmesh-lab" in namespaces and any(
+            "apps" in groups and "Deployment" in resources for groups, resources in kinds
+        ), f"{name} lacks the expected apps/Deployment or trustmesh-lab match.")
+    return "All three constraint match configurations include apps/Deployment and trustmesh-lab."
+
+
+def webhook_status(evidence, names, summaries):
+    reported = {name: summaries.get(name, {}).get("webhookEnforced") for name in names}
+    evidence["webhookEnforced"] = reported
+    evidence["enforcementPoints"] = {n: summaries[n]["enforcementPoints"] for n in names if n in summaries}
+    for name, flag in reported.items():
+        require(flag is not False, f"{name} reports enforced=false for a webhook operation.")
+    incomplete = [name for name, flag in reported.items() if flag is not True]
+    if incomplete:
+        raise ValueError("incomplete webhook status for " + ", ".join(incomplete))
+    return "All three constraints report enforced=true for webhook operations in status.byPod. Enforcement-point diagnostics are recorded separately."
+
+
+SERVER_LABEL = {"app": "trustmesh-integration-server"}
+CLIENT_LABELS = {"app": "trustmesh-integration-client", "role": "authorized"}
+
+
+def scoped_spec(evidence, observations, inventory, name):
+    item = named_item(observations[inventory], name)
+    namespace = field(item["metadata"], "namespace", str)
+    spec = field(item, "spec", dict)
+    evidence.update(name=name, namespace=namespace, spec=spec)
+    require(namespace == NETWORK_NAMESPACE, f"{name} has an unexpected namespace.")
+    return spec
+
+
+def network_policy(evidence, observations, suffix):
+    name = "trustmesh-integration-" + suffix
+    spec = scoped_spec(evidence, observations, "networkPolicies", name)
+    require(selector_matches(field(spec, "podSelector", dict), SERVER_LABEL),
+            f"{name} has an unexpected destination selector.")
+    # When policyTypes is omitted Kubernetes always includes Ingress.
+    types = strings(spec.get("policyTypes", [])) or ["Ingress"]
+    if any(t not in ("Ingress", "Egress") for t in types):
+        raise ValueError("invalid policyTypes")
+    require("Ingress" in types, f"{name} does not specify ingress isolation.")
+    rules = objects(spec.get("ingress", []))
+    for rule in rules:
+        if rule.keys() - {"from", "ports"}:
+            raise ValueError("unrecognized ingress rule fields")
+        objects(rule.get("from", []))
+        objects(rule.get("ports", []))
+    if suffix == "default-deny":
+        require(not rules, f"{name} contributes ingress allowances.")
+        return f"{name} selects the integration server for ingress isolation and contributes no ingress rules. Other policies can add allowances."
+    require(len(rules) == 1, f"{name} must contain exactly one ingress rule.")
+    peers = objects(rules[0].get("from", []))
+    ports = objects(rules[0].get("ports", []))
+    require(len(peers) == 1 and set(peers[0]) == {"podSelector"},
+            f"{name} lacks exactly one same-namespace Pod peer.")
+    require(selector_matches(field(peers[0], "podSelector", dict), CLIENT_LABELS),
+            f"{name} has an unexpected client selector.")
+    require(len(ports) == 1, f"{name} has an unexpected number of ports.")
+    port = ports[0]
+    if (port.keys() - {"port", "endPort", "protocol"}
+            or "port" in port and type(port["port"]) not in (int, str)
+            or type(port.get("protocol", "TCP")) is not str
+            or "endPort" in port and type(port["endPort"]) is not int):
+        raise ValueError("malformed NetworkPolicy port")
+    require(port.get("port") == 8080 and port.get("protocol", "TCP") == "TCP" and "endPort" not in port,
+            f"{name} differs from the single TCP 8080 allowance.")
+    return f"{name} contains one same-namespace authorized-client label allowance on TCP 8080 for the integration server. Effective connectivity depends on the combined policies and dataplane."
+
+
+def strict_mtls(evidence, observations):
+    spec = scoped_spec(evidence, observations, "peerAuthentications", "trustmesh-integration-strict-mtls")
+    require(selector_matches(field(spec, "selector", dict), SERVER_LABEL), "Unexpected integration-server selector.")
+    mode = field(spec["mtls"], "mode", str)
+    if mode not in ("UNSET", "DISABLE", "PERMISSIVE", "STRICT"):
+        raise ValueError("invalid workload mTLS mode")
+    require(mode == "STRICT", "The workload mTLS mode differs from STRICT.")
+    overrides = spec.get("portLevelMtls", {})
+    if not isinstance(overrides, dict):
+        raise ValueError("invalid portLevelMtls")
+    for port, setting in overrides.items():
+        if not port.isdecimal() or not 0 < int(port) <= 65535 or not isinstance(setting, dict):
+            raise ValueError("invalid port-level override")
+        mode = setting.get("mode", "UNSET")
+        if mode not in ("STRICT", "UNSET", "PERMISSIVE", "DISABLE"):
+            raise ValueError("invalid port-level mode")
+        require(mode in ("STRICT", "UNSET"), f"Port {port} overrides workload STRICT mode with {mode}.")
+    return "PeerAuthentication configures STRICT mTLS for the selected integration-server workload. Live handshakes and namespace-wide encryption are outside this check."
+
+
+def count(obj, key):
+    value = field(obj, key, int)
+    if value < 0:
+        raise ValueError(f"negative {key}")
+    return value
+
+
+def component_readiness(evidence, observations):
+    components = evidence["components"] = {}
+    incomplete = []
+    for name in ("trustmesh-spire-server", "trustmesh-spire-agent", "trustmesh-spire-spiffe-csi-driver"):
+        try:
+            item = observations[name]
+            require(item is not None, f"{name} was confirmed absent.")
+            if field(item["metadata"], "name", str) != name:
+                raise ValueError("unexpected resource in named GET")
+            status = field(item, "status", dict)
+            if name == "trustmesh-spire-server":
+                # A present StatefulSet spec defaults omitted replicas to one.
+                spec = field(item, "spec", dict)
+                desired = count(spec, "replicas") if "replicas" in spec else 1
+                ready_key = "readyReplicas"
+            else:
+                desired = count(status, "desiredNumberScheduled")
+                ready_key = "numberReady"
+            components[name] = {"desired": desired, "ready": status.get(ready_key)}
+            require(desired > 0, f"{name} has zero desired replicas.")
+            ready = count(status, ready_key)
+            require(ready >= desired, f"{name} reports {ready}/{desired} ready replicas.")
+        except (ValueError, KeyError, TypeError, AttributeError):
+            incomplete.append(name)
+    if incomplete:
+        raise ValueError("missing or invalid readiness for " + ", ".join(incomplete))
+    return "All three expected SPIRE controllers report ready replicas meeting their positive desired counts."
+
+
+def registration_posture(evidence, observations):
+    item = observations["registration"]
+    require(item is not None, "The expected ClusterSPIFFEID was confirmed absent.")
+    name = field(item["metadata"], "name", str)
+    spec = field(item, "spec", dict)
+    evidence.update(name=name, namespaceSelector=spec.get("namespaceSelector"), podSelector=spec.get("podSelector"),
+                    spiffeIDTemplate=spec.get("spiffeIDTemplate"), statistics=item.get("status", {}).get("stats"))
+    require(name == "trustmesh-integration-workload-identity", "Unexpected ClusterSPIFFEID name.")
+    for key, labels in (("namespaceSelector", {"kubernetes.io/metadata.name": IDENTITY_NAMESPACE}),
+                        ("podSelector", {"app": "trustmesh-integration-verifier"})):
+        require(selector_matches(field(spec, key, dict), labels), f"Unexpected ClusterSPIFFEID {key}.")
+    template = field(spec, "spiffeIDTemplate", str)
+    expected = r"spiffe://{{\s*\.TrustDomain\s*}}/ns/{{\s*\.PodMeta\.Namespace\s*}}/sa/{{\s*\.PodSpec\.ServiceAccountName\s*}}"
+    require(re.fullmatch(expected, template), "Unexpected ClusterSPIFFEID identity template.")
+    stats = field(item["status"], "stats", dict)
+    for key in ("namespacesSelected", "podsSelected", "entriesToSet", "entryFailures", "podEntryRenderFailures", "entriesMasked"):
+        value = count(stats, key)
+        if key in ("podsSelected", "entriesToSet"):
+            require(value > 0, f"Registration reports {key}=0.")
+        elif key == "namespacesSelected":
+            require(value == 1, f"Registration reports namespacesSelected={value}.")
+        else:
+            require(value == 0, f"Registration reports {key}={value}.")
+    return "The ClusterSPIFFEID selects the integration verifier with the expected ServiceAccount identity template and reports selected workloads and entries without failures or masking. Current SVID issuance and validity require separate evidence."
+
+
+def pod_role(name, labels):
+    app = labels.get("app")
+    if (labels.get("trustmesh.io/test") == "plaintext-negative"
+            or app == "trustmesh-integration-plaintext" or "plaintext-client" in name):
+        return "plaintext"
+    if app == SERVER_LABEL["app"]:
+        return "server"
+    if app == "trustmesh-integration-verifier" or "verifier" in name:
+        return "verifier"
+    if labels.get("role") in ("authorized", "unauthorized"):
+        return labels["role"]
+    if app == "trustmesh-integration-client":
+        raise ValueError(f"unrecognized client role for {name}")
+    return None
+
+
+def named_containers(entries):
+    result = {}
+    for entry in objects(entries):
+        name = field(entry, "name", str)
+        if name in result:
+            raise ValueError(f"duplicate container {name}")
+        result[name] = entry
+    return result
+
+
+def pod_containers(pod):
+    spec = field(pod, "spec", dict)
+    regular = named_containers(spec["containers"])
+    init = named_containers(spec.get("initContainers", []))
+    if not regular or regular.keys() & init.keys():
+        raise ValueError("empty or ambiguous container spec")
+    return regular, init
+
+
+def reported_ready(status, group, names):
+    observed = named_containers(status[group])
+    return {name: field(observed[name], "ready", bool) for name in names}
+
+
+def sidecar_posture(pod, role, row):
+    regular, init = pod_containers(pod)
+    proxy = "istio-proxy"
+    present = proxy in regular or proxy in init
+    row["present"] = present
+    if role == "plaintext":
+        require(not present, "plaintext Pod unexpectedly contains istio-proxy")
+        return
+    require(present, "missing istio-proxy")
+    native = proxy in init
+    row.update(location="initContainers" if native else "containers", nativeSidecar=False)
+    if native:
+        require(init[proxy].get("restartPolicy") == "Always", "istio-proxy init container is not a restartable sidecar")
+        row["nativeSidecar"] = True
+    group = "initContainerStatuses" if native else "containerStatuses"
+    row["ready"] = reported_ready(pod["status"], group, [proxy])[proxy]
+    require(row["ready"], "istio-proxy reports unready")
+
+
+def lifecycle_posture(pod, role, row):
+    expected_account = "trustmesh-integration-" + ("authorized" if role == "plaintext" else role)
+    row["sa"] = field(pod["spec"], "serviceAccountName", str)
+    require(row["sa"] == expected_account, f"expected ServiceAccount {expected_account}")
+    phase = row["phase"] = field(pod["status"], "phase", str)
+    if phase not in ("Running", "Succeeded", "Pending", "Failed"):
+        raise ValueError(f"unusable Pod phase {phase}")
+    if role == "verifier" and phase == "Succeeded":
+        return
+    require(phase == "Running", f"unexpected phase {phase}")
+    regular, init = pod_containers(pod)
+    ready = reported_ready(pod["status"], "containerStatuses", regular)
+    native = [name for name, entry in init.items() if entry.get("restartPolicy") == "Always"]
+    if native:
+        ready.update(reported_ready(pod["status"], "initContainerStatuses", native))
+    row["readiness"] = ready
+    require(all(ready.values()), "Running Pod reports unready containers")
+
+
+def workload_posture(evidence, observations, sidecars):
+    roles = {"authorized", "unauthorized", "server", "plaintext"}
+    if not sidecars:
+        roles.add("verifier")
+    seen = set()
+    locations = set()
+    incomplete = []
+    rows = evidence["workloads"] = []
+    for pod in objects(observations["networkPods" if sidecars else "identityPods"]):
+        name = "unidentified Pod"
+        try:
+            name = field(pod["metadata"], "name", str)
+            labels = field(pod["metadata"], "labels", dict)
+            role = pod_role(name, labels)
+            if role not in roles:
+                continue
+            seen.add(role)
+            row = {"name": name, "role": role}
+            rows.append(row)
+            if sidecars:
+                sidecar_posture(pod, role, row)
+                if row["present"]:
+                    locations.add("native initContainers" if row["nativeSidecar"] else "regular containers")
+            else:
+                lifecycle_posture(pod, role, row)
+        except ConfigurationMismatch as error:
+            raise ConfigurationMismatch(f"{name}: {error}.") from error
+        except (ValueError, KeyError, TypeError, AttributeError) as error:
+            incomplete.append(f"{name}: {error}")
+    incomplete.extend("missing role " + role for role in sorted(roles - seen))
+    if incomplete:
+        raise ValueError(", ".join(incomplete))
+    if sidecars:
+        return ("All observed authorized-client, unauthorized-client and server Pods report ready Istio sidecars in "
+                + " and ".join(sorted(locations)) + ". All observed plaintext clients omit istio-proxy.")
+    return ("All observed Pods for the five roles have expected ServiceAccount bindings and lifecycle phases. "
+            "Running Pods report ready containers. A Succeeded verifier requires no current container readiness.")
+
+
 def automated_verification():
     now_iso = datetime.now(timezone.utc).isoformat()
     checks = []
+    # Request-local raw observations retain fields deliberately omitted by the public inventory views.
+    observations = {}
+
+    def record(check_id, control, source, evaluate, *args):
+        evidence = {}
+        try:
+            reason = evaluate(evidence, *args)
+            status = "PASS"
+        except ConfigurationMismatch as error:
+            status, reason = "FAIL", str(error)
+        except (ValueError, KeyError, TypeError, AttributeError) as error:
+            status, reason = "UNKNOWN", f"Incomplete or unusable observation: {error}"
+        checks.append({"id": check_id, "control": control, "source": source,
+                       "status": status, "reason": reason, "evidence": evidence,
+                       "observedAt": now_iso})
 
     # 1. KUBERNETES READINESS
     # Context 1: kind-trustmesh-lab
@@ -724,7 +1099,7 @@ def automated_verification():
 
     # 2. GATEKEEPER
     try:
-        gk_status, gk_data = gatekeeper_policies()
+        gk_status, gk_data = gatekeeper_policies(observations)
     except Exception as e:
         gk_status, gk_data = 503, {"available": False, "error": str(e)}
 
@@ -817,215 +1192,23 @@ def automated_verification():
                 "observedAt": now_iso,
             })
 
-        # 2c: Scope (apps/Deployment in trustmesh-lab)
-        scope_mismatch = []
-        for name in expected_constraints:
-            c = c_map.get(name)
-            if c:
-                match = c.get("match") or {}
-                namespaces = match.get("namespaces") or []
-                kinds = match.get("kinds") or []
-                has_ns = "trustmesh-lab" in namespaces
-                has_dep = any(
-                    "Deployment" in (k.get("kinds") or [])
-                    and ("apps" in (k.get("apiGroups") or []) or "" in (k.get("apiGroups") or []))
-                    for k in kinds if isinstance(k, dict)
-                )
-                if not (has_ns and has_dep):
-                    scope_mismatch.append(name)
-        if missing:
-            checks.append({
-                "id": "gatekeeper-scope-workload-deployments",
-                "control": "Gatekeeper Target Scope (apps/Deployment in trustmesh-lab)",
-                "status": "FAIL",
-                "reason": f"Cannot verify scope because constraints are missing: {', '.join(missing)}",
-                "evidence": {"missing": missing},
-                "source": "kind-trustmesh-lab / gatekeeper spec.match",
-                "observedAt": now_iso,
-            })
-        elif scope_mismatch:
-            checks.append({
-                "id": "gatekeeper-scope-workload-deployments",
-                "control": "Gatekeeper Target Scope (apps/Deployment in trustmesh-lab)",
-                "status": "FAIL",
-                "reason": f"Constraints do not correctly scope to apps/Deployment in namespace trustmesh-lab: {', '.join(scope_mismatch)}",
-                "evidence": {name: c_map[name].get("match") for name in expected_constraints},
-                "source": "kind-trustmesh-lab / gatekeeper spec.match",
-                "observedAt": now_iso,
-            })
-        else:
-            checks.append({
-                "id": "gatekeeper-scope-workload-deployments",
-                "control": "Gatekeeper Target Scope (apps/Deployment in trustmesh-lab)",
-                "status": "PASS",
-                "reason": "All 3 expected constraints target apps/Deployment resources within namespace trustmesh-lab.",
-                "evidence": {name: c_map[name].get("match") for name in expected_constraints},
-                "source": "kind-trustmesh-lab / gatekeeper spec.match",
-                "observedAt": now_iso,
-            })
-
-        # 2d: Webhook Enforced
-        webhook_status = {name: c_map[name].get("webhookEnforced") for name in expected_constraints if name in c_map}
-        enforcement_pts = {name: c_map[name].get("enforcementPoints") for name in expected_constraints if name in c_map}
-        if any(v is None for v in webhook_status.values()) or len(webhook_status) < len(expected_constraints):
-            checks.append({
-                "id": "gatekeeper-webhook-enforced",
-                "control": "Gatekeeper Webhook Enforcement Posture",
-                "status": "UNKNOWN",
-                "reason": "Webhook enforcement status is incomplete or not reported in status.byPod.",
-                "evidence": {"webhookEnforced": webhook_status, "enforcementPoints": enforcement_pts},
-                "source": "kind-trustmesh-lab / gatekeeper status.byPod",
-                "observedAt": now_iso,
-            })
-        elif all(v is True for v in webhook_status.values()):
-            checks.append({
-                "id": "gatekeeper-webhook-enforced",
-                "control": "Gatekeeper Webhook Enforcement Posture",
-                "status": "PASS",
-                "reason": "All 3 expected constraints report webhookEnforced = true on controller-manager pods. (Environment diagnostic note: vap.k8s.io engine missing on audit pod is retained and does not impair webhook admission).",
-                "evidence": {"webhookEnforced": webhook_status, "enforcementPoints": enforcement_pts},
-                "source": "kind-trustmesh-lab / gatekeeper status.byPod",
-                "observedAt": now_iso,
-            })
-        else:
-            not_enforced = [name for name, status in webhook_status.items() if status is not True]
-            checks.append({
-                "id": "gatekeeper-webhook-enforced",
-                "control": "Gatekeeper Webhook Enforcement Posture",
-                "status": "FAIL",
-                "reason": f"Constraints reporting inactive webhook enforcement: {', '.join(not_enforced)}",
-                "evidence": {"webhookEnforced": webhook_status, "enforcementPoints": enforcement_pts},
-                "source": "kind-trustmesh-lab / gatekeeper status.byPod",
-                "observedAt": now_iso,
-            })
+        record("gatekeeper-scope-workload-deployments", "Gatekeeper Target Scope (apps/Deployment in trustmesh-lab)",
+               "kind-trustmesh-lab / gatekeeper spec.match", constraint_scope, observations, expected_constraints)
+        record("gatekeeper-webhook-enforced", "Gatekeeper Webhook Enforcement Posture",
+               "kind-trustmesh-lab / gatekeeper status.byPod", webhook_status, expected_constraints, c_map)
 
     # 3 & 4. NETWORK & MESH SECURITY
     try:
-        net_status, net_data = network_security()
+        net_status, net_data = network_security(observations)
     except Exception as e:
         net_status, net_data = 503, {"available": False, "error": str(e)}
 
-    # 3. CALICO NETWORK POLICIES
-    if net_status != 200 or not net_data.get("available") or not net_data.get("networkPoliciesAvailable"):
-        err_msg = net_data.get("networkPoliciesError") or net_data.get("error") or "NetworkPolicy telemetry unavailable"
-        for check_id, title in [
-            ("calico-default-deny-server", "Calico Default-Deny Ingress Policy for Server Workloads"),
-            ("calico-allow-authorized-server", "Calico Ingress Allowance for Authorized Client"),
-        ]:
-            checks.append({
-                "id": check_id,
-                "control": title,
-                "status": "UNKNOWN",
-                "reason": err_msg,
-                "evidence": {},
-                "source": "kind-trustmesh-network-lab / networkpolicies",
-                "observedAt": now_iso,
-            })
-    else:
-        net_pols = net_data.get("networkPolicies") or []
-        np_map = {np.get("name"): np for np in net_pols if isinstance(np, dict) and np.get("name")}
-
-        # 3a: default-deny
-        dd = np_map.get("trustmesh-integration-default-deny")
-        if not dd:
-            checks.append({
-                "id": "calico-default-deny-server",
-                "control": "Calico Default-Deny Ingress Policy for Server Workloads",
-                "status": "FAIL",
-                "reason": "Policy trustmesh-integration-default-deny not found.",
-                "evidence": {"discoveredPolicies": list(np_map.keys())},
-                "source": "kind-trustmesh-network-lab / networkpolicies",
-                "observedAt": now_iso,
-            })
-        else:
-            sel = (dd.get("podSelector") or {}).get("matchLabels") or {}
-            ptypes = dd.get("policyTypes") or []
-            ingress = dd.get("ingress")
-            is_server = sel.get("app") == "trustmesh-integration-server"
-            has_ingress_type = "Ingress" in ptypes
-            is_empty_ingress = isinstance(ingress, list) and len(ingress) == 0
-            if is_server and has_ingress_type and is_empty_ingress:
-                checks.append({
-                    "id": "calico-default-deny-server",
-                    "control": "Calico Default-Deny Ingress Policy for Server Workloads",
-                    "status": "PASS",
-                    "reason": "Policy trustmesh-integration-default-deny selects app=trustmesh-integration-server, specifies Ingress in policyTypes, and contains an empty ingress array (default deny on server pods).",
-                    "evidence": {"podSelector": sel, "policyTypes": ptypes, "ingressRules": len(ingress)},
-                    "source": "kind-trustmesh-network-lab / networkpolicy:trustmesh-integration-default-deny",
-                    "observedAt": now_iso,
-                })
-            else:
-                checks.append({
-                    "id": "calico-default-deny-server",
-                    "control": "Calico Default-Deny Ingress Policy for Server Workloads",
-                    "status": "FAIL",
-                    "reason": f"Default-deny policy configuration diverges (server selector: {is_server}, Ingress policyType: {has_ingress_type}, empty ingress array: {is_empty_ingress}).",
-                    "evidence": {"podSelector": sel, "policyTypes": ptypes, "ingress": ingress},
-                    "source": "kind-trustmesh-network-lab / networkpolicy:trustmesh-integration-default-deny",
-                    "observedAt": now_iso,
-                })
-
-        # 3b: allow-authorized
-        aa = np_map.get("trustmesh-integration-allow-authorized")
-        if not aa:
-            checks.append({
-                "id": "calico-allow-authorized-server",
-                "control": "Calico Ingress Allowance for Authorized Client",
-                "status": "FAIL",
-                "reason": "Policy trustmesh-integration-allow-authorized not found.",
-                "evidence": {"discoveredPolicies": list(np_map.keys())},
-                "source": "kind-trustmesh-network-lab / networkpolicies",
-                "observedAt": now_iso,
-            })
-        else:
-            sel = (aa.get("podSelector") or {}).get("matchLabels") or {}
-            ptypes = aa.get("policyTypes") or []
-            ingress = aa.get("ingress") or []
-            is_server = sel.get("app") == "trustmesh-integration-server"
-            has_ingress_type = "Ingress" in ptypes
-
-            valid_rule = False
-            for rule in ingress:
-                if not isinstance(rule, dict):
-                    continue
-                from_list = rule.get("from") or []
-                ports_list = rule.get("ports") or []
-                match_from = any(
-                    isinstance(p, dict)
-                    and (p.get("podSelector") or {}).get("matchLabels", {}).get("app") == "trustmesh-integration-client"
-                    and (p.get("podSelector") or {}).get("matchLabels", {}).get("role") == "authorized"
-                    for p in from_list
-                )
-                match_port = any(
-                    isinstance(prt, dict)
-                    and str(prt.get("port")) == "8080"
-                    and str(prt.get("protocol", "TCP")).upper() == "TCP"
-                    for prt in ports_list
-                )
-                if match_from and match_port:
-                    valid_rule = True
-                    break
-
-            if is_server and has_ingress_type and valid_rule:
-                checks.append({
-                    "id": "calico-allow-authorized-server",
-                    "control": "Calico Ingress Allowance for Authorized Client",
-                    "status": "PASS",
-                    "reason": "Policy trustmesh-integration-allow-authorized selects app=trustmesh-integration-server and restricts ingress to authorized client (app=trustmesh-integration-client, role=authorized) over TCP port 8080.",
-                    "evidence": {"podSelector": sel, "policyTypes": ptypes, "ingress": ingress},
-                    "source": "kind-trustmesh-network-lab / networkpolicy:trustmesh-integration-allow-authorized",
-                    "observedAt": now_iso,
-                })
-            else:
-                checks.append({
-                    "id": "calico-allow-authorized-server",
-                    "control": "Calico Ingress Allowance for Authorized Client",
-                    "status": "FAIL",
-                    "reason": f"Allow policy rules diverge from expected specification (server selector: {is_server}, valid rule: {valid_rule}).",
-                    "evidence": {"podSelector": sel, "policyTypes": ptypes, "ingress": ingress},
-                    "source": "kind-trustmesh-network-lab / networkpolicy:trustmesh-integration-allow-authorized",
-                    "observedAt": now_iso,
-                })
+    network_source = NETWORK_CONTEXT + " / "
+    for check_id, title, name in (
+        ("calico-default-deny-server", "Calico Default-Deny Ingress Policy for Server Workloads", "default-deny"),
+        ("calico-allow-authorized-server", "Calico Ingress Allowance for Authorized Client", "allow-authorized"),
+    ):
+        record(check_id, title, network_source + "networkpolicies", network_policy, observations, name)
 
     # 4. ISTIO MTLS & SIDECARS
     # 4a: istiod
@@ -1061,144 +1244,14 @@ def automated_verification():
             "observedAt": now_iso,
         })
 
-    # 4b: PeerAuthentication STRICT mTLS
-    if net_status != 200 or not net_data.get("available") or not net_data.get("peerAuthenticationsAvailable"):
-        checks.append({
-            "id": "istio-workload-strict-mtls",
-            "control": "Istio Workload-Scoped STRICT mTLS Policy",
-            "status": "UNKNOWN",
-            "reason": net_data.get("peerAuthenticationsError") or "PeerAuthentication telemetry unavailable",
-            "evidence": {},
-            "source": "kind-trustmesh-network-lab / peerauthentications",
-            "observedAt": now_iso,
-        })
-    else:
-        pa_list = net_data.get("peerAuthentications") or []
-        pa = next((p for p in pa_list if p.get("name") == "trustmesh-integration-strict-mtls"), None)
-        if not pa:
-            checks.append({
-                "id": "istio-workload-strict-mtls",
-                "control": "Istio Workload-Scoped STRICT mTLS Policy",
-                "status": "FAIL",
-                "reason": "PeerAuthentication trustmesh-integration-strict-mtls not found.",
-                "evidence": {"discovered": [p.get("name") for p in pa_list]},
-                "source": "kind-trustmesh-network-lab / peerauthentications",
-                "observedAt": now_iso,
-            })
-        else:
-            mode = pa.get("mode")
-            sel = (pa.get("selector") or {}).get("matchLabels") or {}
-            is_strict = mode == "STRICT"
-            is_server = sel.get("app") == "trustmesh-integration-server"
-            if is_strict and is_server:
-                checks.append({
-                    "id": "istio-workload-strict-mtls",
-                    "control": "Istio Workload-Scoped STRICT mTLS Policy",
-                    "status": "PASS",
-                    "reason": "STRICT mTLS is actively configured and workload-scoped to app=trustmesh-integration-server (verifying traffic encryption without falsely claiming namespace-wide enforcement).",
-                    "evidence": pa,
-                    "source": "kind-trustmesh-network-lab / peerauthentication:trustmesh-integration-strict-mtls",
-                    "observedAt": now_iso,
-                })
-            else:
-                checks.append({
-                    "id": "istio-workload-strict-mtls",
-                    "control": "Istio Workload-Scoped STRICT mTLS Policy",
-                    "status": "FAIL",
-                    "reason": f"PeerAuthentication is not configured as workload-scoped STRICT mTLS (mode: {mode}, selector: {sel}).",
-                    "evidence": pa,
-                    "source": "kind-trustmesh-network-lab / peerauthentication:trustmesh-integration-strict-mtls",
-                    "observedAt": now_iso,
-                })
-
-    # 4c: Sidecar Posture
-    if net_status != 200 or not net_data.get("available") or not net_data.get("workloadsAvailable"):
-        checks.append({
-            "id": "istio-sidecar-injection-posture",
-            "control": "Istio Sidecar Injection Posture (Workload Inspection)",
-            "status": "UNKNOWN",
-            "reason": net_data.get("workloadsError") or "Workload sidecar telemetry unavailable",
-            "evidence": {},
-            "source": "kind-trustmesh-network-lab / pods",
-            "observedAt": now_iso,
-        })
-    else:
-        wk_list = net_data.get("workloads") or []
-        plaintext = next(
-            (w for w in wk_list if (
-                (w.get("labels") or {}).get("trustmesh.io/test") == "plaintext-negative"
-                or (w.get("labels") or {}).get("app") == "trustmesh-integration-plaintext"
-                or "plaintext-client" in w.get("name", "")
-            )),
-            None
-        )
-        auth_client = next(
-            (w for w in wk_list if (
-                w != plaintext
-                and (w.get("labels") or {}).get("trustmesh.io/test") != "plaintext-negative"
-                and "plaintext" not in w.get("name", "")
-                and (w.get("labels") or {}).get("role") == "authorized"
-            )),
-            None
-        )
-        unauth_client = next((w for w in wk_list if (w.get("labels") or {}).get("role") == "unauthorized"), None)
-        srv = next((w for w in wk_list if (w.get("labels") or {}).get("app") == "trustmesh-integration-server"), None)
-
-        if not auth_client or not unauth_client or not srv or not plaintext:
-            missing_wks = []
-            if not auth_client: missing_wks.append("authorized-client")
-            if not unauth_client: missing_wks.append("unauthorized-client")
-            if not srv: missing_wks.append("server")
-            if not plaintext: missing_wks.append("plaintext-client")
-            checks.append({
-                "id": "istio-sidecar-injection-posture",
-                "control": "Istio Sidecar Injection Posture (Workload Inspection)",
-                "status": "UNKNOWN",
-                "reason": f"Cannot verify sidecar posture: missing workload(s) {', '.join(missing_wks)}.",
-                "evidence": {"discovered": [w.get("name") for w in wk_list]},
-                "source": "kind-trustmesh-network-lab / pods",
-                "observedAt": now_iso,
-            })
-        else:
-            auth_sidecar = (auth_client.get("sidecar") or {}).get("present") is True
-            unauth_sidecar = (unauth_client.get("sidecar") or {}).get("present") is True
-            srv_sidecar = (srv.get("sidecar") or {}).get("present") is True
-            plain_sidecar = (plaintext.get("sidecar") or {}).get("present") is False
-
-            if auth_sidecar and unauth_sidecar and srv_sidecar and plain_sidecar:
-                checks.append({
-                    "id": "istio-sidecar-injection-posture",
-                    "control": "Istio Sidecar Injection Posture (Workload Inspection)",
-                    "status": "PASS",
-                    "reason": "Sidecars verified in spec.initContainers (native sidecar) for server, authorized client, and unauthorized client. Plaintext client confirmed uninjected (expected baseline for negative testing).",
-                    "evidence": {
-                        "authorized": auth_client.get("sidecar"),
-                        "unauthorized": unauth_client.get("sidecar"),
-                        "server": srv.get("sidecar"),
-                        "plaintext": plaintext.get("sidecar"),
-                    },
-                    "source": "kind-trustmesh-network-lab / pods",
-                    "observedAt": now_iso,
-                })
-            else:
-                checks.append({
-                    "id": "istio-sidecar-injection-posture",
-                    "control": "Istio Sidecar Injection Posture (Workload Inspection)",
-                    "status": "FAIL",
-                    "reason": f"Sidecar injection posture differs from expected baseline (auth: {auth_sidecar}, unauth: {unauth_sidecar}, srv: {srv_sidecar}, plaintext uninjected: {plain_sidecar}).",
-                    "evidence": {
-                        "authorized": auth_client.get("sidecar"),
-                        "unauthorized": unauth_client.get("sidecar"),
-                        "server": srv.get("sidecar"),
-                        "plaintext": plaintext.get("sidecar"),
-                    },
-                    "source": "kind-trustmesh-network-lab / pods",
-                    "observedAt": now_iso,
-                })
+    record("istio-workload-strict-mtls", "Istio Workload-Scoped STRICT mTLS Policy",
+           network_source + "peerauthentications", strict_mtls, observations)
+    record("istio-sidecar-injection-posture", "Istio Sidecar Injection Posture (Workload Inspection)",
+           network_source + "pods", workload_posture, observations, True)
 
     # 5 & 6. SPIRE & IDENTITY WORKLOADS
     try:
-        ident_status, ident_data = identity_workloads()
+        ident_status, ident_data = identity_workloads(observations)
     except Exception as e:
         ident_status, ident_data = 503, {"available": False, "error": str(e)}
 
@@ -1221,93 +1274,10 @@ def automated_verification():
                 "observedAt": now_iso,
             })
     else:
-        # 5a: Spire Components
-        spire_comps = ident_data.get("spireComponents") or []
-        comp_map = {c.get("name"): c for c in spire_comps if isinstance(c, dict) and c.get("name")}
-        expected_comps = [
-            "trustmesh-spire-server",
-            "trustmesh-spire-agent",
-            "trustmesh-spire-spiffe-csi-driver",
-        ]
-        missing_comps = [c for c in expected_comps if c not in comp_map]
-        unavail_comps = [c for c, item in comp_map.items() if not item.get("available")]
-
-        if missing_comps or unavail_comps:
-            checks.append({
-                "id": "spire-control-plane-components",
-                "control": "SPIRE Control Plane & Node Attestation Components",
-                "status": "UNKNOWN",
-                "reason": f"SPIRE components unavailable or missing: {', '.join(missing_comps + unavail_comps)}.",
-                "evidence": {"components": spire_comps},
-                "source": "kind-trustmesh-network-lab / trustmesh-spire",
-                "observedAt": now_iso,
-            })
-        else:
-            not_ready_comps = []
-            for name in expected_comps:
-                item = comp_map[name]
-                ready = item.get("readyReplicas") or 0
-                desired = item.get("desiredReplicas") or 1
-                if ready < desired or ready == 0:
-                    not_ready_comps.append(f"{name} ({ready}/{desired})")
-            if not_ready_comps:
-                checks.append({
-                    "id": "spire-control-plane-components",
-                    "control": "SPIRE Control Plane & Node Attestation Components",
-                    "status": "FAIL",
-                    "reason": f"SPIRE components not fully ready: {', '.join(not_ready_comps)}.",
-                    "evidence": {"components": spire_comps},
-                    "source": "kind-trustmesh-network-lab / trustmesh-spire",
-                    "observedAt": now_iso,
-                })
-            else:
-                checks.append({
-                    "id": "spire-control-plane-components",
-                    "control": "SPIRE Control Plane & Node Attestation Components",
-                    "status": "PASS",
-                    "reason": "All 3 SPIRE infrastructure components (server StatefulSet, agent DaemonSet, CSI driver DaemonSet) report Ready in namespace trustmesh-spire.",
-                    "evidence": {"components": spire_comps},
-                    "source": "kind-trustmesh-network-lab / trustmesh-spire",
-                    "observedAt": now_iso,
-                })
-
-        # 5b: Spire Registration
-        spire_reg = ident_data.get("spireRegistration") or {}
-        if not spire_reg.get("available"):
-            checks.append({
-                "id": "spire-workload-registration",
-                "control": "SPIRE Workload Identity Registration (ClusterSPIFFEID)",
-                "status": "UNKNOWN",
-                "reason": spire_reg.get("error", "ClusterSPIFFEID registration unavailable"),
-                "evidence": spire_reg,
-                "source": "kind-trustmesh-network-lab / clusterspiffeids.spire.spiffe.io",
-                "observedAt": now_iso,
-            })
-        else:
-            name = spire_reg.get("name")
-            tmpl = spire_reg.get("spiffeIDTemplate") or ""
-            is_valid_name = name == "trustmesh-integration-workload-identity"
-            is_valid_tmpl = "spiffe://" in tmpl and "sa" in tmpl
-            if is_valid_name and is_valid_tmpl:
-                checks.append({
-                    "id": "spire-workload-registration",
-                    "control": "SPIRE Workload Identity Registration (ClusterSPIFFEID)",
-                    "status": "PASS",
-                    "reason": f"ClusterSPIFFEID registration exists targeting namespace trustmesh-integration-test with template {tmpl}." + (f" Statistics: {spire_reg.get('statistics')}." if spire_reg.get('statistics') else ""),
-                    "evidence": spire_reg,
-                    "source": "kind-trustmesh-network-lab / clusterspiffeid:trustmesh-integration-workload-identity",
-                    "observedAt": now_iso,
-                })
-            else:
-                checks.append({
-                    "id": "spire-workload-registration",
-                    "control": "SPIRE Workload Identity Registration (ClusterSPIFFEID)",
-                    "status": "FAIL",
-                    "reason": f"ClusterSPIFFEID registration configuration diverges from expected template/name (name: {name}, template: {tmpl}).",
-                    "evidence": spire_reg,
-                    "source": "kind-trustmesh-network-lab / clusterspiffeids.spire.spiffe.io",
-                    "observedAt": now_iso,
-                })
+        record("spire-control-plane-components", "SPIRE Control Plane & Node Attestation Components",
+               network_source + SPIRE_NAMESPACE, component_readiness, observations)
+        record("spire-workload-registration", "SPIRE Workload Identity Registration (ClusterSPIFFEID)",
+               network_source + "clusterspiffeids.spire.spiffe.io", registration_posture, observations)
 
         # 6a: ServiceAccounts Inventory
         sa_list = ident_data.get("serviceAccounts") or []
@@ -1340,84 +1310,8 @@ def automated_verification():
                 "observedAt": now_iso,
             })
 
-        # 6b: Workload Lifecycle & Identity Binding
-        wks = ident_data.get("workloads") or []
-        plain_w = next(
-            (w for w in wks if (
-                (w.get("labels") or {}).get("trustmesh.io/test") == "plaintext-negative"
-                or (w.get("labels") or {}).get("app") == "trustmesh-integration-plaintext"
-                or "plaintext-client" in w.get("name", "")
-            )),
-            None
-        )
-        auth_w = next(
-            (w for w in wks if (
-                w != plain_w
-                and (w.get("labels") or {}).get("trustmesh.io/test") != "plaintext-negative"
-                and "plaintext" not in w.get("name", "")
-                and (w.get("labels") or {}).get("role") == "authorized"
-            )),
-            None
-        )
-        unauth_w = next((w for w in wks if (w.get("labels") or {}).get("role") == "unauthorized"), None)
-        srv_w = next((w for w in wks if (w.get("labels") or {}).get("app") == "trustmesh-integration-server"), None)
-        verif_w = next((w for w in wks if ((w.get("labels") or {}).get("app") == "trustmesh-integration-verifier" or "verifier" in w.get("name", ""))), None)
-
-        if not auth_w or not unauth_w or not srv_w or not plain_w or not verif_w:
-            missing_items = []
-            if not auth_w: missing_items.append("authorized-client")
-            if not unauth_w: missing_items.append("unauthorized-client")
-            if not srv_w: missing_items.append("server")
-            if not plain_w: missing_items.append("plaintext-client")
-            if not verif_w: missing_items.append("verifier")
-            checks.append({
-                "id": "workload-lifecycle-and-identity",
-                "control": "Workload Lifecycle Phase & ServiceAccount Binding",
-                "status": "UNKNOWN",
-                "reason": f"Missing expected workloads: {', '.join(missing_items)}.",
-                "evidence": {"discovered": [w.get("name") for w in wks]},
-                "source": "kind-trustmesh-network-lab / pods",
-                "observedAt": now_iso,
-            })
-        else:
-            discrepancies = []
-            if auth_w.get("phase") != "Running" or auth_w.get("serviceAccountName") != "trustmesh-integration-authorized":
-                discrepancies.append(f"authorized client (phase: {auth_w.get('phase')}, SA: {auth_w.get('serviceAccountName')})")
-            if unauth_w.get("phase") != "Running" or unauth_w.get("serviceAccountName") != "trustmesh-integration-unauthorized":
-                discrepancies.append(f"unauthorized client (phase: {unauth_w.get('phase')}, SA: {unauth_w.get('serviceAccountName')})")
-            if srv_w.get("phase") != "Running" or srv_w.get("serviceAccountName") != "trustmesh-integration-server":
-                discrepancies.append(f"server (phase: {srv_w.get('phase')}, SA: {srv_w.get('serviceAccountName')})")
-            if plain_w.get("phase") != "Running" or plain_w.get("serviceAccountName") != "trustmesh-integration-authorized":
-                discrepancies.append(f"plaintext client (phase: {plain_w.get('phase')}, SA: {plain_w.get('serviceAccountName')})")
-            if verif_w.get("phase") not in ("Succeeded", "Running") or verif_w.get("serviceAccountName") != "trustmesh-integration-verifier":
-                discrepancies.append(f"verifier (phase: {verif_w.get('phase')}, SA: {verif_w.get('serviceAccountName')})")
-
-            if discrepancies:
-                checks.append({
-                    "id": "workload-lifecycle-and-identity",
-                    "control": "Workload Lifecycle Phase & ServiceAccount Binding",
-                    "status": "FAIL",
-                    "reason": f"Workload lifecycle or ServiceAccount binding discrepancy: {', '.join(discrepancies)}.",
-                    "evidence": {"workloads": [
-                        {"name": w["name"], "phase": w["phase"], "sa": w["serviceAccountName"], "labels": w["labels"]}
-                        for w in [auth_w, unauth_w, srv_w, plain_w, verif_w]
-                    ]},
-                    "source": "kind-trustmesh-network-lab / pods",
-                    "observedAt": now_iso,
-                })
-            else:
-                checks.append({
-                    "id": "workload-lifecycle-and-identity",
-                    "control": "Workload Lifecycle Phase & ServiceAccount Binding",
-                    "status": "PASS",
-                    "reason": "All 5 integration workloads observed matching expected lifecycle phases and dedicated ServiceAccount bindings.",
-                    "evidence": {"workloads": [
-                        {"name": w["name"], "phase": w["phase"], "sa": w["serviceAccountName"], "labels": w["labels"]}
-                        for w in [auth_w, unauth_w, srv_w, plain_w, verif_w]
-                    ]},
-                    "source": "kind-trustmesh-network-lab / pods",
-                    "observedAt": now_iso,
-                })
+        record("workload-lifecycle-and-identity", "Workload Lifecycle Phase & ServiceAccount Binding",
+               network_source + "pods", workload_posture, observations, False)
 
     return 200, {
         "source": "automated-verification",

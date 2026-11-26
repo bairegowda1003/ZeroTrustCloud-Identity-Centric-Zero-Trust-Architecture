@@ -30,6 +30,117 @@ const loaded = { exports: {} };
 new Function('exports', 'require', 'module', compiled)(loaded.exports, require, loaded);
 const { validateSecurityVerification, snapshotAgeReason, requestSecurityVerification } = loaded.exports;
 
+// Controlled transports exercise the request lifecycle without contacting the lab.
+function controlledFetch(t) {
+  const calls = [];
+  t.mock.method(globalThis, 'fetch', (_url, { signal }) => new Promise((resolve, reject) => {
+    calls.push({ signal, resolve, reject });
+  }));
+  return calls;
+}
+function verificationResponse(time) {
+  return { ok: true, json: async () => ({ source: 'automated-verification', collectedAt: time, checks: [] }) };
+}
+
+test('verification sharing detaches the departing consumer and preserves the collection timestamp', async t => {
+  const calls = controlledFetch(t);
+  const leaving = new AbortController();
+  let updates = 0;
+  const first = requestSecurityVerification(leaving.signal).then(() => updates++);
+  leaving.abort();
+  const second = requestSecurityVerification(new AbortController().signal);
+  const third = requestSecurityVerification();
+  await assert.rejects(first, { name: 'AbortError' });
+  assert.equal(calls.length, 1);
+  assert.equal(calls[0].signal.aborted, false);
+  const timestamp = '2026-11-25T00:00:00Z';
+  calls[0].resolve(verificationResponse(timestamp));
+  assert.equal((await second).collectedAt, timestamp);
+  assert.equal(await third, await second);
+  assert.equal(updates, 0);
+  const manual = requestSecurityVerification();
+  assert.equal(calls.length, 2);
+  calls[1].resolve(verificationResponse('2026-11-25T00:01:00Z'));
+  assert.equal((await manual).collectedAt, '2026-11-25T00:01:00Z');
+});
+
+test('shared failure rejects active consumers, validates responses and permits fresh retries', async t => {
+  const calls = controlledFetch(t);
+  const leaving = new AbortController();
+  const first = requestSecurityVerification(leaving.signal);
+  const second = requestSecurityVerification();
+  const third = requestSecurityVerification();
+  leaving.abort();
+  await assert.rejects(first, { name: 'AbortError' });
+  assert.equal(calls[0].signal.aborted, false);
+  calls[0].reject(new Error('collector unavailable'));
+  await Promise.all([second, third].map(p => assert.rejects(p, /collector unavailable/)));
+  const invalid = requestSecurityVerification();
+  calls[1].resolve({ ok: true, json: async () => ({ source: 'invalid' }) });
+  await assert.rejects(invalid, /Unexpected verification source/);
+  const retry = requestSecurityVerification();
+  assert.equal(calls.length, 3);
+  calls[2].resolve(verificationResponse('2026-11-25T00:00:00Z'));
+  await retry;
+});
+
+test('shared deadline stays fixed and late settlement cannot release a replacement', async t => {
+  t.mock.timers.enable({ apis: ['setTimeout'] });
+  const calls = controlledFetch(t);
+  const first = requestSecurityVerification();
+  t.mock.timers.tick(7000);
+  const second = requestSecurityVerification();
+  t.mock.timers.tick(1000);
+  assert.equal(calls.length, 1);
+  assert.equal(calls[0].signal.aborted, true);
+  await Promise.all([first, second].map(p => assert.rejects(p, /timed out after 8000ms/)));
+  const fresh = requestSecurityVerification();
+  calls[0].resolve(verificationResponse('2026-11-24T00:00:00Z'));
+  await new Promise(resolve => setImmediate(resolve));
+  const joined = requestSecurityVerification();
+  assert.equal(calls.length, 2);
+  calls[1].resolve(verificationResponse('2026-11-25T00:00:00Z'));
+  assert.equal(await fresh, await joined);
+});
+
+test('verification releases an abandoned operation and ignores already cancelled callers', async t => {
+  const calls = controlledFetch(t);
+  const controller = new AbortController();
+  const departing = requestSecurityVerification(controller.signal);
+  controller.abort();
+  await assert.rejects(departing, { name: 'AbortError' });
+  assert.equal(calls[0].signal.aborted, true);
+  await assert.rejects(requestSecurityVerification(controller.signal), { name: 'AbortError' });
+  const next = requestSecurityVerification();
+  assert.equal(calls.length, 2);
+  calls[1].resolve(verificationResponse('2026-11-25T00:01:00Z'));
+  await next;
+});
+
+test('Command Center reuses the supplied cluster observation and only starts the four lab feeds', t => {
+  const effects = [];
+  t.mock.method(React, 'useEffect', setup => effects.push(setup));
+  const paths = [];
+  t.mock.method(globalThis, 'fetch', url => {
+    paths.push(url);
+    return new Promise(() => {});
+  });
+  const cluster = { data: null, isLoading: true, refresh() {} };
+  const { useCommandSources } = require('../src/hooks/useCommandSources');
+  function Probe() {
+    assert.equal(useCommandSources(cluster).cluster, cluster);
+    return null;
+  }
+  renderToStaticMarkup(React.createElement(Probe));
+  const cleanups = effects.map(setup => setup());
+  try {
+    assert.deepEqual(paths.sort(), ['/api/identity/workloads', '/api/policies/gatekeeper',
+      '/api/security/network', '/api/security/verification']);
+  } finally {
+    for (const cleanup of cleanups) cleanup?.();
+  }
+});
+
 // Synthetic test fixture matching the 15 verified Zero Trust checks
 const validFixture = () => ({
   source: 'automated-verification',
@@ -332,6 +443,7 @@ test('12. Existing endpoints and verification endpoint registered in backend sta
 test('13. CommandCenterHero renders LiveVerificationCard alongside LiveKubernetesStatus', () => {
   const { CommandCenterHero } = require('../src/components/CommandCenterHero');
   const html = renderToStaticMarkup(React.createElement(CommandCenterHero, {
+    cluster: { data: null, isLoading: true },
     findings: [],
     onFindingClick: () => {},
   }));

@@ -89,56 +89,97 @@ export function snapshotAgeReason(timestamp: string, now: number = Date.now()): 
   return null;
 }
 
-export async function requestSecurityVerification(signal?: AbortSignal): Promise<LiveSecurityVerificationResponse> {
-  const timeoutMs = 8000;
-  const timeoutController = new AbortController();
-  const timer = setTimeout(() => {
-    timeoutController.abort(new Error('Automated verification request timed out after 8000ms'));
-  }, timeoutMs);
+async function collectVerification(signal: AbortSignal): Promise<LiveSecurityVerificationResponse> {
+  const response = await fetch('/api/security/verification', {
+    signal,
+    headers: { Accept: 'application/json', 'Cache-Control': 'no-cache' },
+  });
 
-  const combinedSignal = signal
-    ? anySignal([signal, timeoutController.signal])
-    : timeoutController.signal;
-
-  try {
-    const response = await fetch('/api/security/verification', {
-      signal: combinedSignal,
-      headers: { Accept: 'application/json', 'Cache-Control': 'no-cache' },
-    });
-
-    if (!response.ok) {
-      let detail = `HTTP ${response.status}`;
-      try {
-        const errorJson = await response.json();
-        if (errorJson && typeof errorJson === 'object') {
-          const errRec = errorJson as Record<string, unknown>;
-          if (typeof errRec.error === 'string') {
-            detail = `${detail} - ${errRec.error}`;
-          }
-        }
-      } catch {
-        if (response.statusText) {
-          detail = `${detail} (${response.statusText})`;
+  if (!response.ok) {
+    let detail = `HTTP ${response.status}`;
+    try {
+      const errorJson = await response.json();
+      if (errorJson && typeof errorJson === 'object') {
+        const errRec = errorJson as Record<string, unknown>;
+        if (typeof errRec.error === 'string') {
+          detail = `${detail} - ${errRec.error}`;
         }
       }
-      throw new Error(`Failed to retrieve automated security verification: ${detail}`);
+    } catch {
+      if (response.statusText) {
+        detail = `${detail} (${response.statusText})`;
+      }
     }
-
-    const json = await response.json();
-    return validateSecurityVerification(json);
-  } finally {
-    clearTimeout(timer);
+    throw new Error(`Failed to retrieve automated security verification: ${detail}`);
   }
+
+  const json = await response.json();
+  return validateSecurityVerification(json);
 }
 
-function anySignal(signals: AbortSignal[]): AbortSignal {
+interface Consumer {
+  resolve: (value: LiveSecurityVerificationResponse) => void;
+  reject: (reason: unknown) => void;
+}
+
+interface Collection {
+  controller: AbortController;
+  consumers: Set<Consumer>;
+}
+
+let activeCollection: Collection | undefined;
+
+function startCollection(): Collection {
   const controller = new AbortController();
-  for (const s of signals) {
-    if (s.aborted) {
-      controller.abort(s.reason);
-      return controller.signal;
-    }
-    s.addEventListener('abort', () => controller.abort(s.reason), { once: true });
+  const collection: Collection = { controller, consumers: new Set() };
+  activeCollection = collection;
+
+  function finish(deliver: (consumer: Consumer) => void) {
+    clearTimeout(timer);
+    if (activeCollection === collection) activeCollection = undefined;
+    for (const consumer of collection.consumers) deliver(consumer);
+    collection.consumers.clear();
   }
-  return controller.signal;
+
+  const timer = setTimeout(() => {
+    controller.abort(new Error('Automated verification request timed out after 8000ms'));
+  }, 8000);
+  controller.signal.addEventListener('abort', () => {
+    finish(consumer => consumer.reject(controller.signal.reason));
+  }, { once: true });
+
+  void collectVerification(controller.signal).then(
+    value => finish(consumer => consumer.resolve(value)),
+    error => finish(consumer => consumer.reject(error)),
+  );
+  return collection;
+}
+
+export function requestSecurityVerification(signal?: AbortSignal): Promise<LiveSecurityVerificationResponse> {
+  if (signal?.aborted) return Promise.reject(signal.reason);
+  const collection = activeCollection ?? startCollection();
+  return new Promise((resolve, reject) => {
+    function cancel() {
+      collection.consumers.delete(consumer);
+      reject(signal?.reason);
+      // React runs outgoing effect cleanup before mounting the incoming workspace.
+      queueMicrotask(() => {
+        if (activeCollection === collection && !collection.consumers.size) {
+          collection.controller.abort();
+        }
+      });
+    }
+    const consumer: Consumer = {
+      resolve(value) {
+        signal?.removeEventListener('abort', cancel);
+        resolve(value);
+      },
+      reject(error) {
+        signal?.removeEventListener('abort', cancel);
+        reject(error);
+      },
+    };
+    collection.consumers.add(consumer);
+    signal?.addEventListener('abort', cancel, { once: true });
+  });
 }

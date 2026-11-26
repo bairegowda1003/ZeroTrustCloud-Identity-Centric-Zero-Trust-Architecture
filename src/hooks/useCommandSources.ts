@@ -1,5 +1,5 @@
 ﻿import { useCallback, useEffect, useRef, useState } from 'react';
-import * as cluster from '../utils/kubernetesStatus';
+import type { LiveKubernetesStatusResponse } from '../utils/kubernetesStatus';
 import * as identity from '../utils/identityWorkloads';
 import * as policy from '../utils/gatekeeperPolicies';
 import * as network from '../utils/securityNetwork';
@@ -56,18 +56,14 @@ export function useSource<T extends { collectedAt: string }>(
   return { data, retrievedAt, error, isLoading, staleReason, refresh };
 }
 
-export function useLabSources() {
+export function useCommandSources(cluster: Observation<LiveKubernetesStatusResponse>) {
   return {
+    cluster,
     policy: useSource(policy.requestGatekeeperPolicies, policy.snapshotAgeReason),
     network: useSource(network.requestSecurityNetwork, network.snapshotAgeReason),
     identity: useSource(identity.requestIdentityWorkloads, identity.snapshotAgeReason),
     verification: useSource(verification.requestSecurityVerification, verification.snapshotAgeReason),
   };
-}
-
-export function useCommandSources() {
-  const clusterFeed = useSource(cluster.requestKubernetesStatus, cluster.snapshotAgeReason);
-  return { cluster: clusterFeed, ...useLabSources() };
 }
 
 export type CommandSources = ReturnType<typeof useCommandSources>;
