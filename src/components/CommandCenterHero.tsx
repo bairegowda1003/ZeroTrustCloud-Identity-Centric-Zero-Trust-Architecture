@@ -5,7 +5,7 @@ import { LiveVerificationCard } from './verification/LiveVerificationCard';
 import { DemoNotice } from './DemoNotice';
 import { SnapshotTime } from './SnapshotTime';
 import { SecurityTopology } from './SecurityTopology';
-import { useCommandSources } from '../hooks/useCommandSources';
+import { useCommandSources, type CommandSources } from '../hooks/useCommandSources';
 import { positionResourceInspector } from '../utils/positionResourceInspector';
 import { topologyNodes } from '../utils/commandTopology';
 import type { ActiveModule } from '../types/security';
@@ -19,8 +19,8 @@ const documented: Record<string,string> = {
   spire:'Registration describes the workload selector and identity template. Certificate validity requires separate evidence.',
   istio:'PeerAuthentication describes configured mTLS scope. Traffic test results require separate evidence.',
 };
-export function CommandCenterHero({onViewAllFindings,onNavigate}: {onViewAllFindings:()=>void;onNavigate:(route:ActiveModule)=>void}) {
-  const sources=useCommandSources();
+export function CommandCenterHero({cluster,onViewAllFindings,onNavigate}: {cluster:CommandSources['cluster'];onViewAllFindings:()=>void;onNavigate:(route:ActiveModule)=>void}) {
+  const sources=useCommandSources(cluster);
   const nodes=topologyNodes(sources);
   const [selected,setSelected]=useState('fabric');
   const [inspecting,setInspecting]=useState(false);

@@ -147,6 +147,7 @@ export const App: React.FC = () => {
           {currentModule === 'command_center' ? (
             commandCenterTab === 'overview' ? (
               <CommandCenterHero
+                cluster={cluster}
                 onNavigate={navigate}
                 onViewAllFindings={() => setCommandCenterTab('findings')}
               />
